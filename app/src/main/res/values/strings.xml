@@ -1,24 +1,24 @@
 <resources>
     <string name="app_name">OneDevs</string>
 
-    <string name="nav_dashboard">Dashboard</string>
-    <string name="nav_testers">Testers</string>
-    <string name="nav_my_tests">My Tests</string>
-    <string name="nav_tools">Tools</string>
-    <string name="nav_profile">Profile</string>
+    <string name="nav_board">Board</string>
+    <string name="nav_missions">Missions</string>
+    <string name="nav_launches">Launches</string>
+    <string name="nav_lab">Lab</string>
+    <string name="nav_badge">Badge</string>
 
     <string name="cd_devcoin_balance">DevCoins balance: %1$d</string>
 
-    <string name="dashboard_empty_title">No campaigns yet</string>
-    <string name="dashboard_empty_body">Campaigns you run will show their 14-day window, tester continuity and collected evidence here.</string>
-    <string name="testers_empty_title">No open campaigns</string>
-    <string name="testers_empty_body">Campaigns recruiting testers will appear here once the network is connected.</string>
-    <string name="my_tests_empty_title">You have not joined a test</string>
-    <string name="my_tests_empty_body">Campaigns you join appear here with their testing tasks, feedback and earnings.</string>
-    <string name="tools_empty_title">Developer tools</string>
-    <string name="tools_empty_body">App inspector, APK analyzer, permission checker and device diagnostics live here.</string>
-    <string name="profile_empty_title">Profile</string>
-    <string name="profile_empty_body">Account, device profiles, reputation and settings.</string>
+    <string name="board_empty_title">No apps need testers yet</string>
+    <string name="board_empty_body">Apps looking for testers show up here. Test them to earn DevCoins, then spend DevCoins to put your own app on the board.</string>
+    <string name="missions_empty_title">No missions yet</string>
+    <string name="missions_empty_body">Tests you join appear here with their tasks, the days you have left and what each one pays.</string>
+    <string name="launches_empty_title">Nothing launched yet</string>
+    <string name="launches_empty_body">Apps you put up for testing appear here with their tester count and how far through the 14 days they are.</string>
+    <string name="lab_empty_title">Nothing to inspect yet</string>
+    <string name="lab_empty_body">App inspector, APK analyzer, permission checker and device diagnostics run from here.</string>
+    <string name="badge_empty_title">No reputation yet</string>
+    <string name="badge_empty_body">Testing work you complete builds your badge. Devices, reputation and account settings live here.</string>
     <string name="wallet_empty_title">No DevCoins yet</string>
     <string name="wallet_empty_body">DevCoins reward real testing work: completed tasks, useful feedback and reproducible bug reports.</string>
 </resources>

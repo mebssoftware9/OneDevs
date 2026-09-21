@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.navigationsuite.ExperimentalMaterial3AdaptiveNavigationSuiteApi
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,20 +28,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.devbangs.onedevs.R
 import com.devbangs.onedevs.ui.components.DevCoinChip
-import com.devbangs.onedevs.ui.navigation.Dashboard
-import com.devbangs.onedevs.ui.navigation.MyTests
-import com.devbangs.onedevs.ui.navigation.Profile
-import com.devbangs.onedevs.ui.navigation.Testers
-import com.devbangs.onedevs.ui.navigation.Tools
+import com.devbangs.onedevs.ui.navigation.Badge
+import com.devbangs.onedevs.ui.navigation.Board
+import com.devbangs.onedevs.ui.navigation.Lab
+import com.devbangs.onedevs.ui.navigation.Launches
+import com.devbangs.onedevs.ui.navigation.Missions
 import com.devbangs.onedevs.ui.navigation.TopLevel
 import com.devbangs.onedevs.ui.navigation.Wallet
-import com.devbangs.onedevs.ui.screens.DashboardScreen
-import com.devbangs.onedevs.ui.screens.MyTestsScreen
-import com.devbangs.onedevs.ui.screens.ProfileScreen
-import com.devbangs.onedevs.ui.screens.TestersScreen
-import com.devbangs.onedevs.ui.screens.ToolsScreen
+import com.devbangs.onedevs.ui.screens.BadgeScreen
+import com.devbangs.onedevs.ui.screens.BoardScreen
+import com.devbangs.onedevs.ui.screens.LabScreen
+import com.devbangs.onedevs.ui.screens.LaunchesScreen
+import com.devbangs.onedevs.ui.screens.MissionsScreen
 import com.devbangs.onedevs.ui.screens.WalletScreen
 
 @OptIn(ExperimentalMaterial3AdaptiveNavigationSuiteApi::class, ExperimentalMaterial3Api::class)
@@ -49,6 +49,7 @@ fun OneDevsApp() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val current = backStackEntry?.destination
+    val surface = MaterialTheme.colorScheme.surface
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -73,8 +74,17 @@ fun OneDevsApp() {
                 )
             }
         },
+        // One continuous surface top to bottom: the navigation bar defaults to
+        // surfaceContainer, which reads as a grey slab under the content.
+        navigationSuiteColors = NavigationSuiteDefaults.colors(
+            navigationBarContainerColor = surface,
+            navigationRailContainerColor = surface,
+            navigationDrawerContainerColor = surface,
+        ),
+        containerColor = surface,
     ) {
         Scaffold(
+            containerColor = surface,
             topBar = {
                 TopAppBar(
                     title = { Wordmark() },
@@ -85,22 +95,20 @@ fun OneDevsApp() {
                             modifier = Modifier.padding(end = 12.dp),
                         )
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                    ),
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = surface),
                 )
             },
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = Dashboard,
+                startDestination = Board,
                 modifier = Modifier.padding(innerPadding),
             ) {
-                composable<Dashboard> { DashboardScreen() }
-                composable<Testers> { TestersScreen() }
-                composable<MyTests> { MyTestsScreen() }
-                composable<Tools> { ToolsScreen() }
-                composable<Profile> { ProfileScreen() }
+                composable<Board> { BoardScreen() }
+                composable<Missions> { MissionsScreen() }
+                composable<Launches> { LaunchesScreen() }
+                composable<Lab> { LabScreen() }
+                composable<Badge> { BadgeScreen() }
                 composable<Wallet> { WalletScreen() }
             }
         }

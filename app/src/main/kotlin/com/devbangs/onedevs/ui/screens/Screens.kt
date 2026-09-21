@@ -25,42 +25,42 @@ import com.devbangs.onedevs.R
 import com.devbangs.onedevs.ui.components.EmptyState
 
 @Composable
-fun DashboardScreen(modifier: Modifier = Modifier) = EmptyState(
+fun BoardScreen(modifier: Modifier = Modifier) = EmptyState(
     icon = painterResource(R.drawable.ic_squares_four),
-    title = stringResource(R.string.dashboard_empty_title),
-    body = stringResource(R.string.dashboard_empty_body),
+    title = stringResource(R.string.board_empty_title),
+    body = stringResource(R.string.board_empty_body),
     modifier = modifier,
 )
 
 @Composable
-fun TestersScreen(modifier: Modifier = Modifier) = EmptyState(
-    icon = painterResource(R.drawable.ic_users_three),
-    title = stringResource(R.string.testers_empty_title),
-    body = stringResource(R.string.testers_empty_body),
-    modifier = modifier,
-)
-
-@Composable
-fun MyTestsScreen(modifier: Modifier = Modifier) = EmptyState(
+fun MissionsScreen(modifier: Modifier = Modifier) = EmptyState(
     icon = painterResource(R.drawable.ic_list_checks),
-    title = stringResource(R.string.my_tests_empty_title),
-    body = stringResource(R.string.my_tests_empty_body),
+    title = stringResource(R.string.missions_empty_title),
+    body = stringResource(R.string.missions_empty_body),
     modifier = modifier,
 )
 
 @Composable
-fun ToolsScreen(modifier: Modifier = Modifier) = EmptyState(
-    icon = painterResource(R.drawable.ic_wrench),
-    title = stringResource(R.string.tools_empty_title),
-    body = stringResource(R.string.tools_empty_body),
+fun LaunchesScreen(modifier: Modifier = Modifier) = EmptyState(
+    icon = painterResource(R.drawable.ic_rocket_launch),
+    title = stringResource(R.string.launches_empty_title),
+    body = stringResource(R.string.launches_empty_body),
     modifier = modifier,
 )
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) = EmptyState(
-    icon = painterResource(R.drawable.ic_user_circle),
-    title = stringResource(R.string.profile_empty_title),
-    body = stringResource(R.string.profile_empty_body),
+fun LabScreen(modifier: Modifier = Modifier) = EmptyState(
+    icon = painterResource(R.drawable.ic_flask),
+    title = stringResource(R.string.lab_empty_title),
+    body = stringResource(R.string.lab_empty_body),
+    modifier = modifier,
+)
+
+@Composable
+fun BadgeScreen(modifier: Modifier = Modifier) = EmptyState(
+    icon = painterResource(R.drawable.ic_medal),
+    title = stringResource(R.string.badge_empty_title),
+    body = stringResource(R.string.badge_empty_body),
     modifier = modifier,
 )
 

@@ -14,7 +14,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 RES = ROOT / "app/src/main/res"
 COIN = ROOT / "art/source/devcoin_master.png"
 BASE = "https://raw.githubusercontent.com/phosphor-icons/core/main/assets"
-ICONS = ["squares-four", "users-three", "list-checks", "wrench", "user-circle"]
+ICONS = ["squares-four", "list-checks", "rocket-launch", "flask", "medal"]
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
 COIN_DP, HERO_DP = 28, 96
 
