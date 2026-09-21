@@ -131,4 +131,15 @@ import androidx.compose.ui.graphics.Color
 {scheme("dark", "darkColorScheme")}
 ''')
 print("wrote", OUT.relative_to(ROOT))
-print("window bg light", LIGHT["surface"], "| dark", DARK["surface"])
+
+# The splash window and the app surface have to be the same colour or the
+# handoff flashes. Emitting both from this one palette stops them drifting.
+for folder, sch in (("values", LIGHT), ("values-night", DARK)):
+    d = ROOT / "app/src/main/res" / folder
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "colors.xml").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        "<resources>\n"
+        f'    <color name="window_background">#FF{sch["surface"][1:]}</color>\n'
+        "</resources>\n")
+print("window background light", LIGHT["surface"], "| dark", DARK["surface"])

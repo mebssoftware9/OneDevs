@@ -1,10 +1,14 @@
 <resources>
+    <!-- The splash window and the app window share @color/window_background,
+         which art/gen_theme.py emits from the same palette as the Compose
+         surface colour. They cannot drift apart, so the splash hands off to the
+         first frame without a flash in either light or dark mode. -->
     <style name="Theme.OneDevs" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/window_background</item>
     </style>
 
     <style name="Theme.OneDevs.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenBackground">@color/window_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
         <item name="postSplashScreenTheme">@style/Theme.OneDevs</item>
     </style>
