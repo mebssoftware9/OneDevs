@@ -9,6 +9,13 @@
 
     <string name="cd_devcoin_balance">DevCoins balance: %1$d</string>
 
+    <string name="channel_missions">Missions</string>
+    <string name="channel_missions_desc">Day counters and tasks for tests you joined</string>
+    <string name="channel_launches">Launches</string>
+    <string name="channel_launches_desc">Tester activity and feedback on apps you put up</string>
+    <string name="channel_devcoins">DevCoins</string>
+    <string name="channel_devcoins_desc">DevCoins you earn and spend</string>
+
     <string name="board_empty_title">No apps need testers yet</string>
     <string name="board_empty_body">Apps looking for testers show up here. Test them to earn DevCoins, then spend DevCoins to put your own app on the board.</string>
     <string name="missions_empty_title">No missions yet</string>

@@ -81,6 +81,10 @@ private val darkSurfaceContainer = Color(0xFF201F24)
 private val darkSurfaceContainerHigh = Color(0xFF2A292F)
 private val darkSurfaceContainerHighest = Color(0xFF35343A)
 
+// DevBot keeps his own container colour in both themes: the asset is a white
+// shell that reads at 1.26:1 on a light surface and 13:1 on a dark one.
+internal val devBotSurface = Color(0xFF141318)
+
 internal val lightScheme = lightColorScheme(
     primary = lightPrimary,
     onPrimary = lightOnPrimary,

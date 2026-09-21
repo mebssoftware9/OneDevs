@@ -126,6 +126,10 @@ import androidx.compose.ui.graphics.Color
 
 {consts(DARK, "dark")}
 
+// DevBot keeps his own container colour in both themes: the asset is a white
+// shell that reads at 1.26:1 on a light surface and 13:1 on a dark one.
+internal val devBotSurface = Color(0xFF{N[6][1:]})
+
 {scheme("light", "lightColorScheme")}
 
 {scheme("dark", "darkColorScheme")}
@@ -141,5 +145,6 @@ for folder, sch in (("values", LIGHT), ("values-night", DARK)):
         '<?xml version="1.0" encoding="utf-8"?>\n'
         "<resources>\n"
         f'    <color name="window_background">#FF{sch["surface"][1:]}</color>\n'
+        f'    <color name="devbot_accent">#FF{sch["primary"][1:]}</color>\n'
         "</resources>\n")
 print("window background light", LIGHT["surface"], "| dark", DARK["surface"])

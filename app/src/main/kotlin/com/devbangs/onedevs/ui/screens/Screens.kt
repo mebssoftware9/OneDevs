@@ -22,47 +22,46 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.devbangs.onedevs.R
+import com.devbangs.onedevs.ui.components.DevBotMark
 import com.devbangs.onedevs.ui.components.EmptyState
+import com.devbangs.onedevs.ui.components.IconBadge
 
 @Composable
 fun BoardScreen(modifier: Modifier = Modifier) = EmptyState(
-    icon = painterResource(R.drawable.ic_squares_four),
     title = stringResource(R.string.board_empty_title),
     body = stringResource(R.string.board_empty_body),
     modifier = modifier,
-)
+) { IconBadge(painterResource(R.drawable.ic_squares_four)) }
 
+// Missions is DevBot's screen: the day counters he chases are the thing he
+// interrupts you about, so he is who greets you when there is nothing running.
 @Composable
 fun MissionsScreen(modifier: Modifier = Modifier) = EmptyState(
-    icon = painterResource(R.drawable.ic_list_checks),
     title = stringResource(R.string.missions_empty_title),
     body = stringResource(R.string.missions_empty_body),
     modifier = modifier,
-)
+) { DevBotMark() }
 
 @Composable
 fun LaunchesScreen(modifier: Modifier = Modifier) = EmptyState(
-    icon = painterResource(R.drawable.ic_rocket_launch),
     title = stringResource(R.string.launches_empty_title),
     body = stringResource(R.string.launches_empty_body),
     modifier = modifier,
-)
+) { IconBadge(painterResource(R.drawable.ic_rocket_launch)) }
 
 @Composable
 fun LabScreen(modifier: Modifier = Modifier) = EmptyState(
-    icon = painterResource(R.drawable.ic_flask),
     title = stringResource(R.string.lab_empty_title),
     body = stringResource(R.string.lab_empty_body),
     modifier = modifier,
-)
+) { IconBadge(painterResource(R.drawable.ic_flask)) }
 
 @Composable
 fun BadgeScreen(modifier: Modifier = Modifier) = EmptyState(
-    icon = painterResource(R.drawable.ic_medal),
     title = stringResource(R.string.badge_empty_title),
     body = stringResource(R.string.badge_empty_body),
     modifier = modifier,
-)
+) { IconBadge(painterResource(R.drawable.ic_medal)) }
 
 @Composable
 fun WalletScreen(modifier: Modifier = Modifier) {
