@@ -20,7 +20,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -117,6 +116,5 @@ private fun Wordmark() {
         },
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.SemiBold,
-        letterSpacing = (-0.4).sp,
     )
 }

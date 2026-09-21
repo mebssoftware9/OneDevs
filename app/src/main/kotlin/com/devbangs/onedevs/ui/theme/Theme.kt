@@ -11,6 +11,7 @@ fun OneDevsTheme(
 ) {
     MaterialTheme(
         colorScheme = if (darkTheme) darkScheme else lightScheme,
+        typography = OneDevsTypography,
         content = content,
     )
 }
