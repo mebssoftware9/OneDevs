@@ -19,7 +19,6 @@
 
     <string name="board_live">LIVE</string>
     <string name="board_offline">NOT COUNTING</string>
-    <string name="board_active_count">%1$,d developers active now</string>
     <string name="board_active_unknown">Developer activity</string>
     <string name="board_active_sub">Across OneDevs</string>
     <string name="board_window">24h</string>
@@ -113,4 +112,8 @@
     <string name="cd_badge_earned">Earned</string>
     <string name="wallet_empty_title">No DevCoins yet</string>
     <string name="wallet_empty_body">DevCoins reward real testing work: completed tasks, useful feedback and reproducible bug reports.</string>
+    <plurals name="board_active_count">
+        <item quantity="one">%1$,d developer active now</item>
+        <item quantity="other">%1$,d developers active now</item>
+    </plurals>
 </resources>

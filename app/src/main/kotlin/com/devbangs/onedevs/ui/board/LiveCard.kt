@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -79,7 +80,7 @@ fun LiveCard(
                 )
             }
             Text(
-                text = active?.let { stringResource(R.string.board_active_count, it) }
+                text = active?.let { pluralStringResource(R.plurals.board_active_count, it, it) }
                     ?: stringResource(R.string.board_active_unknown),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
