@@ -21,13 +21,6 @@ internal val SampleTestingApps = listOf(
     BoardApp("BudgetBee", "Finance", "4.4", "42 MB", 25, R.drawable.ic_coins, 4),
 )
 
-/** Apps already published, looking for early users rather than testers. */
-internal val SampleEarlyApps = listOf(
-    BoardApp("PhotoFix", "Photography", "4.2", "37 MB", 15, R.drawable.ic_camera, 0),
-    BoardApp("StudyMate", "Education", "4.3", "66 MB", 15, R.drawable.ic_graduation_cap, 1),
-    BoardApp("SkyNotes", "Productivity", "4.4", "24 MB", 15, R.drawable.ic_clipboard_text, 2),
-)
-
 /** A day's worth of shape for the sparkline. Debug only, same reasoning. */
 internal val SampleTrend =
     listOf(38f, 41f, 37f, 44f, 49f, 46f, 52f, 58f, 55f, 61f, 59f, 66f, 71f, 68f, 74f, 79f)

@@ -30,6 +30,8 @@
     <string name="board_empty_early_body">Apps that have gone live and want their first users show up here. Trying one earns DevCoins too.</string>
     <string name="board_app_meta">%1$s &#183; %2$s &#183; %3$s</string>
     <string name="board_reward">%1$d DevCoins</string>
+    <string name="live_meta">%1$s &#183; %2$s</string>
+    <string name="live_meta_installed">%1$s &#183; installed %2$s</string>
     <string name="board_empty_title">No apps need testers yet</string>
     <string name="board_empty_body">Apps looking for testers show up here. Test them to earn DevCoins, then spend DevCoins to put your own app on the board.</string>
     <string name="missions_empty_title">No missions yet</string>

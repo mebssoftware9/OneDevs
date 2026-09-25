@@ -1,7 +1,7 @@
 # Builds on a runner that has nothing to do with whichever container the work
-# happened in. The previous Codespace took eleven unpushed commits with it and
-# its replacement came up without an Android SDK; neither would have mattered
-# if the build had also been running here.
+# happened in. A Codespace took eleven unpushed commits with it and its
+# replacement came up without an Android SDK; neither would have mattered if
+# the build had also been running here.
 name: build
 
 on:
@@ -27,7 +27,7 @@ jobs:
       - run: pip install -r art/requirements.txt
 
       # The generators run before the build, so a commit whose sources and
-      # assets disagree fails here rather than shipping. Everything in
+      # assets disagree fails here rather than shipping. Everything under
       # res/drawable and the density folders is output, not input.
       - name: Regenerate assets
         run: |

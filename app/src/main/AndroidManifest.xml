@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!--
+      Android 11 hides installed packages from an app unless it says which ones
+      it cares about. These three are named individually rather than asking for
+      QUERY_ALL_PACKAGES, which needs a Play policy declaration and would be
+      refused for a reason as thin as showing an icon. Listing packages by name
+      needs no permission and no justification.
+    -->
+    <queries>
+        <package android:name="cc.devbangs.morpho" />
+        <package android:name="com.devbangs.search" />
+        <package android:name="com.devbangs.beampad" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="market" />
+        </intent>
+    </queries>
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application

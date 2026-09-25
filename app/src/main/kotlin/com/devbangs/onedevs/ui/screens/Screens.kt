@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -51,9 +52,11 @@ import com.devbangs.onedevs.ui.components.ActionCard
 import com.devbangs.onedevs.ui.components.ActionCardWidth
 import com.devbangs.onedevs.ui.components.DevBotMark
 import com.devbangs.onedevs.ui.components.EmptyState
+import com.devbangs.onedevs.ui.board.LiveAppRow
+import com.devbangs.onedevs.ui.board.LiveApps
 import com.devbangs.onedevs.ui.board.LiveCard
+import com.devbangs.onedevs.ui.board.openPlayListing
 import com.devbangs.onedevs.ui.board.SampleActive
-import com.devbangs.onedevs.ui.board.SampleEarlyApps
 import com.devbangs.onedevs.ui.board.SampleTestingApps
 import com.devbangs.onedevs.ui.board.SampleTrend
 import com.devbangs.onedevs.ui.board.TestAppRow
@@ -113,11 +116,11 @@ private enum class BoardCategory(
 @Composable
 fun BoardScreen(modifier: Modifier = Modifier) {
     var category by rememberSaveable { mutableStateOf(BoardCategory.Testing) }
-    val apps = when {
-        !BuildConfig.DEBUG -> emptyList()
-        category == BoardCategory.Testing -> SampleTestingApps
-        else -> SampleEarlyApps
-    }
+    // Testing has no backend, so it is samples in debug and empty in release.
+    // Live Apps does not need one: these are real listings with real package
+    // names, and the deep link into Play works with nothing behind it.
+    val testing = if (BuildConfig.DEBUG) SampleTestingApps else emptyList()
+    val context = LocalContext.current
     val active = if (BuildConfig.DEBUG) SampleActive else null
     val trend = if (BuildConfig.DEBUG) SampleTrend else emptyList()
     Column(modifier = modifier.fillMaxSize()) {
@@ -136,7 +139,8 @@ fun BoardScreen(modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .padding(start = 20.dp, end = 20.dp, top = 14.dp),
         )
-        if (apps.isEmpty()) {
+        val empty = if (category == BoardCategory.Testing) testing.isEmpty() else LiveApps.isEmpty()
+        if (empty) {
             Box(modifier = Modifier.weight(1f)) {
                 EmptyState(
                     title = stringResource(category.emptyTitle),
@@ -154,8 +158,12 @@ fun BoardScreen(modifier: Modifier = Modifier) {
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
                 modifier = Modifier.weight(1f),
             ) {
-                items(apps, key = { it.name }) { app ->
-                    TestAppRow(app = app, onClick = {})
+                if (category == BoardCategory.Testing) {
+                    items(testing, key = { it.name }) { app -> TestAppRow(app = app, onClick = {}) }
+                } else {
+                    items(LiveApps, key = { it.packageName }) { app ->
+                        LiveAppRow(app = app, onClick = { openPlayListing(context, app.packageName) })
+                    }
                 }
             }
         }
