@@ -36,6 +36,15 @@ android {
         disable += "ObsoleteSdkInt"
     }
 
+    testOptions {
+        unitTests {
+            // These tests never touch the framework, but a stray android.jar
+            // call should come back as a default rather than throwing and
+            // being read as a failure in the thing under test.
+            isReturnDefaultValues = true
+        }
+    }
+
     buildFeatures {
         compose = true
         // Sample rows for the board exist in debug only. The board has no
@@ -61,4 +70,6 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    testImplementation(libs.junit)
 }

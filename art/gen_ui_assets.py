@@ -48,7 +48,6 @@ ICONS = {
     # bold twin: a rating star is a mark, not a toggle, and an outlined one at
     # 12dp reads as an empty rating.
     "caret-right": ("bold",), "pulse": ("bold",),
-    "camera": ("bold",), "graduation-cap": ("bold",),
 }
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
 COIN_DP, HERO_DP = 32, 96

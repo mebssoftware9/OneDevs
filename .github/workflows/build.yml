@@ -47,7 +47,14 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - run: ./gradlew :app:assembleDebug :app:lintDebug --warning-mode all
+      - run: ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --warning-mode all
+
+      - name: Test report on failure
+        if: failure()
+        run: |
+          find app/build/reports/tests -name '*.html' -print 2>/dev/null | head
+          find app/build/test-results -name '*.xml' -exec grep -l 'failure' {} + 2>/dev/null \
+            | xargs -r grep -A4 '<failure' | head -40
 
       - name: Lint must be clean
         run: |
