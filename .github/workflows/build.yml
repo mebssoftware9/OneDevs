@@ -1,0 +1,56 @@
+# Builds on a runner that has nothing to do with whichever container the work
+# happened in. The previous Codespace took eleven unpushed commits with it and
+# its replacement came up without an Android SDK; neither would have mattered
+# if the build had also been running here.
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r art/requirements.txt
+
+      # The generators run before the build, so a commit whose sources and
+      # assets disagree fails here rather than shipping. Everything in
+      # res/drawable and the density folders is output, not input.
+      - name: Regenerate assets
+        run: |
+          python3 art/gen_theme.py
+          python3 art/gen_ui_assets.py
+          python3 art/gen_icons.py
+
+      - name: Assets match their generators
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Generated assets differ from what is committed:"
+            git status --porcelain
+            git diff --stat
+            exit 1
+          fi
+          echo "committed assets match the generators"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: ./gradlew :app:assembleDebug :app:lintDebug --warning-mode all
+
+      - name: Lint must be clean
+        run: |
+          grep -qE "No issues found|0 errors, 0 warnings" \
+            app/build/reports/lint-results-debug.txt \
+            || { tail -40 app/build/reports/lint-results-debug.txt; exit 1; }

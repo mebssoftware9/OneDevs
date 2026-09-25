@@ -1,0 +1,14 @@
+{
+  "name": "OneDevs Android",
+  "image": "mcr.microsoft.com/devcontainers/java:21-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/android-sdk:1": {},
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.12" }
+  },
+  "postCreateCommand": "pip install --quiet -r art/requirements.txt",
+  "customizations": {
+    "vscode": {
+      "extensions": ["fwcd.kotlin", "vscjava.vscode-gradle", "ms-python.python"]
+    }
+  }
+}
