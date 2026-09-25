@@ -1,0 +1,5 @@
+# What the asset generators need. numpy and Pillow do the raster work.
+#
+#   pip install -r art/requirements.txt
+numpy>=1.26
+pillow>=10.2

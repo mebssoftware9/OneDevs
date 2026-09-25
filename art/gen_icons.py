@@ -14,7 +14,10 @@ SRC = ROOT / "art/source/icon_master.png"
 RES = ROOT / "app/src/main/res"
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
 CANVAS_DP, SAFE_RADIUS_DP = 108.0, 33.0      # keep content inside the 66dp safe circle
-SPLASH_CANVAS_DP, SPLASH_ART_DP = 288.0, 192.0   # icon with no icon-background
+# Splash sizes for an icon WITH an icon background: 240dp canvas, artwork
+# inside a 160dp circle. The mark's crop is already inscribed in a circle of
+# its own side length, so pasting it at 160dp fills that circle exactly.
+SPLASH_CANVAS_DP, SPLASH_ART_DP = 240.0, 160.0
 
 assert SRC.exists(), f"missing {SRC}"
 img = Image.open(SRC).convert("RGB")
@@ -97,10 +100,14 @@ for dens, f in DENSITIES.items():
     mono.paste(Image.new("RGBA", (content, content), (0, 0, 0, 255)), pos, mk.getchannel("A"))
     write(f"mipmap-{dens}", "ic_launcher_monochrome.webp", mono, **LL)
 
+    # The mark on transparent, not the composited square. The splash window is
+    # pure white or true black, and windowSplashScreenIconBackgroundColor paints
+    # the brand circle behind this, so a baked-in square would sit inside it.
     sc, sa = int(round(SPLASH_CANVAS_DP * f)), int(round(SPLASH_ART_DP * f))
     sp = Image.new("RGBA", (sc, sc), (0, 0, 0, 0))
-    sp.paste(img.resize((sa, sa), Image.LANCZOS).convert("RGBA"), ((sc - sa) // 2,) * 2)
-    write(f"drawable-{dens}", "splash_icon.webp", sp, **LOSSY)
+    sk = mark.resize((sa, sa), Image.LANCZOS)
+    sp.paste(sk, ((sc - sa) // 2,) * 2, sk)
+    write(f"drawable-{dens}", "splash_icon.webp", sp, **LL)
     n += 4
 
 (ROOT / "art/play").mkdir(parents=True, exist_ok=True)

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="window_background">#FFFCFCFF</color>
-    <color name="devbot_accent">#FF384CDE</color>
+    <color name="window_background">#FFFFFFFF</color>
+    <color name="devbot_accent">#FF004EE7</color>
+    <color name="brand_navy">#FF03106B</color>
 </resources>

@@ -38,6 +38,11 @@ android {
 
     buildFeatures {
         compose = true
+        // Sample rows for the board exist in debug only. The board has no
+        // backend yet, and a list component cannot be judged against an empty
+        // list -- but shipping invented apps would be worse than shipping none,
+        // so the compiler decides rather than a flag someone has to remember.
+        buildConfig = true
     }
 }
 

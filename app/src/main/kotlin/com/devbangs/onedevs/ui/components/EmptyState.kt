@@ -24,7 +24,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.devbangs.onedevs.R
-import com.devbangs.onedevs.ui.theme.devBotSurface
+import com.devbangs.onedevs.ui.theme.brandNavy
+import com.devbangs.onedevs.ui.theme.oneDevsColors
 
 /** Circle-and-glyph badge, for screens DevBot has no part in. */
 @Composable
@@ -34,7 +35,7 @@ fun IconBadge(icon: Painter, modifier: Modifier = Modifier) {
         modifier = modifier
             .size(72.dp)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+            .background(oneDevsColors.brandTint),
     ) {
         Icon(
             painter = icon,
@@ -46,9 +47,10 @@ fun IconBadge(icon: Painter, modifier: Modifier = Modifier) {
 }
 
 /**
- * DevBot on his own dark container. The container is not decoration: the asset
- * is a white shell that sits at 1.26:1 against a light surface and 13:1 against
- * a dark one, so without it he half-dissolves in light mode.
+ * DevBot on the brand's navy plate. The plate is not decoration: the asset is a
+ * white shell, which against a pure white surface has nothing to sit on at all.
+ * The navy is the icon's own container colour, so the plate reads as part of the
+ * brand rather than as a grey box, and it holds in both themes.
  */
 @Composable
 fun DevBotMark(modifier: Modifier = Modifier, size: Dp = 96.dp) {
@@ -57,7 +59,7 @@ fun DevBotMark(modifier: Modifier = Modifier, size: Dp = 96.dp) {
         modifier = modifier
             .size(size)
             .clip(RoundedCornerShape(size * 0.28f))
-            .background(devBotSurface),
+            .background(brandNavy),
     ) {
         Image(
             painter = painterResource(R.drawable.ic_devbot),

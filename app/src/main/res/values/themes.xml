@@ -10,6 +10,11 @@
     <style name="Theme.OneDevs.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/window_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <!-- The mark ships on transparent, so the brand circle is drawn here
+             rather than baked into the asset. Without it the splash icon is a
+             square of artwork sitting on the page; with it the launcher and the
+             splash show the same navy disc. -->
+        <item name="windowSplashScreenIconBackgroundColor">@color/brand_navy</item>
         <item name="postSplashScreenTheme">@style/Theme.OneDevs</item>
     </style>
 </resources>
