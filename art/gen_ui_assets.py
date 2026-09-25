@@ -14,6 +14,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 RES = ROOT / "app/src/main/res"
 COIN = ROOT / "art/source/devcoin_master.png"
 BOT = ROOT / "art/source/devbot_master.png"
+MISSION = ROOT / "art/source/graphic.png"
 BASE = "https://raw.githubusercontent.com/phosphor-icons/core/main/assets"
 ICONS = {
     "squares-four": ("bold", "fill"),
@@ -52,13 +53,26 @@ ICONS = {
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
 COIN_DP, HERO_DP = 32, 96
 BOT_DP = 96
+# Mission card backing, generated wider than the card so it is only ever scaled
+# down. The card crops to its own height from the bottom, which keeps the
+# low-poly ridge and loses the top of the chevrons, because the ridge is the
+# part of the artwork that reads at 200dp.
+MISSION_DP_W = 340
 
 def fetch(url):
     with urllib.request.urlopen(url, timeout=30) as r:
         assert r.status == 200, f"{url} -> {r.status}"
         return r.read().decode()
 
-def to_vector(svg, name):
+# Glyphs that point somewhere. In a right-to-left layout everything else on
+# the screen mirrors and these would keep pointing the wrong way -- a chevron
+# meaning "onwards" aimed back where the reader came from. autoMirrored is the
+# framework flipping them, which is cheaper and more correct than shipping a
+# second drawable.
+AUTO_MIRRORED = {"caret-right", "arrow-right"}
+
+
+def to_vector(svg, name, mirror=False):
     vb = re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', svg)
     assert vb, f"{name}: no viewBox"
     paths = re.findall(r'<path[^>]*\sd="([^"]+)"', svg)
@@ -67,12 +81,13 @@ def to_vector(svg, name):
     body = "".join(
         f'    <path\n        android:fillColor="#FFFFFFFF"\n        android:pathData="{p}" />\n'
         for p in paths)
+    mirrored = '\n    android:autoMirrored="true"' if mirror else ""
     return (f'<!-- Phosphor Icons (MIT) - phosphor-icons/core - {name} -->\n'
             f'<vector xmlns:android="http://schemas.android.com/apk/res/android"\n'
             f'    android:width="24dp"\n'
             f'    android:height="24dp"\n'
             f'    android:viewportWidth="{vb.group(1)}"\n'
-            f'    android:viewportHeight="{vb.group(2)}">\n{body}</vector>\n')
+            f'    android:viewportHeight="{vb.group(2)}"{mirrored}>\n{body}</vector>\n')
 
 out = RES / "drawable"
 out.mkdir(parents=True, exist_ok=True)
@@ -81,7 +96,8 @@ for icon, weights in ICONS.items():
     for weight in weights:
         suffix = "" if weight == "bold" else "_fill"
         src = f"{icon}-{weight}"
-        xml = to_vector(fetch(f"{BASE}/{weight}/{src}.svg"), f"{weight}/{src}")
+        xml = to_vector(fetch(f"{BASE}/{weight}/{src}.svg"), f"{weight}/{src}",
+                        mirror=icon in AUTO_MIRRORED)
         (out / f"ic_{icon.replace('-', '_')}{suffix}.xml").write_text(xml)
         n += 1
 print(f"wrote {n} Phosphor vector drawables")
@@ -137,3 +153,36 @@ for dens, f in DENSITIES.items():
     bsq.resize((px, px), Image.LANCZOS).save(d / "ic_devbot.webp", format="WEBP",
                                              quality=95, method=6)
 print(f"wrote DevBot at {BOT_DP}dp (cropped {bot.size}, squared {bside}px)")
+
+# Mission card backing. Opaque on purpose -- it lives inside a rounded clip, so
+# unlike the launch header there is no edge between it and the page to
+# reconcile. White text clears 6.08:1 anywhere in its top band and 4.98:1 in
+# the middle; only the lit ridge along the bottom drops to 3.88:1, which is why
+# the card puts its text above and its button across it.
+assert MISSION.exists(), f"missing {MISSION}"
+mission = Image.open(MISSION).convert("RGB")
+mw, mh = mission.size
+
+
+def _white_contrast(region):
+    c = np.asarray(region).astype(float) / 255.0
+    c = np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+    lum = 0.2126 * c[..., 0] + 0.7152 * c[..., 1] + 0.0722 * c[..., 2]
+    return 1.05 / (lum.max() + 0.05)
+
+
+top = mission.crop((0, 0, mw, int(mh * 0.62)))
+assert _white_contrast(top) >= 4.5, (
+    f"white text only reaches {_white_contrast(top):.2f}:1 on the card's top "
+    "band; the artwork is too bright to write on")
+
+for dens, f in DENSITIES.items():
+    px = int(round(MISSION_DP_W * f))
+    d = RES / f"drawable-{dens}"
+    d.mkdir(parents=True, exist_ok=True)
+    for stale in d.glob("mission_card.*"):
+        stale.unlink()
+    mission.resize((px, int(round(px * mh / mw))), Image.LANCZOS).save(
+        d / "mission_card.webp", format="WEBP", quality=86, method=6)
+print(f"wrote mission card at {MISSION_DP_W}dp ({mw}x{mh} master), "
+      f"white on its top band {_white_contrast(top):.2f}:1")

@@ -17,6 +17,15 @@ android {
     }
 
     buildTypes {
+        debug {
+            // en-XA accents every character and runs about 30% long; ar-XB
+            // mirrors the layout. Between them they find truncation and
+            // right-to-left mistakes on a real device, months before there is
+            // a translator to find them for us. Debug only -- they are test
+            // instruments, not languages.
+            isPseudoLocalesEnabled = true
+        }
+
         release {
             optimization {
                 enable = true
@@ -30,6 +39,13 @@ android {
     }
 
     lint {
+        // The gate is lint's, not a grep's. Every block that has landed here
+        // checked the report for "0 errors, 0 warnings" afterwards, which means
+        // a typo in the grep is a gate that passes everything. This fails the
+        // build instead.
+        warningsAsErrors = true
+        abortOnError = true
+
         // The adaptive icon has to stay in mipmap-anydpi-v26. aapt2 in AGP 9.4
         // does not resolve @mipmap/ic_launcher from an unqualified mipmap-anydpi
         // folder, so lint's suggestion to merge it there breaks resource linking.

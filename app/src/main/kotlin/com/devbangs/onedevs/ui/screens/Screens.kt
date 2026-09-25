@@ -61,6 +61,8 @@ import com.devbangs.onedevs.ui.board.SampleTestingApps
 import com.devbangs.onedevs.ui.board.SampleTrend
 import com.devbangs.onedevs.ui.board.TestAppRow
 import com.devbangs.onedevs.ui.components.FilterPills
+import com.devbangs.onedevs.ui.missions.MissionCard
+import com.devbangs.onedevs.ui.missions.SampleMissions
 import com.devbangs.onedevs.ui.components.IconBadge
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 import kotlin.math.roundToInt
@@ -171,11 +173,62 @@ fun BoardScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun MissionsScreen(modifier: Modifier = Modifier) = EmptyState(
-    title = stringResource(R.string.missions_empty_title),
-    body = stringResource(R.string.missions_empty_body),
-    modifier = modifier,
-) { DevBotMark() }
+fun MissionsScreen(modifier: Modifier = Modifier) {
+    var mine by rememberSaveable { mutableStateOf(false) }
+    val all = if (BuildConfig.DEBUG) SampleMissions else emptyList()
+    val shown = all.filter { it.member == mine }
+    Column(modifier = modifier.fillMaxSize()) {
+        Text(
+            text = stringResource(R.string.missions_intro),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp),
+        )
+        // Said once, on the screen that counts days, because it is the one
+        // claim this app could accidentally make and must not: the number on
+        // a mission is what OneDevs watched, not what Google accepted.
+        Text(
+            text = stringResource(R.string.missions_note),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp),
+        )
+        FilterPills(
+            labels = listOf(
+                stringResource(R.string.missions_available),
+                stringResource(R.string.missions_mine),
+            ),
+            selected = if (mine) 1 else 0,
+            onSelect = { mine = it == 1 },
+            fillWidth = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, end = 20.dp, top = 14.dp),
+        )
+        if (shown.isEmpty()) {
+            Box(modifier = Modifier.weight(1f)) {
+                EmptyState(
+                    title = stringResource(
+                        if (mine) R.string.missions_empty_mine_title else R.string.missions_empty_title,
+                    ),
+                    body = stringResource(
+                        if (mine) R.string.missions_empty_mine_body else R.string.missions_empty_body,
+                    ),
+                ) { DevBotMark() }
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 16.dp),
+                modifier = Modifier.weight(1f),
+            ) {
+                items(shown, key = { it.id }) { mission ->
+                    MissionCard(mission = mission, onClick = {})
+                }
+            }
+        }
+    }
+}
 
 /**
  * What My launches is narrowed to. Each carries its own empty copy, so the

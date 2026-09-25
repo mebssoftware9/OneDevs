@@ -29,11 +29,25 @@
     <string name="board_empty_early_title">No apps need early users yet</string>
     <string name="board_empty_early_body">Apps that have gone live and want their first users show up here. Trying one earns DevCoins too.</string>
     <string name="board_app_meta">%1$s &#183; %2$s &#183; %3$s</string>
-    <string name="board_reward">%1$d DevCoins</string>
     <string name="live_meta">%1$s &#183; %2$s</string>
     <string name="live_meta_installed">%1$s &#183; installed %2$s</string>
     <string name="board_empty_title">No apps need testers yet</string>
     <string name="board_empty_body">Apps looking for testers show up here. Test them to earn DevCoins, then spend DevCoins to put your own app on the board.</string>
+    <string name="missions_intro">Sixteen developers join a mission and test each other\'s apps for 14 days. Everyone gets real testers, nobody waits to be found.</string>
+    <string name="missions_note">Days are counted by OneDevs. Google Play decides your test on its own record.</string>
+    <string name="mission_gathering">GATHERING</string>
+    <string name="mission_running">RUNNING</string>
+    <string name="mission_elapsed">ELAPSED</string>
+    <string name="mission_slots">%1$d/%2$d</string>
+    <string name="mission_day">Day %1$d of %2$d</string>
+    <string name="mission_cta_join">Join this mission</string>
+    <string name="mission_cta_open">Open mission</string>
+    <string name="mission_cta_report">View report</string>
+    <string name="mission_cta_full">Full</string>
+    <string name="missions_available">Available</string>
+    <string name="missions_mine">My missions</string>
+    <string name="missions_empty_mine_title">You have not joined one yet</string>
+    <string name="missions_empty_mine_body">Missions you join appear here with their day count and the tasks you owe the others.</string>
     <string name="missions_empty_title">No missions yet</string>
     <string name="missions_empty_body">Tests you join appear here with their tasks, the days you have left and what each one pays.</string>
     <string name="launches_intro">Manage all your apps in one place. Add them to testing, run a mission, or go live.</string>
@@ -117,5 +131,13 @@
     <plurals name="board_active_count">
         <item quantity="one">%1$,d developer active now</item>
         <item quantity="other">%1$,d developers active now</item>
+    </plurals>
+    <plurals name="board_reward">
+        <item quantity="one">%1$d DevCoin</item>
+        <item quantity="other">%1$d DevCoins</item>
+    </plurals>
+    <plurals name="mission_co_testers">
+        <item quantity="one">%1$d tester so far</item>
+        <item quantity="other">%1$d testers so far</item>
     </plurals>
 </resources>
