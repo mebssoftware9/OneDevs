@@ -2,6 +2,7 @@ package com.devbangs.onedevs
 
 import com.devbangs.onedevs.data.play.OptInLink
 import com.devbangs.onedevs.data.play.matchesPackage
+import com.devbangs.onedevs.data.play.packageOrNull
 import com.devbangs.onedevs.data.play.parseOptInLink
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -27,6 +28,33 @@ class OptInLinkTest {
     fun `surrounding whitespace is tolerated`() {
         val link = parseOptInLink("  https://play.google.com/apps/testing/com.devbangs.search  ")
         assertEquals("com.devbangs.search", (link as OptInLink.PlayOptIn).packageName)
+    }
+
+    @Test
+    fun `a store link gives up its package too`() {
+        val link = parseOptInLink("https://play.google.com/store/apps/details?id=com.devbangs.beampad")
+        assertEquals("com.devbangs.beampad", (link as OptInLink.PlayStore).packageName)
+    }
+
+    @Test
+    fun `extra query parameters do not hide the package`() {
+        val link = parseOptInLink(
+            "https://play.google.com/store/apps/details?id=cc.devbangs.morpho&gl=US&hl=en",
+        )
+        assertEquals("cc.devbangs.morpho", (link as OptInLink.PlayStore).packageName)
+    }
+
+    @Test
+    fun `a store link with no id is not a listing link`() {
+        assertTrue(parseOptInLink("https://play.google.com/store/apps/details?hl=en")
+            is OptInLink.Unrecognised)
+    }
+
+    @Test
+    fun `either play form yields the same package`() {
+        val store = parseOptInLink("https://play.google.com/store/apps/details?id=com.a.b")!!
+        val optIn = parseOptInLink("https://play.google.com/apps/testing/com.a.b")!!
+        assertEquals(store.packageOrNull(), optIn.packageOrNull())
     }
 
     @Test

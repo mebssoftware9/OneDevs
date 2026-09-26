@@ -146,7 +146,7 @@
     <string name="add_live_title">Ajouter aux applis publiées</string>
     <string name="add_app_name">Nom de l\'appli</string>
     <string name="add_category">Catégorie</string>
-    <string name="add_optin_link">Lien d\'inscription Play</string>
+    <string name="add_optin_link">Lien Play</string>
     <string name="add_note">Que doivent tester les testeurs ?</string>
     <string name="common_cancel">Annuler</string>
     <string name="cd_remove">Retirer</string>
@@ -160,7 +160,7 @@
     <string name="add_icon">Ajouter une icône</string>
     <string name="add_icon_change">Changer l\'icône</string>
     <string name="add_icon_hint">PNG ou JPG \u00b7 512 \u00d7 512 px</string>
-    <string name="add_optin_invalid">Collez le lien d\'inscription depuis Play Console</string>
+    <string name="add_optin_invalid">Collez le lien Play de votre appli</string>
     <string name="add_group_heading">Ajoutez OneDevs à vos testeurs</string>
     <string name="add_group_body">Collez cette adresse dans la liste des testeurs de votre test fermé, dans Play Console. Tous les testeurs OneDevs sont déjà dans ce groupe.</string>
     <string name="add_group_copy">Copier</string>

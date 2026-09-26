@@ -148,7 +148,7 @@
     <string name="add_live_title">Añadir a Apps publicadas</string>
     <string name="add_app_name">Nombre de la app</string>
     <string name="add_category">Categoría</string>
-    <string name="add_optin_link">Enlace de participación de Play</string>
+    <string name="add_optin_link">Enlace de Play</string>
     <string name="add_note">¿Qué deben probar?</string>
     <string name="common_cancel">Cancelar</string>
     <string name="cd_remove">Quitar</string>
@@ -162,7 +162,7 @@
     <string name="add_icon">Añadir icono</string>
     <string name="add_icon_change">Cambiar icono</string>
     <string name="add_icon_hint">PNG o JPG \u00b7 512 \u00d7 512 px</string>
-    <string name="add_optin_invalid">Pega el enlace de participación de Play Console</string>
+    <string name="add_optin_invalid">Pega el enlace de Play de tu app</string>
     <string name="add_group_heading">Añade OneDevs a tus testers</string>
     <string name="add_group_body">Pega esta dirección en la lista de testers de tu prueba cerrada en Play Console. Todos los testers de OneDevs ya están en este grupo.</string>
     <string name="add_group_copy">Copiar</string>

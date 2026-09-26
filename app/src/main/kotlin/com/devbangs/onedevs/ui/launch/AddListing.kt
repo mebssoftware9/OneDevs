@@ -42,8 +42,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.asImageBitmap
@@ -67,7 +69,7 @@ import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.data.listings.Listing
 import com.devbangs.onedevs.data.listings.ListingRepository
-import com.devbangs.onedevs.data.play.OptInLink
+import com.devbangs.onedevs.data.play.packageOrNull
 import com.devbangs.onedevs.data.play.parseOptInLink
 import java.io.File
 import java.util.UUID
@@ -108,7 +110,7 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
 
     /** The package, read out of the opt-in link rather than asked for twice. */
     val packageName: String?
-        get() = (parseOptInLink(optInLink) as? OptInLink.PlayOptIn)?.packageName
+        get() = parseOptInLink(optInLink)?.packageOrNull()
 
     val linkLooksWrong: Boolean
         get() = optInLink.isNotBlank() && packageName == null
@@ -354,26 +356,31 @@ private fun IconDropzone(
             modifier = Modifier
                 .size(96.dp)
                 .clip(shape)
-                .then(
-                    if (image == null) {
-                        Modifier.drawBehind {
-                            drawRoundRect(
-                                color = outline,
-                                cornerRadius = CornerRadius(22.dp.toPx()),
-                                style = Stroke(
-                                    width = 1.dp.toPx(),
-                                    pathEffect = PathEffect.dashPathEffect(
-                                        floatArrayOf(8.dp.toPx(), 6.dp.toPx()),
-                                    ),
-                                ),
-                            )
-                        }
-                    } else {
-                        Modifier.border(1.dp, outline, shape)
-                    },
-                )
                 .background(MaterialTheme.colorScheme.surface)
-                .clickable(onClick = onPick),
+                .clickable(onClick = onPick)
+                // Drawn after the fill, not before it. background() paints in
+                // modifier order, so an outline declared earlier is painted
+                // over by the surface behind it and the box simply vanishes.
+                .drawWithContent {
+                    drawContent()
+                    val stroke = 1.dp.toPx()
+                    drawRoundRect(
+                        color = outline,
+                        topLeft = Offset(stroke / 2, stroke / 2),
+                        size = Size(size.width - stroke, size.height - stroke),
+                        cornerRadius = CornerRadius(22.dp.toPx()),
+                        style = Stroke(
+                            width = stroke,
+                            pathEffect = if (image == null) {
+                                PathEffect.dashPathEffect(
+                                    floatArrayOf(8.dp.toPx(), 6.dp.toPx()),
+                                )
+                            } else {
+                                null
+                            },
+                        ),
+                    )
+                },
         ) {
             if (image == null) {
                 Icon(

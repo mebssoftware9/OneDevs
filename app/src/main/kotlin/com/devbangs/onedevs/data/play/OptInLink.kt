@@ -18,6 +18,17 @@ sealed interface OptInLink {
      */
     data class PlayOptIn(val packageName: String, val url: String) : OptInLink
 
+    /**
+     * play.google.com/store/apps/details?id=<package>.
+     *
+     * This is the link Play Console actually hands a developer, and the one
+     * they have to hand. The web opt-in URL exists, but a closed test run
+     * through a Google Group does not require anyone to visit it: a tester on
+     * the list sees the app in the Play app itself. Refusing the store link
+     * would be refusing the normal case.
+     */
+    data class PlayStore(val packageName: String, val url: String) : OptInLink
+
     /** groups.google.com/g/<name>. Nothing in it ties to a package. */
     data class Group(val url: String) : OptInLink
 
@@ -43,6 +54,16 @@ fun parseOptInLink(raw: String): OptInLink? {
             segments[0] == "apps" && segments[1] == "testing" ->
             OptInLink.PlayOptIn(segments[2], trimmed)
 
+        host == "play.google.com" && segments.size >= 3 &&
+            segments[0] == "store" && segments[1] == "apps" && segments[2] == "details" ->
+            uri.query.orEmpty()
+                .split('&')
+                .firstOrNull { it.startsWith("id=") }
+                ?.removePrefix("id=")
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { OptInLink.PlayStore(it, trimmed) }
+                ?: OptInLink.Unrecognised(trimmed)
+
         host == "groups.google.com" && segments.size >= 2 && segments[0] == "g" ->
             OptInLink.Group(trimmed)
 
@@ -60,6 +81,15 @@ fun parseOptInLink(raw: String): OptInLink? {
  */
 fun OptInLink.matchesPackage(packageName: String): Boolean? = when (this) {
     is OptInLink.PlayOptIn -> this.packageName.equals(packageName, ignoreCase = true)
+    is OptInLink.PlayStore -> this.packageName.equals(packageName, ignoreCase = true)
+    is OptInLink.Group -> null
+    is OptInLink.Unrecognised -> null
+}
+
+/** The package a link names, from either Play form, or null if it names none. */
+fun OptInLink.packageOrNull(): String? = when (this) {
+    is OptInLink.PlayOptIn -> packageName
+    is OptInLink.PlayStore -> packageName
     is OptInLink.Group -> null
     is OptInLink.Unrecognised -> null
 }
