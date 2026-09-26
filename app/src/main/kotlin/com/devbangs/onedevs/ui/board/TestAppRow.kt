@@ -115,22 +115,31 @@ fun TestAppRow(
             }
         }
         Spacer(Modifier.width(8.dp))
-        Text(
-            text = pluralStringResource(R.plurals.board_reward, app.reward, app.reward),
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
-            maxLines = 1,
+        // No chevron. The whole row is the target, and Play's own lists carry
+        // none -- an arrow at the end of every row is a hint nobody needed
+        // twice, taking width from the name that did. The coin says what the
+        // tap is for, which the arrow never did.
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
             modifier = Modifier
                 .clip(CircleShape)
                 .background(oneDevsColors.brandTint)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-        )
-        Icon(
-            painter = painterResource(R.drawable.ic_caret_right),
-            contentDescription = null,
-            tint = scheme.onSurfaceVariant,
-            modifier = Modifier.size(14.dp),
-        )
+                .padding(horizontal = 9.dp, vertical = 5.dp),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_coins),
+                contentDescription = null,
+                tint = scheme.primary,
+                modifier = Modifier.size(13.dp),
+            )
+            Text(
+                text = pluralStringResource(R.plurals.board_reward, app.reward, app.reward),
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                fontWeight = FontWeight.SemiBold,
+                color = scheme.primary,
+                maxLines = 1,
+            )
+        }
     }
 }

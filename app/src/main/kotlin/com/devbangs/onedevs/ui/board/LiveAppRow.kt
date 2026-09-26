@@ -120,24 +120,24 @@ fun LiveAppRow(
         Spacer(Modifier.width(8.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(oneDevsColors.brandTint)
+                .padding(horizontal = 9.dp, vertical = 5.dp),
         ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_coins),
+                contentDescription = null,
+                tint = scheme.primary,
+                modifier = Modifier.size(13.dp),
+            )
             Text(
                 text = pluralStringResource(R.plurals.board_reward, app.reward, app.reward),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                 fontWeight = FontWeight.SemiBold,
                 color = scheme.primary,
                 maxLines = 1,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(oneDevsColors.brandTint)
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-            )
-            Icon(
-                painter = painterResource(R.drawable.ic_caret_right),
-                contentDescription = null,
-                tint = scheme.onSurfaceVariant,
-                modifier = Modifier.size(14.dp),
             )
         }
     }

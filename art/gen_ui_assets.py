@@ -48,7 +48,7 @@ ICONS = {
     # Board. The star is the only glyph in the app that ships filled without a
     # bold twin: a rating star is a mark, not a toggle, and an outlined one at
     # 12dp reads as an empty rating.
-    "caret-right": ("bold",), "pulse": ("bold",),
+    "pulse": ("bold",),
 }
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
 COIN_DP, HERO_DP = 32, 96
@@ -69,7 +69,7 @@ def fetch(url):
 # meaning "onwards" aimed back where the reader came from. autoMirrored is the
 # framework flipping them, which is cheaper and more correct than shipping a
 # second drawable.
-AUTO_MIRRORED = {"caret-right", "arrow-right"}
+AUTO_MIRRORED = {"arrow-right"}
 
 
 def to_vector(svg, name, mirror=False):
