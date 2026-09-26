@@ -56,10 +56,7 @@
     <string name="launch_testing_body">Consiga testadores reais para experimentar seu app e enviar feedback.</string>
     <string name="launch_testing_status">Para desenvolvedores elegíveis</string>
     <string name="launch_testing_footer">Melhore seu app</string>
-    <string name="launch_mission_title">Criar uma missão</string>
-    <string name="launch_mission_body">Recrute testadores da comunidade. Custa DevCoins.</string>
-    <string name="launch_mission_status">Bloqueado</string>
-    <string name="launch_mission_footer">Usa DevCoins</string>
+    <string name="cd_locked">Bloqueado</string>
     <string name="launch_live_title">Adicionar aos apps publicados</string>
     <string name="launch_live_body">Publique para que os primeiros usuários encontrem você.</string>
     <string name="launch_live_status">Para primeiros usuários elegíveis</string>

@@ -8,12 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,33 +23,22 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.ui.theme.Accent
 
 /**
- * Wide enough for two lines of title and three of body at bodySmall, narrow
- * enough that the next card is visibly cut off. A row of three that exactly
- * fills the screen looks like the whole set even when it isn't.
+ * One way into the Launch screen, sized to sit two-across without scrolling.
  *
- * 210dp rather than 232dp: these are a way into the screen, not the screen, and
- * at the wider size they were taking the room My launches needed underneath.
- * The paddings inside are tuned against the same budget -- the row is 199dp
- * tall, and every point of that is a point My launches does not start at.
- */
-internal val ActionCardWidth = 210.dp
-
-/**
- * One thing a developer can do with an app.
+ * There is no fixed width any more: two of these share the row, so each takes
+ * half of whatever the screen gives. That is 110dp of usable space inside the
+ * padding on a 320dp phone, which is what every size below is chosen against.
  *
- * Each action wears its own [accent] rather than the house blue. They are
- * different products with different costs -- one is free, one spends DevCoins,
- * one needs a published app -- and telling them apart at a glance is worth more
- * here than a uniform row. The accents are generated against a contrast floor,
- * so a distinct identity never costs an unreadable label.
- *
- * [available] changes the pill, not the palette. A greyed-out card and a live
- * card at the same weight is how someone taps the wrong one, but draining the
- * colour out of a locked action also hides which action it was.
+ * The status is coloured text rather than a filled pill. At 110dp the longest
+ * of them needs 106, and a pill's own padding pushes that to 124 -- so the pill
+ * was a shape that could not hold its own contents on a small phone. Losing it
+ * also loses a row of vertical padding, which is the other thing a card this
+ * narrow cannot spare.
  */
 @Composable
 fun ActionCard(
@@ -69,9 +55,8 @@ fun ActionCard(
 ) {
     Column(
         modifier = modifier
-            .width(ActionCardWidth)
             .fillMaxHeight()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(18.dp))
             .background(accent.tint)
             .clickable(enabled = available, onClick = onClick)
             .padding(12.dp),
@@ -79,93 +64,71 @@ fun ActionCard(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(13.dp))
+                .size(38.dp)
+                .clip(RoundedCornerShape(12.dp))
                 .background(accent.solid),
         ) {
             Icon(
                 painter = icon,
                 contentDescription = null,
                 tint = accent.onSolid,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(19.dp),
             )
         }
         Spacer(Modifier.height(10.dp))
         Text(
             text = title,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.labelLarge.copy(lineHeight = 17.sp),
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(5.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(accent.solid)
-                .padding(horizontal = 9.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             if (!available) {
                 Icon(
                     painter = painterResource(R.drawable.ic_lock),
                     contentDescription = null,
-                    tint = accent.onSolid,
-                    modifier = Modifier.size(12.dp),
+                    tint = accent.solid,
+                    modifier = Modifier.size(11.dp),
                 )
             }
             Text(
                 text = status,
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, lineHeight = 13.sp),
                 fontWeight = FontWeight.Medium,
-                color = accent.onSolid,
+                color = accent.solid,
             )
         }
         Spacer(Modifier.height(8.dp))
         Text(
             text = body,
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, lineHeight = 15.sp),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        // Pushes the footer down so it lands on one line across all three cards,
-        // whatever their body length.
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
         Spacer(Modifier.weight(1f))
+        // No arrow disc. A 32dp circle was a quarter of the width of a card
+        // this size, spent saying "tappable" about a card that is entirely a
+        // button.
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                Icon(
-                    painter = footerIcon,
-                    contentDescription = null,
-                    tint = accent.solid,
-                    modifier = Modifier.size(15.dp),
-                )
-                Text(
-                    text = footerLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = accent.solid,
-                )
-            }
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(30.dp)
-                    .clip(CircleShape)
-                    .background(accent.solid),
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_right),
-                    contentDescription = null,
-                    tint = accent.onSolid,
-                    modifier = Modifier.size(15.dp),
-                )
-            }
+            Icon(
+                painter = footerIcon,
+                contentDescription = null,
+                tint = accent.solid,
+                modifier = Modifier.size(14.dp),
+            )
+            Text(
+                text = footerLabel,
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                fontWeight = FontWeight.Medium,
+                color = accent.solid,
+            )
         }
     }
 }

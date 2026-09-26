@@ -58,10 +58,7 @@
     <string name="launch_testing_body">Get real testers to try your app and send you feedback.</string>
     <string name="launch_testing_status">For eligible developers</string>
     <string name="launch_testing_footer">Build better</string>
-    <string name="launch_mission_title">Create a Mission</string>
-    <string name="launch_mission_body">Recruit testers from the community. Costs DevCoins.</string>
-    <string name="launch_mission_status">Locked</string>
-    <string name="launch_mission_footer">Uses DevCoins</string>
+    <string name="cd_locked">Locked</string>
     <string name="launch_live_title">Add to Live Apps</string>
     <string name="launch_live_body">Publish to Live Apps so early users can find you.</string>
     <string name="launch_live_status">For eligible early users</string>

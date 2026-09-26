@@ -7,8 +7,6 @@ package com.devbangs.onedevs.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,20 +30,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -64,7 +56,6 @@ import com.devbangs.onedevs.ui.board.SampleTrend
 import com.devbangs.onedevs.ui.board.TestAppRow
 import com.devbangs.onedevs.ui.board.openPlayListing
 import com.devbangs.onedevs.ui.components.ActionCard
-import com.devbangs.onedevs.ui.components.ActionCardWidth
 import com.devbangs.onedevs.ui.components.DevBotMark
 import com.devbangs.onedevs.ui.components.EmptyState
 import com.devbangs.onedevs.ui.components.FilterPills
@@ -73,8 +64,6 @@ import com.devbangs.onedevs.ui.missions.MissionCard
 import com.devbangs.onedevs.ui.missions.SampleMissions
 import com.devbangs.onedevs.ui.settings.LanguagePicker
 import com.devbangs.onedevs.ui.theme.oneDevsColors
-import kotlin.math.roundToInt
-import kotlinx.coroutines.delay
 
 /**
  * The two things a developer can be on the board for. Testing is the 14-day
@@ -284,7 +273,7 @@ private fun CreateMissionButton(modifier: Modifier = Modifier) {
         Spacer(Modifier.width(7.dp))
         Icon(
             painter = painterResource(R.drawable.ic_lock),
-            contentDescription = stringResource(R.string.launch_mission_status),
+            contentDescription = stringResource(R.string.cd_locked),
             tint = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.size(13.dp),
         )
@@ -315,9 +304,6 @@ private enum class LaunchFilter(val label: Int, val emptyTitle: Int, val emptyBo
 /** Gap between action cards, and the number the loop's period is built from. */
 private val CardGap = 12.dp
 
-/** How far the row travels per second while it is drifting. */
-private val DriftPerSecond = 52.dp
-
 /**
  * No page title. The tab beneath already says where you are, and repeating it
  * in 32sp costs a third of the first screenful to say it twice. The line that
@@ -326,78 +312,48 @@ private val DriftPerSecond = 52.dp
 @Composable
 fun LaunchesScreen(modifier: Modifier = Modifier) {
     var filter by rememberSaveable { mutableStateOf(LaunchFilter.All) }
-    val cardScroll = rememberScrollState()
-    // Stops on the first touch anywhere on the screen and does not come back.
-    // Watching the Initial pointer pass means a tap on a card counts the same
-    // as a drag on the row: anyone who has started reading has already said
-    // they do not need to be shown that the row moves.
-    var touched by rememberSaveable { mutableStateOf(false) }
-
-    // One direction, forever. The row holds the three actions twice, so after
-    // travelling exactly one set it can be put back to where it started and the
-    // pixels do not change -- A B C A B C, wrapped where the second A sits on
-    // the first. A pendulum was the wrong shape: reversing is an event, and an
-    // event is the thing you cannot read past.
-    val pitchPx = with(LocalDensity.current) { (ActionCardWidth + CardGap).toPx() }
-    val setPx = pitchPx * 3
-    val speedPx = with(LocalDensity.current) { DriftPerSecond.toPx() }
-    LaunchedEffect(touched) {
-        if (touched) return@LaunchedEffect
-        delay(600)
-        var previous = withFrameNanos { it }
-        while (true) {
-            val now = withFrameNanos { it }
-            // Driven by elapsed time, not by frame count, so it travels at the
-            // same speed on a 60Hz panel and a 120Hz one.
-            val seconds = (now - previous) / 1_000_000_000f
-            previous = now
-            if (cardScroll.value >= setPx) cardScroll.scrollTo(cardScroll.value - setPx.roundToInt())
-            cardScroll.scrollBy(speedPx * seconds)
-        }
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    awaitPointerEvent(PointerEventPass.Initial)
-                    touched = true
-                }
-            },
-    ) {
+    Column(modifier = modifier.fillMaxSize()) {
         Text(
             text = stringResource(R.string.launches_intro),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 18.dp),
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 14.dp),
         )
+        // Two cards, side by side, no scroll. There were three, and the third
+        // -- creating a mission -- now has a button of its own on the Missions
+        // screen, which is where someone goes to think about missions. Two fit
+        // a phone without moving, and a row that does not move needs no drift
+        // to advertise that it can: everything on it is already visible.
         Row(
             horizontalArrangement = Arrangement.spacedBy(CardGap),
             modifier = Modifier
-                .horizontalScroll(cardScroll)
-                // Intrinsic height, so the three cards match the tallest of them
-                // and their status rows sit on one line across the set.
                 .height(IntrinsicSize.Max)
                 .padding(horizontal = 20.dp),
         ) {
-            // A card leaving by the left edge shrinks and fades out, so the
-            // wrap reads as one leaving while its copy arrives rather than as a
-            // jump. Read straight from the scroll value inside a graphicsLayer
-            // block, which defers to the draw phase: a card sliding away is not
-            // rebuilding its text every frame.
-            val passing: (Int) -> Modifier = { index ->
-                Modifier.graphicsLayer {
-                    val t = ((cardScroll.value - index * pitchPx) / pitchPx).coerceIn(0f, 1f)
-                    scaleX = 1f - 0.14f * t
-                    scaleY = 1f - 0.14f * t
-                    alpha = 1f - 0.9f * t
-                }
-            }
-
-            // Twice, so the wrap has something identical to land on.
-            LaunchActions(0, passing)
-            LaunchActions(3, passing)
+            ActionCard(
+                modifier = Modifier.weight(1f),
+                accent = oneDevsColors.testing,
+                icon = painterResource(R.drawable.ic_users_three),
+                title = stringResource(R.string.launch_testing_title),
+                body = stringResource(R.string.launch_testing_body),
+                status = stringResource(R.string.launch_testing_status),
+                available = true,
+                footerIcon = painterResource(R.drawable.ic_users_three),
+                footerLabel = stringResource(R.string.launch_testing_footer),
+                onClick = {},
+            )
+            ActionCard(
+                modifier = Modifier.weight(1f),
+                accent = oneDevsColors.live,
+                icon = painterResource(R.drawable.ic_globe),
+                title = stringResource(R.string.launch_live_title),
+                body = stringResource(R.string.launch_live_body),
+                status = stringResource(R.string.launch_live_status),
+                available = true,
+                footerIcon = painterResource(R.drawable.ic_globe),
+                footerLabel = stringResource(R.string.launch_live_footer),
+                onClick = {},
+            )
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -431,61 +387,6 @@ fun LaunchesScreen(modifier: Modifier = Modifier) {
     }
 }
 
-/**
- * The three actions, in order. Emitted twice by the row so the loop has an
- * identical set to wrap onto; [first] is the index the leftmost of the three
- * occupies in the row, which is what [passing] needs to know where it sits.
- *
- * available is hard-coded until account state exists. Eligibility is a real
- * rule -- missions cost DevCoins and new accounts cannot run them -- but
- * nothing computes it yet, so these values are presentation standing in for a
- * check that has still to be written.
- */
-@Composable
-private fun LaunchActions(first: Int, passing: (Int) -> Modifier) {
-    ActionCard(
-        modifier = passing(first),
-        accent = oneDevsColors.testing,
-        icon = painterResource(R.drawable.ic_users_three),
-        title = stringResource(R.string.launch_testing_title),
-        body = stringResource(R.string.launch_testing_body),
-        status = stringResource(R.string.launch_testing_status),
-        available = true,
-        footerIcon = painterResource(R.drawable.ic_users_three),
-        footerLabel = stringResource(R.string.launch_testing_footer),
-        onClick = {},
-    )
-    ActionCard(
-        modifier = passing(first + 1),
-        accent = oneDevsColors.mission,
-        icon = painterResource(R.drawable.ic_target),
-        title = stringResource(R.string.launch_mission_title),
-        body = stringResource(R.string.launch_mission_body),
-        status = stringResource(R.string.launch_mission_status),
-        available = false,
-        footerIcon = painterResource(R.drawable.ic_coins),
-        footerLabel = stringResource(R.string.launch_mission_footer),
-        onClick = {},
-    )
-    ActionCard(
-        modifier = passing(first + 2),
-        accent = oneDevsColors.live,
-        icon = painterResource(R.drawable.ic_globe),
-        title = stringResource(R.string.launch_live_title),
-        body = stringResource(R.string.launch_live_body),
-        status = stringResource(R.string.launch_live_status),
-        available = true,
-        footerIcon = painterResource(R.drawable.ic_globe),
-        footerLabel = stringResource(R.string.launch_live_footer),
-        onClick = {},
-    )
-}
-
-/**
- * How the app behaves, rather than what it holds. Language lives here because
- * it is a setting, not an achievement -- it was on Badge only because Badge was
- * the nearest thing to a profile that existed.
- */
 @Composable
 fun ProfileScreen(modifier: Modifier = Modifier) {
     Column(

@@ -35,7 +35,6 @@ ICONS = {
     "target": ("bold",),
     "globe": ("bold",),
     "lock": ("bold",),
-    "arrow-right": ("bold",),
     "coins": ("bold",),
     # Badge catalogue. One glyph per badge, all bold: a badge is a badge whether
     # or not it has been earned, and the earned state is carried by colour.
@@ -69,7 +68,7 @@ def fetch(url):
 # meaning "onwards" aimed back where the reader came from. autoMirrored is the
 # framework flipping them, which is cheaper and more correct than shipping a
 # second drawable.
-AUTO_MIRRORED = {"arrow-right"}
+AUTO_MIRRORED: set[str] = set()
 
 
 def to_vector(svg, name, mirror=False):
