@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Asking Play whether a package has a public listing. HEAD only:
+         no response body is read, parsed or stored. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!--
       Android 11 hides installed packages from an app unless it says which ones
       it cares about. These three are named individually rather than asking for
