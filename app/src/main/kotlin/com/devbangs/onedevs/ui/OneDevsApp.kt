@@ -42,6 +42,7 @@ import com.devbangs.onedevs.ui.navigation.Board
 import com.devbangs.onedevs.ui.navigation.Lab
 import com.devbangs.onedevs.ui.navigation.Launches
 import com.devbangs.onedevs.ui.navigation.Missions
+import com.devbangs.onedevs.ui.navigation.Profile
 import com.devbangs.onedevs.ui.navigation.TopLevel
 import com.devbangs.onedevs.ui.navigation.Wallet
 import com.devbangs.onedevs.ui.screens.BadgeScreen
@@ -49,6 +50,7 @@ import com.devbangs.onedevs.ui.screens.BoardScreen
 import com.devbangs.onedevs.ui.screens.LabScreen
 import com.devbangs.onedevs.ui.screens.LaunchesScreen
 import com.devbangs.onedevs.ui.screens.MissionsScreen
+import com.devbangs.onedevs.ui.screens.ProfileScreen
 import com.devbangs.onedevs.ui.screens.WalletScreen
 
 @OptIn(ExperimentalMaterial3AdaptiveNavigationSuiteApi::class, ExperimentalMaterial3Api::class)
@@ -165,7 +167,14 @@ fun OneDevsApp() {
                             // Badge already owns reputation, devices and account
                             // settings. The profile action opens that rather than
                             // introducing a second destination for one screen.
-                            ProfileAction(onClick = { openTopLevel(Badge) })
+                            // Profile is its own destination now. It was
+                            // opening Badge because there was nothing else to
+                            // open, which made settings look like a reward.
+                            ProfileAction(
+                                onClick = {
+                                    navController.navigate(Profile) { launchSingleTop = true }
+                                },
+                            )
                         }
                     },
                     // scrolledContainerColor defaults to surfaceContainer, which
@@ -187,6 +196,7 @@ fun OneDevsApp() {
                 composable<Launches> { LaunchesScreen() }
                 composable<Lab> { LabScreen() }
                 composable<Badge> { BadgeScreen() }
+                composable<Profile> { ProfileScreen() }
                 composable<Wallet> { WalletScreen() }
             }
         }

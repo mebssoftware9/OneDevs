@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Spanish, written as a first pass and not yet reviewed by a native speaker.
+
+  One line is not a matter of taste. mission_elapsed is TRANSCURRIDA, meaning
+  the window has passed. It must never become "aprobada" or "completada":
+  OneDevs counts days, Google Play decides tests, and a translation that blurs
+  those two makes the exact claim this product is built not to make.
+-->
+<resources>
+    <string name="nav_board">Tablero</string>
+    <string name="nav_missions">Misión</string>
+    <string name="nav_launches">Lanzar</string>
+    <string name="nav_lab">Lab</string>
+    <string name="nav_badge">Insignia</string>
+    <string name="cd_profile">Perfil</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_language_system">Predeterminado del sistema</string>
+    <string name="channel_missions">Misiones</string>
+    <string name="channel_missions_desc">Contadores de días y tareas de las pruebas a las que te uniste</string>
+    <string name="channel_launches">Lanzamientos</string>
+    <string name="channel_launches_desc">Actividad de testers y comentarios sobre las apps que publicaste</string>
+    <string name="channel_devcoins">DevCoins</string>
+    <string name="channel_devcoins_desc">DevCoins que ganas y gastas</string>
+    <string name="board_live">EN VIVO</string>
+    <string name="board_offline">SIN CONTEO</string>
+    <string name="board_active_unknown">Actividad de desarrolladores</string>
+    <string name="board_active_sub">En todo OneDevs</string>
+    <string name="board_window">24 h</string>
+    <string name="board_cat_testing">Pruebas</string>
+    <string name="board_cat_early">Primeros usuarios</string>
+    <string name="board_apps_heading">Prueba estas apps y gana DevCoins</string>
+    <string name="board_early_heading">Pruébalas y ayúdalas a crecer</string>
+    <string name="board_empty_early_title">Ninguna app necesita primeros usuarios todavía</string>
+    <string name="board_empty_early_body">Las apps que ya se publicaron y buscan sus primeros usuarios aparecen aquí. Probar una también da DevCoins.</string>
+    <string name="live_meta_installed">%1$s &#183; instalada %2$s</string>
+    <string name="board_empty_title">Ninguna app necesita testers todavía</string>
+    <string name="board_empty_body">Las apps que buscan testers aparecen aquí. Pruébalas para ganar DevCoins y luego gástalos para poner tu propia app en el tablero.</string>
+    <string name="missions_intro">Dieciséis desarrolladores se unen a una misión y prueban las apps de los demás durante 14 días. Todos consiguen testers reales y nadie espera a que lo encuentren.</string>
+    <string name="missions_note">OneDevs cuenta los días. Google Play decide sobre tu prueba según su propio registro.</string>
+    <string name="mission_gathering">REUNIENDO</string>
+    <string name="mission_running">EN CURSO</string>
+    <string name="mission_elapsed">TRANSCURRIDA</string>
+    <string name="mission_day">Día %1$d de %2$d</string>
+    <string name="mission_cta_join">Unirme a esta misión</string>
+    <string name="mission_cta_open">Abrir misión</string>
+    <string name="mission_cta_report">Ver informe</string>
+    <string name="mission_cta_full">Completa</string>
+    <string name="missions_available">Disponibles</string>
+    <string name="missions_mine">Mis misiones</string>
+    <string name="missions_empty_mine_title">Todavía no te has unido a ninguna</string>
+    <string name="missions_empty_mine_body">Las misiones a las que te unas aparecen aquí con sus días contados y las tareas que debes a los demás.</string>
+    <string name="missions_empty_title">Todavía no hay misiones</string>
+    <string name="missions_empty_body">Las pruebas a las que te unas aparecen aquí con sus tareas, los días que te quedan y lo que paga cada una.</string>
+    <string name="launches_intro">Gestiona todas tus apps en un solo lugar. Ponlas en pruebas, crea una misión o publícalas.</string>
+    <string name="launch_testing_title">Añadir al tablero de pruebas</string>
+    <string name="launch_testing_body">Consigue testers reales que prueben tu app y te envíen comentarios.</string>
+    <string name="launch_testing_status">Para desarrolladores elegibles</string>
+    <string name="launch_testing_footer">Mejora tu app</string>
+    <string name="launch_mission_title">Crear una misión</string>
+    <string name="launch_mission_body">Recluta testers de la comunidad. Cuesta DevCoins.</string>
+    <string name="launch_mission_status">Bloqueado</string>
+    <string name="launch_mission_footer">Usa DevCoins</string>
+    <string name="launch_live_title">Añadir a Apps publicadas</string>
+    <string name="launch_live_body">Publícala para que los primeros usuarios puedan encontrarte.</string>
+    <string name="launch_live_status">Para primeros usuarios elegibles</string>
+    <string name="launch_live_footer">Llega a más usuarios</string>
+    <string name="launches_mine_title">Mis lanzamientos</string>
+    <string name="filter_all">Todas</string>
+    <string name="filter_testing">En pruebas</string>
+    <string name="filter_live">Publicadas</string>
+    <string name="launches_empty_testing_title">Nada en pruebas</string>
+    <string name="launches_empty_testing_body">Las apps que pongas en el tablero aparecen aquí con su número de testers y cuánto llevan de los 14 días.</string>
+    <string name="launches_empty_live_title">Nada publicado todavía</string>
+    <string name="launches_empty_live_body">Las apps que publiques aparecen aquí, donde los primeros usuarios pueden encontrarlas.</string>
+    <string name="launches_empty_title">Nada lanzado todavía</string>
+    <string name="launches_empty_body">Las apps que pongas a prueba aparecen aquí con su número de testers y cuánto llevan de los 14 días.</string>
+    <string name="lab_empty_title">Nada que inspeccionar todavía</string>
+    <string name="lab_empty_body">El inspector de apps, el analizador de APK, el verificador de permisos y el diagnóstico del dispositivo se ejecutan desde aquí.</string>
+    <string name="badge_intro">Las insignias se ganan con trabajo real de pruebas. Aquí no se compra nada.</string>
+    <string name="badge_your_badges">Tus insignias</string>
+    <string name="badge_group_testing">Pruebas</string>
+    <string name="badge_group_testing_tagline">Prueba, explora, mejora.</string>
+    <string name="badge_first_test">Primera prueba</string>
+    <string name="badge_first_test_req">Completa tu primera misión</string>
+    <string name="badge_tester">Tester</string>
+    <string name="badge_tester_req">Completa 5 misiones</string>
+    <string name="badge_dedicated">Tester dedicado</string>
+    <string name="badge_dedicated_req">Completa 10 misiones</string>
+    <string name="badge_veteran">Veterano de pruebas</string>
+    <string name="badge_veteran_req">Completa 25 misiones</string>
+    <string name="badge_streak">Racha de pruebas</string>
+    <string name="badge_streak_req">Completa 5 seguidas</string>
+    <string name="badge_group_feedback">Comentarios</string>
+    <string name="badge_group_feedback_tagline">Comparte. Mejora. Deja huella.</string>
+    <string name="badge_useful">Comentarios útiles</string>
+    <string name="badge_useful_req">Envía 5 informes aceptados</string>
+    <string name="badge_bug_hunter">Cazador de errores</string>
+    <string name="badge_bug_hunter_req">Reporta 10 errores confirmados</string>
+    <string name="badge_detail">Atento al detalle</string>
+    <string name="badge_detail_req">Envía informes de alta calidad</string>
+    <string name="badge_group_community">Comunidad</string>
+    <string name="badge_group_community_tagline">Ayuda a otros. Crecemos juntos.</string>
+    <string name="badge_builder">Constructor de comunidad</string>
+    <string name="badge_builder_req">Ayuda a 10 desarrolladores</string>
+    <string name="badge_helper">Ayudante de desarrolladores</string>
+    <string name="badge_helper_req">Ayuda a 25 desarrolladores</string>
+    <string name="badge_contributor">Colaborador de confianza</string>
+    <string name="badge_contributor_req">Mantén una participación alta</string>
+    <string name="badge_group_creator">Creador de misiones</string>
+    <string name="badge_group_creator_tagline">Lanza misiones. Gana confianza.</string>
+    <string name="badge_creator">Creador de misiones</string>
+    <string name="badge_creator_req">Crea tu primera misión</string>
+    <string name="badge_campaign">Gestor de campañas</string>
+    <string name="badge_campaign_req">Completa tu primera campaña</string>
+    <string name="badge_trusted_creator">Creador de confianza</string>
+    <string name="badge_trusted_creator_req">Ejecuta 5 misiones con éxito</string>
+    <string name="badge_group_trust">Confianza y verificación</string>
+    <string name="badge_group_trust_tagline">Se ganan con actividad real. Nunca se compran.</string>
+    <string name="badge_device">Dispositivo verificado</string>
+    <string name="badge_device_req">Dispositivo Android físico</string>
+    <string name="badge_account">Cuenta verificada</string>
+    <string name="badge_account_req">Verificación de cuenta completada</string>
+    <string name="badge_reliable">Tester fiable</string>
+    <string name="badge_reliable_req">Cumple el umbral de finalización</string>
+    <string name="badge_eligible">Apto para misiones</string>
+    <string name="badge_eligible_req">Todos los requisitos cumplidos</string>
+    <string name="badge_progress">%1$d de %2$d</string>
+    <string name="cd_badge_locked">Bloqueada</string>
+    <string name="cd_badge_earned">Conseguida</string>
+    <string name="wallet_empty_title">Todavía no tienes DevCoins</string>
+    <string name="wallet_empty_body">Los DevCoins premian el trabajo real de pruebas: tareas completadas, comentarios útiles e informes de errores reproducibles.</string>
+    <plurals name="board_active_count">
+        <item quantity="one">%1$,d desarrollador activo ahora</item>
+        <item quantity="other">%1$,d desarrolladores activos ahora</item>
+        <item quantity="many">%1$,d de desarrolladores activos ahora</item>
+    </plurals>
+    <plurals name="board_reward">
+        <item quantity="one">%1$d DevCoin</item>
+        <item quantity="other">%1$d DevCoins</item>
+        <item quantity="many">%1$d de DevCoins</item>
+    </plurals>
+    <plurals name="mission_co_testers">
+        <item quantity="one">%1$d tester hasta ahora</item>
+        <item quantity="other">%1$d testers hasta ahora</item>
+        <item quantity="many">%1$d de testers hasta ahora</item>
+    </plurals>
+</resources>

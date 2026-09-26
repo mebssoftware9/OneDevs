@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  What the system picker offers on Android 13 and above. Every tag here must
+  have a res/values-<tag> folder behind it and an entry in AppLanguage, or the
+  picker lists a language the app cannot speak. A test checks all three agree.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="es" />
+    <locale android:name="fr" />
+    <locale android:name="pt-BR" />
+</locale-config>

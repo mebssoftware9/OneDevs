@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">OneDevs</string>
+    <string name="app_name" translatable="false">OneDevs</string>
 
     <string name="nav_board">Board</string>
     <string name="nav_missions">Mission</string>
@@ -7,8 +7,10 @@
     <string name="nav_lab">Lab</string>
     <string name="nav_badge">Badge</string>
 
-    <string name="devcoin_label">DevCoins</string>
+    <string name="devcoin_label" translatable="false">DevCoins</string>
     <string name="cd_profile">Profile</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">System default</string>
 
     <string name="channel_missions">Missions</string>
     <string name="channel_missions_desc">Day counters and tasks for tests you joined</string>
@@ -28,8 +30,8 @@
     <string name="board_early_heading">Try these and help them grow</string>
     <string name="board_empty_early_title">No apps need early users yet</string>
     <string name="board_empty_early_body">Apps that have gone live and want their first users show up here. Trying one earns DevCoins too.</string>
-    <string name="board_app_meta">%1$s &#183; %2$s &#183; %3$s</string>
-    <string name="live_meta">%1$s &#183; %2$s</string>
+    <string name="board_app_meta" translatable="false">%1$s &#183; %2$s &#183; %3$s</string>
+    <string name="live_meta" translatable="false">%1$s &#183; %2$s</string>
     <string name="live_meta_installed">%1$s &#183; installed %2$s</string>
     <string name="board_empty_title">No apps need testers yet</string>
     <string name="board_empty_body">Apps looking for testers show up here. Test them to earn DevCoins, then spend DevCoins to put your own app on the board.</string>
@@ -38,7 +40,7 @@
     <string name="mission_gathering">GATHERING</string>
     <string name="mission_running">RUNNING</string>
     <string name="mission_elapsed">ELAPSED</string>
-    <string name="mission_slots">%1$d/%2$d</string>
+    <string name="mission_slots" translatable="false">%1$d/%2$d</string>
     <string name="mission_day">Day %1$d of %2$d</string>
     <string name="mission_cta_join">Join this mission</string>
     <string name="mission_cta_open">Open mission</string>

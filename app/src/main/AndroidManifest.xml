@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!--
       Android 11 hides installed packages from an app unless it says which ones
@@ -22,6 +23,8 @@
 
     <application
         android:name=".OneDevsApplication"
+        android:localeConfig="@xml/locales_config"
+        tools:targetApi="tiramisu"
         android:allowBackup="false"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"

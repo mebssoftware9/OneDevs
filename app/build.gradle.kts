@@ -18,6 +18,17 @@ android {
         versionName = "0.1.0"
     }
 
+    bundle {
+        language {
+            // Every language ships in every install. On by default, Play splits
+            // a bundle by language and sends a device only its own -- so the
+            // picker would offer French and then render English, because the
+            // French resources were never downloaded. An in-app picker and
+            // language splitting cannot both be true.
+            enableSplit = false
+        }
+    }
+
     buildTypes {
         debug {
             // en-XA accents every character and runs about 30% long; ar-XB

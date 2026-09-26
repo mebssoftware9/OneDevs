@@ -61,6 +61,7 @@ import com.devbangs.onedevs.ui.board.SampleTestingApps
 import com.devbangs.onedevs.ui.board.SampleTrend
 import com.devbangs.onedevs.ui.board.TestAppRow
 import com.devbangs.onedevs.ui.components.FilterPills
+import com.devbangs.onedevs.ui.settings.LanguagePicker
 import com.devbangs.onedevs.ui.missions.MissionCard
 import com.devbangs.onedevs.ui.missions.SampleMissions
 import com.devbangs.onedevs.ui.components.IconBadge
@@ -418,6 +419,24 @@ private fun LaunchActions(first: Int, passing: (Int) -> Modifier) {
         footerLabel = stringResource(R.string.launch_live_footer),
         onClick = {},
     )
+}
+
+/**
+ * How the app behaves, rather than what it holds. Language lives here because
+ * it is a setting, not an achievement -- it was on Badge only because Badge was
+ * the nearest thing to a profile that existed.
+ */
+@Composable
+fun ProfileScreen(modifier: Modifier = Modifier) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
+    ) {
+        LanguagePicker()
+    }
 }
 
 @Composable

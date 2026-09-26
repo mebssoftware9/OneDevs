@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
 @Serializable object Launches
 @Serializable object Lab
 @Serializable object Badge
+@Serializable object Profile
 @Serializable object Wallet
 
 /** Top-level destinations. DevCoins is reached from the balance chip, not a tab. */
