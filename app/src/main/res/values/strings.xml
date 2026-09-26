@@ -35,8 +35,8 @@
     <string name="live_meta_installed">%1$s &#183; installed %2$s</string>
     <string name="board_empty_title">No apps need testers yet</string>
     <string name="board_empty_body">Apps looking for testers show up here. Test them to earn DevCoins, then spend DevCoins to put your own app on the board.</string>
-    <string name="missions_intro">Sixteen developers join a mission and test each other\'s apps for 14 days. Everyone gets real testers, nobody waits to be found.</string>
-    <string name="missions_note">Days are counted by OneDevs. Google Play decides your test on its own record.</string>
+    <string name="missions_intro">Sixteen developers test each other\'s apps for 14 days. OneDevs counts the days; Google Play decides your test.</string>
+    <string name="mission_create">Create Mission</string>
     <string name="mission_gathering">GATHERING</string>
     <string name="mission_running">RUNNING</string>
     <string name="mission_elapsed">ELAPSED</string>

@@ -4,24 +4,34 @@ package com.devbangs.onedevs.ui.screens
 // state. Nothing here fabricates data — screens show what is actually known,
 // which before the data layer exists is nothing.
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -41,30 +52,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.devbangs.onedevs.R
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import com.devbangs.onedevs.BuildConfig
+import com.devbangs.onedevs.R
 import com.devbangs.onedevs.ui.badges.BadgeCatalogue
 import com.devbangs.onedevs.ui.badges.BadgeGroupCard
-import com.devbangs.onedevs.ui.components.ActionCard
-import com.devbangs.onedevs.ui.components.ActionCardWidth
-import com.devbangs.onedevs.ui.components.DevBotMark
-import com.devbangs.onedevs.ui.components.EmptyState
 import com.devbangs.onedevs.ui.board.LiveAppRow
 import com.devbangs.onedevs.ui.board.LiveApps
 import com.devbangs.onedevs.ui.board.LiveCard
-import com.devbangs.onedevs.ui.board.openPlayListing
 import com.devbangs.onedevs.ui.board.SampleActive
 import com.devbangs.onedevs.ui.board.SampleTestingApps
 import com.devbangs.onedevs.ui.board.SampleTrend
 import com.devbangs.onedevs.ui.board.TestAppRow
+import com.devbangs.onedevs.ui.board.openPlayListing
+import com.devbangs.onedevs.ui.components.ActionCard
+import com.devbangs.onedevs.ui.components.ActionCardWidth
+import com.devbangs.onedevs.ui.components.DevBotMark
+import com.devbangs.onedevs.ui.components.EmptyState
 import com.devbangs.onedevs.ui.components.FilterPills
-import com.devbangs.onedevs.ui.settings.LanguagePicker
+import com.devbangs.onedevs.ui.components.IconBadge
 import com.devbangs.onedevs.ui.missions.MissionCard
 import com.devbangs.onedevs.ui.missions.SampleMissions
-import com.devbangs.onedevs.ui.components.IconBadge
+import com.devbangs.onedevs.ui.settings.LanguagePicker
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
@@ -185,14 +193,8 @@ fun MissionsScreen(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp),
         )
-        // Said once, on the screen that counts days, because it is the one
-        // claim this app could accidentally make and must not: the number on
-        // a mission is what OneDevs watched, not what Google accepted.
-        Text(
-            text = stringResource(R.string.missions_note),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp),
+        CreateMissionButton(
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp),
         )
         FilterPills(
             labels = listOf(
@@ -204,7 +206,7 @@ fun MissionsScreen(modifier: Modifier = Modifier) {
             fillWidth = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp, top = 14.dp),
+                .padding(start = 20.dp, end = 20.dp, top = 12.dp),
         )
         if (shown.isEmpty()) {
             Box(modifier = Modifier.weight(1f)) {
@@ -223,11 +225,81 @@ fun MissionsScreen(modifier: Modifier = Modifier) {
                 contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 16.dp),
                 modifier = Modifier.weight(1f),
             ) {
-                items(shown, key = { it.id }) { mission ->
-                    MissionCard(mission = mission, onClick = {})
+                itemsIndexed(shown, key = { _, m -> m.id }) { index, mission ->
+                    // DevBot sits on the first card and no other. He is the one
+                    // watching the missions, and one of him leaning on the top
+                    // card reads as that; one on every card reads as wallpaper.
+                    if (index == 0) {
+                        Box {
+                            MissionCard(
+                                mission = mission,
+                                onClick = {},
+                                modifier = Modifier.padding(top = DevBotClear),
+                            )
+                            Image(
+                                painter = painterResource(R.drawable.mission_devbot),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .padding(start = 18.dp)
+                                    .width(DevBotWidth),
+                            )
+                        }
+                    } else {
+                        MissionCard(mission = mission, onClick = {})
+                    }
                 }
             }
         }
+    }
+}
+
+/**
+ * DevBot is 120dp across and 83 tall, and rests 28 of those on the card, so
+ * the row above has to clear the other 55. The overlap is the whole effect:
+ * without it he is a picture above a card rather than something leaning on one.
+ */
+private val DevBotWidth = 120.dp
+private val DevBotClear = 55.dp
+
+/**
+ * Creating a mission is locked until an account is eligible, and the lock is on
+ * the button rather than behind a tap that fails. The Launch screen's mission
+ * card says the same thing; this is the second place it is shown, not a second
+ * rule.
+ */
+@Composable
+private fun CreateMissionButton(modifier: Modifier = Modifier) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(CircleShape)
+            .background(oneDevsColors.brandTint)
+            .clickable {}
+            .padding(vertical = 13.dp),
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_plus),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(17.dp),
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = stringResource(R.string.mission_create),
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Spacer(Modifier.width(8.dp))
+        Icon(
+            painter = painterResource(R.drawable.ic_lock),
+            contentDescription = stringResource(R.string.launch_mission_status),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(14.dp),
+        )
     }
 }
 

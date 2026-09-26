@@ -34,8 +34,8 @@
     <string name="live_meta_installed">%1$s &#183; installée %2$s</string>
     <string name="board_empty_title">Aucune appli ne cherche de testeurs</string>
     <string name="board_empty_body">Les applis qui cherchent des testeurs apparaissent ici. Testez-les pour gagner des DevCoins, puis dépensez-les pour inscrire la vôtre.</string>
-    <string name="missions_intro">Seize développeurs rejoignent une mission et testent les applis des autres pendant 14 jours. Chacun obtient de vrais testeurs, personne n\'attend d\'être remarqué.</string>
-    <string name="missions_note">OneDevs compte les jours. Google Play décide de votre test selon son propre relevé.</string>
+    <string name="missions_intro">Seize développeurs testent les applis des autres pendant 14 jours. OneDevs compte les jours ; Google Play décide de votre test.</string>
+    <string name="mission_create">Créer une mission</string>
     <string name="mission_gathering">RASSEMBLEMENT</string>
     <string name="mission_running">EN COURS</string>
     <string name="mission_elapsed">ÉCOULÉE</string>

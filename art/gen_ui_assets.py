@@ -15,6 +15,7 @@ RES = ROOT / "app/src/main/res"
 COIN = ROOT / "art/source/devcoin_master.png"
 BOT = ROOT / "art/source/devbot_master.png"
 MISSION = ROOT / "art/source/graphic.png"
+ROBOT = ROOT / "art/source/card robot.png"
 BASE = "https://raw.githubusercontent.com/phosphor-icons/core/main/assets"
 ICONS = {
     "squares-four": ("bold", "fill"),
@@ -48,7 +49,7 @@ ICONS = {
     # Board. The star is the only glyph in the app that ships filled without a
     # bold twin: a rating star is a mark, not a toggle, and an outlined one at
     # 12dp reads as an empty rating.
-    "pulse": ("bold",),
+    "pulse": ("bold",), "plus": ("bold",),
 }
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
 COIN_DP, HERO_DP = 32, 96
@@ -58,6 +59,9 @@ BOT_DP = 96
 # low-poly ridge and loses the top of the chevrons, because the ridge is the
 # part of the artwork that reads at 200dp.
 MISSION_DP_W = 340
+# DevBot resting on the first mission card. Generated a little wider than he is
+# drawn so he is only ever scaled down.
+ROBOT_DP_W = 130
 
 def fetch(url):
     with urllib.request.urlopen(url, timeout=30) as r:
@@ -186,3 +190,23 @@ for dens, f in DENSITIES.items():
         d / "mission_card.webp", format="WEBP", quality=86, method=6)
 print(f"wrote mission card at {MISSION_DP_W}dp ({mw}x{mh} master), "
       f"white on its top band {_white_contrast(top):.2f}:1")
+
+# DevBot, cropped to himself. The master carries a margin of empty pixels, and
+# a dp size that included it would size the gap rather than the robot -- the
+# same crop the coin and the launcher mark get, for the same reason.
+assert ROBOT.exists(), f"missing {ROBOT}"
+robot = Image.open(ROBOT).convert("RGBA")
+box = robot.getchannel("A").point(lambda v: 255 if v > 8 else 0).getbbox()
+assert box, "the robot is entirely transparent"
+robot = robot.crop(box)
+rw, rh = robot.size
+assert rw > rh, f"robot is {rw}x{rh}; he rests along a card edge and should be wider than tall"
+for dens, f in DENSITIES.items():
+    px = int(round(ROBOT_DP_W * f))
+    d = RES / f"drawable-{dens}"
+    d.mkdir(parents=True, exist_ok=True)
+    for stale in d.glob("mission_devbot.*"):
+        stale.unlink()
+    robot.resize((px, int(round(px * rh / rw))), Image.LANCZOS).save(
+        d / "mission_devbot.webp", format="WEBP", quality=88, method=6)
+print(f"wrote DevBot at {ROBOT_DP_W}dp (cropped {box} -> {rw}x{rh})")
