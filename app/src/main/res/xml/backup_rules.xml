@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  The pre-Android-12 half of the backup configuration. dataExtractionRules
+  covers 12 and above; minSdk is 26, so without this a device on 8 through 11
+  has no rules at all. Both files say the same thing: nothing leaves.
+
+  allowBackup is already false, so cloud backup is off regardless. This is what
+  governs the case where that changes, and what lint requires alongside its
+  modern counterpart.
+-->
 <full-backup-content>
     <exclude domain="root" path="." />
     <exclude domain="file" path="." />

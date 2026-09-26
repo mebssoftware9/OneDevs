@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -68,6 +70,25 @@ android {
         // list -- but shipping invented apps would be worse than shipping none,
         // so the compiler decides rather than a flag someone has to remember.
         buildConfig = true
+    }
+}
+
+/**
+ * Pins Kotlin's bytecode target, which compileOptions only did for javac.
+ * Kotlin was taking its target from whichever JDK happened to be running --
+ * 17 on the CI runner, 25 in the Codespace -- so the same source compiled two
+ * ways depending on where.
+ *
+ * jvmTarget rather than jvmToolchain deliberately. A toolchain pins the whole
+ * JDK and has to provision one, which means a resolver plugin whose version
+ * has to stay in step with Gradle's; 0.8.0 already broke against Gradle 9.8
+ * over a vendor constant that no longer exists. What this build actually needs
+ * is one bytecode level, and compileSdk bounds the API surface regardless of
+ * which JDK compiled it.
+ */
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
