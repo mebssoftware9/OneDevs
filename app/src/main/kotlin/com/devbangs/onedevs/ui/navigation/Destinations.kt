@@ -16,6 +16,14 @@ import kotlinx.serialization.Serializable
 @Serializable object Profile
 @Serializable object Wallet
 
+/**
+ * Filing an app on one of the two boards. The board is an argument rather
+ * than two destinations: the form is the same shape either way, and the one
+ * thing that differs -- a testing listing needing its two opt-in links -- is a
+ * branch inside it, not a second screen to keep in step with the first.
+ */
+@Serializable data class AddListing(val live: Boolean)
+
 /** Top-level destinations. DevCoins is reached from the balance chip, not a tab. */
 enum class TopLevel(
     val route: Any,

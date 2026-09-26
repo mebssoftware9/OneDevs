@@ -1,7 +1,15 @@
 package com.devbangs.onedevs
 
 import android.app.Application
+import androidx.datastore.core.DataStoreFactory
+import com.devbangs.onedevs.data.listings.DataStoreListingRepository
+import com.devbangs.onedevs.data.listings.ListingRepository
+import com.devbangs.onedevs.data.listings.ListingsSerializer
 import com.devbangs.onedevs.notifications.DevBot
+import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * Registers DevBot's channels at install rather than at first notification.
@@ -21,5 +29,20 @@ class OneDevsApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         DevBot.ensureChannels(this)
+    }
+
+    /**
+     * The apps this developer has put up, held for as long as the process
+     * lives. DataStore serialises its own writes, so one instance per file is
+     * not a convenience -- a second would corrupt the first.
+     */
+    val listings: ListingRepository by lazy {
+        DataStoreListingRepository(
+            DataStoreFactory.create(
+                serializer = ListingsSerializer,
+                scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+                produceFile = { File(filesDir, "listings.json") },
+            ),
+        )
     }
 }

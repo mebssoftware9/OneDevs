@@ -43,7 +43,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.BuildConfig
+import com.devbangs.onedevs.data.listings.Channel
+import com.devbangs.onedevs.ui.launch.LaunchRow
+import kotlinx.coroutines.launch
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.ui.badges.BadgeCatalogue
 import com.devbangs.onedevs.ui.badges.BadgeGroupCard
@@ -310,7 +316,7 @@ private val CardGap = 12.dp
  * does work -- what this place is for -- runs directly under the top bar.
  */
 @Composable
-fun LaunchesScreen(modifier: Modifier = Modifier) {
+fun LaunchesScreen(onAdd: (Channel) -> Unit, modifier: Modifier = Modifier) {
     var filter by rememberSaveable { mutableStateOf(LaunchFilter.All) }
     Column(modifier = modifier.fillMaxSize()) {
         Text(
@@ -340,7 +346,7 @@ fun LaunchesScreen(modifier: Modifier = Modifier) {
                 available = true,
                 footerIcon = painterResource(R.drawable.ic_users_three),
                 footerLabel = stringResource(R.string.launch_testing_footer),
-                onClick = {},
+                onClick = { onAdd(Channel.Testing) },
             )
             ActionCard(
                 modifier = Modifier.weight(1f),
@@ -352,7 +358,7 @@ fun LaunchesScreen(modifier: Modifier = Modifier) {
                 available = true,
                 footerIcon = painterResource(R.drawable.ic_globe),
                 footerLabel = stringResource(R.string.launch_live_footer),
-                onClick = {},
+                onClick = { onAdd(Channel.Live) },
             )
         }
         Row(
@@ -378,11 +384,40 @@ fun LaunchesScreen(modifier: Modifier = Modifier) {
         // each one says what would be here, so choosing Live tells you what Live
         // would hold rather than repeating the same sentence three times. When
         // there are launches, the same selection narrows them.
-        Box(modifier = Modifier.weight(1f)) {
-            EmptyState(
-                title = stringResource(filter.emptyTitle),
-                body = stringResource(filter.emptyBody),
-            ) { IconBadge(painterResource(R.drawable.ic_rocket_launch)) }
+        // Listings are the developer's own records, read straight from the
+        // store rather than through a ViewModel: there is no state here beyond
+        // the flow, and a ViewModel that only forwards one is a layer to
+        // maintain in exchange for nothing.
+        val app = LocalContext.current.applicationContext as OneDevsApplication
+        val listings by app.listings.listings.collectAsStateWithLifecycle(emptyList())
+        val scope = rememberCoroutineScope()
+        val mine = listings.filter {
+            when (filter) {
+                LaunchFilter.All -> true
+                LaunchFilter.Testing -> it.channel == Channel.Testing
+                LaunchFilter.Live -> it.channel == Channel.Live
+            }
+        }
+        if (mine.isEmpty()) {
+            Box(modifier = Modifier.weight(1f)) {
+                EmptyState(
+                    title = stringResource(filter.emptyTitle),
+                    body = stringResource(filter.emptyBody),
+                ) { IconBadge(painterResource(R.drawable.ic_rocket_launch)) }
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 16.dp),
+                modifier = Modifier.weight(1f),
+            ) {
+                items(mine, key = { it.id }) { listing ->
+                    LaunchRow(
+                        listing = listing,
+                        onRemove = { scope.launch { app.listings.remove(listing.id) } },
+                    )
+                }
+            }
         }
     }
 }

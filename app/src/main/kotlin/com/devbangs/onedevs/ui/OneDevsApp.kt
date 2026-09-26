@@ -37,6 +37,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.devbangs.onedevs.ui.components.DevCoinChip
 import com.devbangs.onedevs.ui.components.ProfileAction
+import androidx.navigation.toRoute
+import com.devbangs.onedevs.data.listings.Channel
+import com.devbangs.onedevs.ui.launch.AddListingScreen
+import com.devbangs.onedevs.ui.navigation.AddListing
 import com.devbangs.onedevs.ui.navigation.Badge
 import com.devbangs.onedevs.ui.navigation.Board
 import com.devbangs.onedevs.ui.navigation.Lab
@@ -193,7 +197,22 @@ fun OneDevsApp() {
             ) {
                 composable<Board> { BoardScreen() }
                 composable<Missions> { MissionsScreen() }
-                composable<Launches> { LaunchesScreen() }
+                composable<Launches> {
+                    LaunchesScreen(
+                        onAdd = { channel ->
+                            navController.navigate(AddListing(live = channel == Channel.Live)) {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                }
+                composable<AddListing> { entry ->
+                    val board = entry.toRoute<AddListing>()
+                    AddListingScreen(
+                        channel = if (board.live) Channel.Live else Channel.Testing,
+                        onDone = { navController.popBackStack() },
+                    )
+                }
                 composable<Lab> { LabScreen() }
                 composable<Badge> { BadgeScreen() }
                 composable<Profile> { ProfileScreen() }

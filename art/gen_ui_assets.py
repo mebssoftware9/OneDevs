@@ -44,6 +44,8 @@ ICONS = {
     "star": ("bold", "fill"), "clipboard-text": ("bold",), "shield-check": ("bold",),
     "device-mobile": ("bold",), "user-check": ("bold",), "lock-open": ("bold",),
     "check": ("bold",),
+    # Removing a listing you filed by mistake.
+    "x": ("bold",),
     # Board. The star is the only glyph in the app that ships filled without a
     # bold twin: a rating star is a mark, not a toggle, and an outlined one at
     # 12dp reads as an empty rating.

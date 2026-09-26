@@ -60,6 +60,13 @@ data class Listing(
     val groupLink: String? = null,
     val optInLink: String? = null,
     val testNote: String? = null,
+    /**
+     * Absolute path to the icon this developer chose, downscaled to 512 and
+     * copied into app storage. A path rather than the bytes: the record is
+     * serialised to JSON on every write, and an image inline would rewrite
+     * the whole file each time any listing changed.
+     */
+    val iconPath: String? = null,
     val reward: Int = 0,
     val createdAt: Long = 0L,
     val check: CheckRecord = CheckRecord(),
