@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -187,15 +186,22 @@ fun MissionsScreen(modifier: Modifier = Modifier) {
     val all = if (BuildConfig.DEBUG) SampleMissions else emptyList()
     val shown = all.filter { it.member == mine }
     Column(modifier = modifier.fillMaxSize()) {
-        Text(
-            text = stringResource(R.string.missions_intro),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp),
-        )
-        CreateMissionButton(
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp),
-        )
+        // Sentence and button share a row. At 360dp a "Create Mission" label
+        // leaves the sentence 129dp, which is five lines; one verb beside the
+        // plus leaves 184dp, which is two, in every language we ship.
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.missions_intro),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.width(12.dp))
+            CreateMissionButton()
+        }
         FilterPills(
             labels = listOf(
                 stringResource(R.string.missions_available),
@@ -222,45 +228,29 @@ fun MissionsScreen(modifier: Modifier = Modifier) {
         } else {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 16.dp),
+                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 16.dp),
                 modifier = Modifier.weight(1f),
             ) {
-                itemsIndexed(shown, key = { _, m -> m.id }) { index, mission ->
-                    // DevBot sits on the first card and no other. He is the one
-                    // watching the missions, and one of him leaning on the top
-                    // card reads as that; one on every card reads as wallpaper.
-                    if (index == 0) {
-                        Box {
-                            MissionCard(
-                                mission = mission,
-                                onClick = {},
-                                modifier = Modifier.padding(top = DevBotClear),
-                            )
-                            Image(
-                                painter = painterResource(R.drawable.mission_devbot),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .align(Alignment.TopStart)
-                                    .padding(start = 18.dp)
-                                    .width(DevBotWidth),
-                            )
-                        }
-                    } else {
-                        MissionCard(mission = mission, onClick = {})
-                    }
+                items(shown, key = { it.id }) { mission ->
+                    MissionCard(mission = mission, onClick = {})
+                }
+                // At the foot of the list rather than the head of the screen.
+                // OneDevs counting days and Google Play deciding tests is the
+                // one thing this app must not blur, and it has to be somewhere
+                // -- but above the missions it was lines nobody read before the
+                // thing they came for.
+                item {
+                    Text(
+                        text = stringResource(R.string.missions_note),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
                 }
             }
         }
     }
 }
-
-/**
- * DevBot is 120dp across and 83 tall, and rests 28 of those on the card, so
- * the row above has to clear the other 55. The overlap is the whole effect:
- * without it he is a picture above a card rather than something leaning on one.
- */
-private val DevBotWidth = 120.dp
-private val DevBotClear = 55.dp
 
 /**
  * Creating a mission is locked until an account is eligible, and the lock is on
@@ -272,33 +262,31 @@ private val DevBotClear = 55.dp
 private fun CreateMissionButton(modifier: Modifier = Modifier) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
         modifier = modifier
-            .fillMaxWidth()
             .clip(CircleShape)
-            .background(oneDevsColors.brandTint)
+            .background(MaterialTheme.colorScheme.primary)
             .clickable {}
-            .padding(vertical = 13.dp),
+            .padding(start = 14.dp, end = 12.dp, top = 11.dp, bottom = 11.dp),
     ) {
         Icon(
             painter = painterResource(R.drawable.ic_plus),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(17.dp),
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.size(16.dp),
         )
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(7.dp))
         Text(
             text = stringResource(R.string.mission_create),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onPrimary,
         )
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(7.dp))
         Icon(
             painter = painterResource(R.drawable.ic_lock),
             contentDescription = stringResource(R.string.launch_mission_status),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(14.dp),
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.size(13.dp),
         )
     }
 }
