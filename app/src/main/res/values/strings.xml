@@ -175,4 +175,14 @@
     <string name="cd_more">More</string>
     <string name="add_save_changes">Save changes</string>
     <string name="add_size">Size (MB)</string>
+
+    <!-- What DevBot makes of the Play link -->
+    <string name="check_working">Checking with Play…</string>
+    <string name="check_live_wrong_board">This app has a public Play listing, so it is already live. The Testing Board is for closed tests.</string>
+    <string name="check_live_switch">Add to Live Apps instead</string>
+    <string name="check_live_confirmed">Public Play listing found.</string>
+    <string name="check_not_public_ok">No public listing — which is what a closed test looks like.</string>
+    <string name="check_not_public_warn">No public listing found. Publish it first, or add it to the Testing Board.</string>
+    <string name="check_unreachable">Could not reach Play. You can still add this.</string>
+    <string name="check_retry">Try again</string>
 </resources>

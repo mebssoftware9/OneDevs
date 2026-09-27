@@ -176,4 +176,14 @@
     <string name="cd_more">Mais</string>
     <string name="add_save_changes">Salvar alterações</string>
     <string name="add_size">Tamanho (MB)</string>
+
+    <!-- What DevBot makes of the Play link -->
+    <string name="check_working">Verificando no Play…</string>
+    <string name="check_live_wrong_board">Este app tem uma página pública no Play, portanto já está publicado. O Painel de testes é para testes fechados.</string>
+    <string name="check_live_switch">Adicionar a Apps publicados</string>
+    <string name="check_live_confirmed">Página pública encontrada no Play.</string>
+    <string name="check_not_public_ok">Sem página pública — é assim que um teste fechado aparece.</string>
+    <string name="check_not_public_warn">Nenhuma página pública encontrada. Publique-o primeiro ou adicione-o ao Painel de testes.</string>
+    <string name="check_unreachable">Não foi possível acessar o Play. Você ainda pode adicioná-lo.</string>
+    <string name="check_retry">Tentar novamente</string>
 </resources>

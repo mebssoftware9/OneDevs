@@ -16,6 +16,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,11 +42,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -69,12 +73,16 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.listings.Channel
+import com.devbangs.onedevs.data.listings.CheckRecord
 import com.devbangs.onedevs.data.listings.Listing
 import com.devbangs.onedevs.data.listings.ListingRepository
 import com.devbangs.onedevs.data.listings.megabytesOf
 import com.devbangs.onedevs.data.listings.parseMegabytes
+import com.devbangs.onedevs.data.play.PlayListing
+import com.devbangs.onedevs.data.play.PlayListings
 import com.devbangs.onedevs.data.play.packageOrNull
 import com.devbangs.onedevs.data.play.parseOptInLink
+import com.devbangs.onedevs.ui.components.DevBotMark
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
@@ -90,6 +98,25 @@ import kotlinx.coroutines.withContext
  * there is no per-app group for anyone to supply, mistype, or forget.
  */
 const val OneDevsTesterGroup = "onedevs-testers@googlegroups.com"
+
+/**
+ * The whole rule, in one place and covered by tests, because it is the only
+ * part of this screen that can refuse a person's work.
+ *
+ * A 200 is the single unambiguous answer Play gives anonymously: something
+ * public is there, so the app is live, so it is not a closed test. A 404 is
+ * returned identically for a real closed test and for a package that never
+ * existed, so it can establish nothing. A failed request establishes less.
+ */
+internal fun blocksListing(channel: Channel, result: PlayListing?): Boolean =
+    channel == Channel.Testing && result == PlayListing.Live
+
+/** Where the Play check has got to for the link currently in the field. */
+sealed interface CheckState {
+    data object Idle : CheckState
+    data object Checking : CheckState
+    data class Done(val result: PlayListing, val checkedAt: Long) : CheckState
+}
 
 class AddListingViewModel(private val repository: ListingRepository) : ViewModel() {
 
@@ -113,6 +140,13 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
         private set
     var saving by mutableStateOf(false)
         private set
+
+    /** What asking Play about this link established, if it has been asked. */
+    var check by mutableStateOf<CheckState>(CheckState.Idle)
+        private set
+
+    /** The package the current answer belongs to, so one link is asked about once. */
+    private var checkedPackage: String? = null
 
     /** The package, read out of the opt-in link rather than asked for twice. */
     val packageName: String?
@@ -173,6 +207,38 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
     val canSave: Boolean
         get() = !saving && title.isNotBlank() && category.isNotBlank() && packageName != null
 
+    /**
+     * The only thing that stops a save.
+     *
+     * A confident 200 means a public listing answered, so the app is live, so
+     * it is not the closed test the Testing Board is for. Nothing else blocks:
+     * a 404 cannot tell a real closed test from a typo, and an unreachable Play
+     * would otherwise lock out whoever has the worst connection.
+     */
+    fun blockedFrom(channel: Channel): Boolean =
+        blocksListing(channel, (check as? CheckState.Done)?.result)
+
+    /**
+     * Asks Play once per link. Called when the field loses focus rather than on
+     * every keystroke: a request per character would be both useless and rude.
+     */
+    fun checkLink() {
+        val pkg = packageName ?: return
+        if (pkg == checkedPackage) return
+        checkedPackage = pkg
+        check = CheckState.Checking
+        viewModelScope.launch {
+            val result = PlayListings.check(pkg)
+            check = CheckState.Done(result, System.currentTimeMillis())
+        }
+    }
+
+    /** Forgets the answer so the same link can be asked about again. */
+    fun recheck() {
+        checkedPackage = null
+        checkLink()
+    }
+
     fun save(channel: Channel, onSaved: () -> Unit) {
         if (!canSave) return
         saving = true
@@ -188,6 +254,19 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
                     testNote = testNote.trim().ifBlank { null },
                     sizeBytes = parseMegabytes(sizeMb),
                     createdAt = System.currentTimeMillis(),
+                    check = (check as? CheckState.Done)?.let { done ->
+                        CheckRecord(
+                            publicListing = when (done.result) {
+                                PlayListing.Live -> true
+                                PlayListing.NotPublic -> false
+                                is PlayListing.Unknown -> null
+                            },
+                            // Nothing to compare any more: the package is read
+                            // out of the link, so the two cannot disagree.
+                            linkMatchesPackage = null,
+                            checkedAt = done.checkedAt,
+                        )
+                    } ?: CheckRecord(),
                     iconPath = iconPath,
                 ),
             )
@@ -215,7 +294,14 @@ fun AddListingScreen(
     modifier: Modifier = Modifier,
     viewModel: AddListingViewModel = viewModel(factory = AddListingViewModel.Factory),
 ) {
-    val testing = channel == Channel.Testing
+    // The route says which board you arrived for, not which one you leave by.
+    // A live app pasted into the Testing Board is the wrong board rather than a
+    // wrong link, so DevBot can move the form instead of making you retype it.
+    // Keyed on the route so arriving fresh from the other tab starts over.
+    var live by rememberSaveable(channel) { mutableStateOf(channel == Channel.Live) }
+    val board = if (live) Channel.Live else Channel.Testing
+    val testing = !live
+    var linkHadFocus by remember { mutableStateOf(false) }
     val context = LocalContext.current
     LaunchedEffect(listingId) { listingId?.let(viewModel::load) }
     val picker = rememberLauncherForActivityResult(
@@ -305,6 +391,16 @@ fun AddListingScreen(
                 viewModel.packageName
             },
             keyboardType = KeyboardType.Uri,
+            // Asked once the field is done with, not per keystroke. The guard
+            // matters: onFocusChanged also reports "not focused" on the first
+            // composition, which would fire a request before anyone typed.
+            modifier = Modifier.onFocusChanged { state ->
+                if (state.isFocused) {
+                    linkHadFocus = true
+                } else if (linkHadFocus) {
+                    viewModel.checkLink()
+                }
+            },
         )
         // Testing only: this is the address a developer pastes into their
         // closed test's tester list, and a live app has no test to paste it in.
@@ -313,10 +409,18 @@ fun AddListingScreen(
             GroupAddressCard()
         }
 
+        CheckPanel(
+            state = viewModel.check,
+            testing = testing,
+            onSwitchToLive = { live = true },
+            onRetry = viewModel::recheck,
+            modifier = Modifier.padding(top = 12.dp),
+        )
+
         Spacer(Modifier.height(14.dp))
         Button(
-            onClick = { viewModel.save(channel, onDone) },
-            enabled = viewModel.canSave,
+            onClick = { viewModel.save(board, onDone) },
+            enabled = viewModel.canSave && !viewModel.blockedFrom(board),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -518,6 +622,85 @@ private fun GroupAddressCard(modifier: Modifier = Modifier) {
                     if (copied) R.string.add_group_copied else R.string.add_group_copy,
                 ),
             )
+        }
+    }
+}
+
+/**
+ * DevBot's reading of the link, shown only once there is something to read.
+ *
+ * Only one answer carries an action, and it is not "fix your link": a public
+ * listing means the link is right and the board is wrong, so the offer is to
+ * move the form. A 404 never blocks -- a real closed test and a mistyped
+ * package come back byte for byte identical, so it proves nothing either way.
+ * An unreachable Play never blocks either; that would punish the worst
+ * connection hardest and catch no one it was aimed at.
+ */
+@Composable
+private fun CheckPanel(
+    state: CheckState,
+    testing: Boolean,
+    onSwitchToLive: () -> Unit,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val done = state as? CheckState.Done
+    val blocking = testing && done?.result == PlayListing.Live
+    val message = when (state) {
+        CheckState.Idle -> return
+        CheckState.Checking -> stringResource(R.string.check_working)
+        is CheckState.Done -> when (state.result) {
+            PlayListing.Live ->
+                if (testing) {
+                    stringResource(R.string.check_live_wrong_board)
+                } else {
+                    stringResource(R.string.check_live_confirmed)
+                }
+            PlayListing.NotPublic ->
+                if (testing) {
+                    stringResource(R.string.check_not_public_ok)
+                } else {
+                    stringResource(R.string.check_not_public_warn)
+                }
+            is PlayListing.Unknown -> stringResource(R.string.check_unreachable)
+        }
+    }
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = if (blocking) scheme.error.copy(alpha = 0.45f) else scheme.outlineVariant,
+                shape = RoundedCornerShape(14.dp),
+            )
+            .padding(12.dp),
+    ) {
+        DevBotMark(size = 32.dp)
+        Spacer(Modifier.width(10.dp))
+        Column {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (blocking) scheme.error else scheme.onSurfaceVariant,
+            )
+            val action: Pair<Int, () -> Unit>? = when {
+                blocking -> R.string.check_live_switch to onSwitchToLive
+                done?.result is PlayListing.Unknown -> R.string.check_retry to onRetry
+                else -> null
+            }
+            if (action != null) {
+                TextButton(
+                    onClick = action.second,
+                    contentPadding = PaddingValues(vertical = 4.dp),
+                ) {
+                    Text(
+                        text = stringResource(action.first),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
         }
     }
 }

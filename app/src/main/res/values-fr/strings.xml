@@ -176,4 +176,14 @@
     <string name="cd_more">Plus</string>
     <string name="add_save_changes">Enregistrer</string>
     <string name="add_size">Taille (Mo)</string>
+
+    <!-- What DevBot makes of the Play link -->
+    <string name="check_working">Vérification auprès de Play…</string>
+    <string name="check_live_wrong_board">Cette app possède une fiche publique sur Play : elle est donc déjà publiée. Le Tableau de test est réservé aux tests fermés.</string>
+    <string name="check_live_switch">Ajouter aux apps publiées</string>
+    <string name="check_live_confirmed">Fiche publique trouvée sur Play.</string>
+    <string name="check_not_public_ok">Aucune fiche publique — c\'est à cela que ressemble un test fermé.</string>
+    <string name="check_not_public_warn">Aucune fiche publique trouvée. Publiez-la d\'abord, ou ajoutez-la au Tableau de test.</string>
+    <string name="check_unreachable">Impossible de joindre Play. Vous pouvez quand même l\'ajouter.</string>
+    <string name="check_retry">Réessayer</string>
 </resources>
