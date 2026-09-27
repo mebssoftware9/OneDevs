@@ -1,6 +1,8 @@
 package com.devbangs.onedevs.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import com.devbangs.onedevs.settings.AppTheme
+import com.devbangs.onedevs.settings.ThemeStore
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -69,7 +71,11 @@ val oneDevsColors: OneDevsColors
 
 @Composable
 fun OneDevsTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = when (ThemeStore.current) {
+        AppTheme.System -> isSystemInDarkTheme()
+        AppTheme.Light -> false
+        AppTheme.Dark -> true
+    },
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(

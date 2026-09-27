@@ -199,4 +199,19 @@
     <string name="details_check_unreachable">Impossible de joindre Play. Le dernier résultat est inchangé.</string>
     <string name="details_recheck">Vérifier à nouveau</string>
     <string name="details_checking">Vérification…</string>
+    <string name="profile_signed_out">Non connecté</string>
+    <string name="profile_signed_out_body">Les comptes arrivent avec la première version. Pour l\'instant rien ne quitte votre appareil.</string>
+    <string name="settings_app">Application</string>
+    <string name="settings_device">Appareil</string>
+    <string name="settings_about">À propos</string>
+    <string name="settings_theme">Thème</string>
+    <string name="theme_system">Paramètre du système</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme_dark">Sombre</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="device_model">Modèle</string>
+    <string name="device_android">Android</string>
+    <string name="device_abi">Architecture</string>
+    <string name="about_version">Version</string>
+    <string name="about_licenses">Licences open source</string>
 </resources>

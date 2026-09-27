@@ -66,7 +66,10 @@ import com.devbangs.onedevs.ui.components.FilterPills
 import com.devbangs.onedevs.ui.components.IconBadge
 import com.devbangs.onedevs.ui.missions.MissionCard
 import com.devbangs.onedevs.ui.missions.SampleMissions
-import com.devbangs.onedevs.ui.settings.LanguagePicker
+import com.devbangs.onedevs.ui.settings.AboutGroup
+import com.devbangs.onedevs.ui.settings.AppSettingsGroup
+import com.devbangs.onedevs.ui.settings.DeviceGroup
+import com.devbangs.onedevs.ui.settings.ProfileHeader
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 
 /**
@@ -422,13 +425,16 @@ fun LaunchesScreen(
 @Composable
 fun ProfileScreen(modifier: Modifier = Modifier) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 28.dp),
     ) {
-        LanguagePicker()
+        ProfileHeader()
+        AppSettingsGroup()
+        DeviceGroup()
+        AboutGroup()
     }
 }
 

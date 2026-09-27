@@ -201,4 +201,19 @@
     <string name="details_check_unreachable">No se pudo conectar con Play. El último resultado no ha cambiado.</string>
     <string name="details_recheck">Volver a comprobar</string>
     <string name="details_checking">Comprobando…</string>
+    <string name="profile_signed_out">Sin sesión iniciada</string>
+    <string name="profile_signed_out_body">Las cuentas llegan con la primera versión. Por ahora nada sale de tu dispositivo.</string>
+    <string name="settings_app">Aplicación</string>
+    <string name="settings_device">Dispositivo</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Predeterminado del sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="settings_notifications">Notificaciones</string>
+    <string name="device_model">Modelo</string>
+    <string name="device_android">Android</string>
+    <string name="device_abi">Arquitectura</string>
+    <string name="about_version">Versión</string>
+    <string name="about_licenses">Licencias de código abierto</string>
 </resources>

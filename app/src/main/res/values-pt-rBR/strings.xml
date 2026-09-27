@@ -199,4 +199,19 @@
     <string name="details_check_unreachable">Não foi possível acessar o Play. O último resultado permanece.</string>
     <string name="details_recheck">Verificar de novo</string>
     <string name="details_checking">Verificando…</string>
+    <string name="profile_signed_out">Não conectado</string>
+    <string name="profile_signed_out_body">As contas chegam com a primeira versão. Por enquanto nada sai do seu aparelho.</string>
+    <string name="settings_app">Aplicativo</string>
+    <string name="settings_device">Aparelho</string>
+    <string name="settings_about">Sobre</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Padrão do sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Escuro</string>
+    <string name="settings_notifications">Notificações</string>
+    <string name="device_model">Modelo</string>
+    <string name="device_android">Android</string>
+    <string name="device_abi">Arquitetura</string>
+    <string name="about_version">Versão</string>
+    <string name="about_licenses">Licenças de código aberto</string>
 </resources>

@@ -50,6 +50,8 @@ ICONS = {
     # bold twin: a rating star is a mark, not a toggle, and an outlined one at
     # 12dp reads as an empty rating.
     "pulse": ("bold",), "plus": ("bold",),
+    # Settings rows: a caret that opens a row and one that closes it.
+    "caret-right": ("bold",), "caret-up": ("bold",),
 }
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
 COIN_DP, HERO_DP = 32, 96
@@ -70,7 +72,10 @@ def fetch(url):
 # meaning "onwards" aimed back where the reader came from. autoMirrored is the
 # framework flipping them, which is cheaper and more correct than shipping a
 # second drawable.
-AUTO_MIRRORED: set[str] = set()
+# A caret that means "opens" points along the reading direction, so it has to
+# turn around when the reading direction does. caret-up points up in every
+# language and does not.
+AUTO_MIRRORED = {"caret-right"}
 
 
 def to_vector(svg, name, mirror=False):
@@ -187,3 +192,17 @@ for dens, f in DENSITIES.items():
         d / "mission_card.webp", format="WEBP", quality=86, method=6)
 print(f"wrote mission card at {MISSION_DP_W}dp ({mw}x{mh} master), "
       f"white on its top band {_white_contrast(top):.2f}:1")
+
+# Third-party notices, gathered into one asset the app can show.
+#
+# Both licences require it. The OFL says the font's notice must travel with it,
+# and MIT says its notice ships in all copies -- so an app that renders Phosphor
+# glyphs and sets every word in Geist has to say so somewhere a user can reach,
+# not only in a folder in the repository.
+notices = sorted((ROOT / "art/licenses").glob("*.txt"))
+assert notices, "no licence files to bundle"
+assets = ROOT / "app/src/main/assets"
+assets.mkdir(parents=True, exist_ok=True)
+(assets / "licenses.txt").write_text(
+    "\n\n".join(f"{f.stem}\n\n{f.read_text().strip()}" for f in notices) + "\n")
+print(f"bundled {len(notices)} licence notices: {', '.join(f.stem for f in notices)}")

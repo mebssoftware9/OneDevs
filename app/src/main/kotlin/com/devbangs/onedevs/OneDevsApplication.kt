@@ -6,6 +6,7 @@ import com.devbangs.onedevs.data.listings.DataStoreListingRepository
 import com.devbangs.onedevs.data.listings.ListingRepository
 import com.devbangs.onedevs.data.listings.ListingsSerializer
 import com.devbangs.onedevs.notifications.DevBot
+import com.devbangs.onedevs.settings.ThemeStore
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +30,9 @@ class OneDevsApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         DevBot.ensureChannels(this)
+        // Read before anything draws, so the first frame is already in the
+        // right theme rather than flashing the wrong one and correcting.
+        ThemeStore.load(this)
     }
 
     /**
