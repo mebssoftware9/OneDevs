@@ -72,6 +72,7 @@ import com.devbangs.onedevs.ui.components.FilterPills
 import com.devbangs.onedevs.ui.components.IconBadge
 import com.devbangs.onedevs.ui.lab.ApkReportView
 import com.devbangs.onedevs.ui.lab.LabCatalogue
+import com.devbangs.onedevs.ui.lab.UsageProbeScreen
 import com.devbangs.onedevs.ui.lab.LabLayerCard
 import com.devbangs.onedevs.ui.launch.LaunchRow
 import com.devbangs.onedevs.ui.missions.MissionCard
@@ -502,6 +503,13 @@ fun LabScreen(modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.bodySmall,
                 color = oneDevsColors.critical.solid,
             )
+        }
+        // The probe keeps its finding runnable, in debug only. It measured
+        // something the documentation does not state and the answer was not
+        // the one assumed, so it earns the right to be re-run on the next
+        // phone rather than being deleted into a commit message.
+        if (BuildConfig.DEBUG) {
+            UsageProbeScreen()
         }
         LabCatalogue.forEach { layer ->
             LabLayerCard(

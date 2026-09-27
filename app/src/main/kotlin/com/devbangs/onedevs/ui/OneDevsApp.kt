@@ -35,12 +35,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.devbangs.onedevs.ui.components.DevCoinChip
-import com.devbangs.onedevs.ui.components.ProfileAction
 import androidx.navigation.toRoute
 import com.devbangs.onedevs.data.listings.Channel
-import com.devbangs.onedevs.ui.launch.AddListingScreen
+import com.devbangs.onedevs.ui.components.DevCoinChip
+import com.devbangs.onedevs.ui.components.ProfileAction
 import com.devbangs.onedevs.ui.details.AppDetailsScreen
+import com.devbangs.onedevs.ui.launch.AddListingScreen
 import com.devbangs.onedevs.ui.navigation.AddListing
 import com.devbangs.onedevs.ui.navigation.AppDetails
 import com.devbangs.onedevs.ui.navigation.Badge
@@ -53,7 +53,7 @@ import com.devbangs.onedevs.ui.navigation.TopLevel
 import com.devbangs.onedevs.ui.navigation.Wallet
 import com.devbangs.onedevs.ui.screens.BadgeScreen
 import com.devbangs.onedevs.ui.screens.BoardScreen
-import com.devbangs.onedevs.ui.lab.UsageProbeScreen
+import com.devbangs.onedevs.ui.screens.LabScreen
 import com.devbangs.onedevs.ui.screens.LaunchesScreen
 import com.devbangs.onedevs.ui.screens.MissionsScreen
 import com.devbangs.onedevs.ui.screens.ProfileScreen
@@ -232,7 +232,7 @@ fun OneDevsApp() {
                         onDone = { navController.popBackStack() },
                     )
                 }
-                composable<Lab> { UsageProbeScreen() }
+                composable<Lab> { LabScreen() }
                 composable<Badge> { BadgeScreen() }
                 composable<Profile> { ProfileScreen() }
                 composable<Wallet> { WalletScreen() }
