@@ -229,4 +229,24 @@
     <string name="lab_l6_q">A ficha está pronta?</string>
     <string name="lab_l7">ASO</string>
     <string name="lab_l7_q">As pessoas conseguem descobrir?</string>
+    <string name="lab_working">Lendo o pacote…</string>
+    <string name="lab_failed">Não foi possível ler: %1$s</string>
+    <string name="lab_close">Fechar</string>
+    <string name="apk_finding_none">Nada aqui impediria uma publicação.</string>
+    <string name="apk_finding_debuggable">Depurável. O Play recusa este build.</string>
+    <string name="apk_finding_target">Tem como alvo a API %1$d. O Play exige %2$d ou maior.</string>
+    <string name="apk_finding_unsigned">Sem assinatura que o Android consiga ler.</string>
+    <string name="apk_finding_cleartext">Permite tráfego HTTP sem criptografia.</string>
+    <string name="apk_sdk">Níveis de SDK</string>
+    <string name="apk_contents">Conteúdo</string>
+    <string name="apk_breakdown">Divisão do tamanho</string>
+    <string name="apk_signing">Assinatura</string>
+    <string name="apk_size">Tamanho do arquivo</string>
+    <string name="apk_components">Componentes</string>
+    <string name="apk_permissions">Permissões (perigosas)</string>
+    <plurals name="apk_finding_multidex">
+        <item quantity="one">%1$,d método, acima do limite de um único DEX.</item>
+        <item quantity="many">%1$,d de métodos, acima do limite de um único DEX.</item>
+        <item quantity="other">%1$,d métodos, acima do limite de um único DEX.</item>
+    </plurals>
 </resources>

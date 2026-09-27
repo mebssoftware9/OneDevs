@@ -48,6 +48,8 @@ fun LabLayerCard(
     expanded: Boolean,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
+    onTool: (LabTool) -> Unit = {},
+    runnable: (LabTool) -> Boolean = { false },
 ) {
     val accent = layer.accent(oneDevsColors)
     val scheme = MaterialTheme.colorScheme
@@ -117,12 +119,26 @@ fun LabLayerCard(
             Column(modifier = Modifier.padding(start = 14.dp, end = 14.dp, bottom = 12.dp)) {
                 layer.tools.forEach { tool ->
                     val ready = tool.status == LabStatus.Available
+                    // Available and runnable are not the same thing. A tool
+                    // can be buildable and still not built, and a row that
+                    // takes a tap and does nothing is worse than one that
+                    // does not take it.
+                    val runs = ready && runnable(tool)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(9.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp),
+                            .then(
+                                if (runs) {
+                                    Modifier
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .clickable { onTool(tool) }
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .padding(vertical = 6.dp, horizontal = if (runs) 6.dp else 0.dp),
                     ) {
                         // A filled dot for a tool that runs, a ring for one
                         // that does not. Shape rather than colour alone, so
@@ -145,11 +161,17 @@ fun LabLayerCard(
                             color = if (ready) scheme.onSurface else scheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f),
                         )
-                        if (!ready) {
-                            Text(
+                        when {
+                            !ready -> Text(
                                 text = stringResource(R.string.lab_soon),
                                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                                 color = scheme.onSurfaceVariant,
+                            )
+                            runs -> Icon(
+                                painter = painterResource(R.drawable.ic_caret_right),
+                                contentDescription = null,
+                                tint = accent.solid,
+                                modifier = Modifier.size(12.dp),
                             )
                         }
                     }

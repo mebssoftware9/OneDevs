@@ -229,4 +229,24 @@
     <string name="lab_l6_q">La fiche est-elle prête ?</string>
     <string name="lab_l7">ASO</string>
     <string name="lab_l7_q">Peut-on la découvrir ?</string>
+    <string name="lab_working">Lecture du paquet…</string>
+    <string name="lab_failed">Lecture impossible : %1$s</string>
+    <string name="lab_close">Fermer</string>
+    <string name="apk_finding_none">Rien ici n\'empêcherait une publication.</string>
+    <string name="apk_finding_debuggable">Débogable. Play refuse ce build.</string>
+    <string name="apk_finding_target">Cible l\'API %1$d. Play exige %2$d ou plus.</string>
+    <string name="apk_finding_unsigned">Aucune signature lisible par Android.</string>
+    <string name="apk_finding_cleartext">Autorise le trafic HTTP en clair.</string>
+    <string name="apk_sdk">Niveaux de SDK</string>
+    <string name="apk_contents">Contenu</string>
+    <string name="apk_breakdown">Répartition de la taille</string>
+    <string name="apk_signing">Signature</string>
+    <string name="apk_size">Taille du fichier</string>
+    <string name="apk_components">Composants</string>
+    <string name="apk_permissions">Autorisations (dangereuses)</string>
+    <plurals name="apk_finding_multidex">
+        <item quantity="one">%1$,d méthode, au-delà de la limite d\'un seul DEX.</item>
+        <item quantity="many">%1$,d de méthodes, au-delà de la limite d\'un seul DEX.</item>
+        <item quantity="other">%1$,d méthodes, au-delà de la limite d\'un seul DEX.</item>
+    </plurals>
 </resources>
