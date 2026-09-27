@@ -170,14 +170,11 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
         }
     }
 
-    fun canSave(channel: Channel): Boolean =
-        !saving &&
-            title.isNotBlank() &&
-            category.isNotBlank() &&
-            (channel == Channel.Live || packageName != null)
+    val canSave: Boolean
+        get() = !saving && title.isNotBlank() && category.isNotBlank() && packageName != null
 
     fun save(channel: Channel, onSaved: () -> Unit) {
-        if (!canSave(channel)) return
+        if (!canSave) return
         saving = true
         viewModelScope.launch {
             repository.add(
@@ -291,21 +288,27 @@ fun AddListingScreen(
             minLines = 2,
         )
 
-        if (testing) {
-            Spacer(Modifier.height(10.dp))
-            FormField(
-                value = viewModel.optInLink,
-                onValueChange = { viewModel.optInLink = it },
-                label = stringResource(R.string.add_optin_link),
+        // Both boards need this. A live app is more certain to have a store
+        // link than a closed test is, and a Live listing saved without one has
+        // no package at all -- nothing to open, nothing to check, and a row
+        // that can only say its category.
+        Spacer(Modifier.height(10.dp))
+        FormField(
+            value = viewModel.optInLink,
+            onValueChange = { viewModel.optInLink = it },
+            label = stringResource(R.string.add_optin_link),
             leading = R.drawable.ic_globe,
-                isError = viewModel.linkLooksWrong,
-                supporting = if (viewModel.linkLooksWrong) {
-                    stringResource(R.string.add_optin_invalid)
-                } else {
-                    viewModel.packageName
-                },
-                keyboardType = KeyboardType.Uri,
-            )
+            isError = viewModel.linkLooksWrong,
+            supporting = if (viewModel.linkLooksWrong) {
+                stringResource(R.string.add_optin_invalid)
+            } else {
+                viewModel.packageName
+            },
+            keyboardType = KeyboardType.Uri,
+        )
+        // Testing only: this is the address a developer pastes into their
+        // closed test's tester list, and a live app has no test to paste it in.
+        if (testing) {
             Spacer(Modifier.height(12.dp))
             GroupAddressCard()
         }
@@ -313,7 +316,7 @@ fun AddListingScreen(
         Spacer(Modifier.height(14.dp))
         Button(
             onClick = { viewModel.save(channel, onDone) },
-            enabled = viewModel.canSave(channel),
+            enabled = viewModel.canSave,
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
