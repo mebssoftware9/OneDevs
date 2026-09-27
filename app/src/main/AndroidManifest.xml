@@ -23,6 +23,16 @@
         </intent>
     </queries>
 
+    <!--
+      Reading which app was in the foreground, and for how long. Granted by the
+      user in Settings rather than by a runtime prompt, and not on Play's
+      restricted-permissions list. lint calls it a system permission because it
+      is signature-level; the appop is what actually governs it.
+    -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application

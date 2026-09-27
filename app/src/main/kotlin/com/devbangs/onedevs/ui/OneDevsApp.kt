@@ -53,7 +53,7 @@ import com.devbangs.onedevs.ui.navigation.TopLevel
 import com.devbangs.onedevs.ui.navigation.Wallet
 import com.devbangs.onedevs.ui.screens.BadgeScreen
 import com.devbangs.onedevs.ui.screens.BoardScreen
-import com.devbangs.onedevs.ui.screens.LabScreen
+import com.devbangs.onedevs.ui.lab.UsageProbeScreen
 import com.devbangs.onedevs.ui.screens.LaunchesScreen
 import com.devbangs.onedevs.ui.screens.MissionsScreen
 import com.devbangs.onedevs.ui.screens.ProfileScreen
@@ -232,7 +232,7 @@ fun OneDevsApp() {
                         onDone = { navController.popBackStack() },
                     )
                 }
-                composable<Lab> { LabScreen() }
+                composable<Lab> { UsageProbeScreen() }
                 composable<Badge> { BadgeScreen() }
                 composable<Profile> { ProfileScreen() }
                 composable<Wallet> { WalletScreen() }
