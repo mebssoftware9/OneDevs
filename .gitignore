@@ -13,3 +13,10 @@
 *.jks
 *.keystore
 keystore.properties
+
+# Supabase + local secrets
+secrets.properties
+supabase/.temp/
+supabase/.branches/
+.env
+.db-url
