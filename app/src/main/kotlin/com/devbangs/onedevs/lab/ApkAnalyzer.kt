@@ -122,6 +122,7 @@ object ApkAnalyzer {
             abis = abis,
             nativeLibraries = entries.count { it.first.startsWith("lib/") && it.first.endsWith(".so") },
             dex = DexHeader.merge(dex),
+            dexEntries = entries.count { it.first.endsWith(".dex") },
             sizes = sliceSizes(entries),
             signatureSha256 = fingerprint(info),
             signatureScheme = scheme(info),

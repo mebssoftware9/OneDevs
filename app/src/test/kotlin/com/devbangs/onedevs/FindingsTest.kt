@@ -28,6 +28,8 @@ class FindingsTest {
         exported: List<String> = listOf("com.x.MainActivity"),
         abis: List<String> = listOf("arm64-v8a", "armeabi-v7a"),
         methods: Int = 120_710,
+        dexFiles: Int = 10,
+        dexEntries: Int = 10,
         signature: String? = "AA:BB",
     ) = ApkReport(
         fileName = "x.apk", fileBytes = 1_000, packageName = "com.x",
@@ -37,7 +39,8 @@ class FindingsTest {
         permissions = dangerous, dangerousPermissions = dangerous,
         components = Components(2, 0, 1, 1, exported),
         abis = abis, nativeLibraries = abis.size,
-        dex = DexCounts(10, methods, 1, 1, 1),
+        dex = DexCounts(dexFiles, methods, 1, 1, 1),
+        dexEntries = dexEntries,
         sizes = listOf(SizeSlice("Native libraries", 40_000, 4)),
         signatureSha256 = signature, signatureScheme = "v2 or later",
     )
@@ -92,6 +95,29 @@ class FindingsTest {
         ).single()
         assertEquals(Severity.Worth, finding.severity)
         assertTrue(finding.evidence.contains("DeepLinkReceiver"))
+    }
+
+    @Test
+    fun `entries named dex that are not dex files are a packer`() {
+        // MovieBox: a 61 MB DEX slice reporting 106 methods. One entry parses,
+        // the rest are encrypted payloads under .dex names.
+        val finding = Findings.of(report(dexFiles = 1, dexEntries = 12)).single()
+        assertEquals(Severity.Worth, finding.severity)
+        assertTrue(finding.what.contains("11 of 12"))
+        assertTrue(finding.why.contains("packer"))
+        assertTrue(finding.evidence.contains("1 readable"))
+    }
+
+    @Test
+    fun `nothing readable at all says so differently`() {
+        val finding = Findings.of(report(dexFiles = 0, dexEntries = 3)).single()
+        assertTrue(finding.what.startsWith("No readable DEX"))
+    }
+
+    @Test
+    fun `an ordinary multidex app is not a packer`() {
+        // Ten entries, ten parsed. The count matching is the whole test.
+        assertTrue(Findings.of(report(dexFiles = 10, dexEntries = 10)).isEmpty())
     }
 
     @Test

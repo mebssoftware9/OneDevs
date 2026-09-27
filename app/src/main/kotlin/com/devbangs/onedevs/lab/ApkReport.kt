@@ -47,6 +47,14 @@ data class ApkReport(
     val abis: List<String>,
     val nativeLibraries: Int,
     val dex: DexCounts,
+    /**
+     * Entries named *.dex, whether or not they parse as one.
+     *
+     * Separate from [DexCounts.files], which counts the ones whose header
+     * actually says DEX. When the two disagree, something is being carried
+     * under a .dex name that is not code Android will load directly.
+     */
+    val dexEntries: Int,
     val sizes: List<SizeSlice>,
     val signatureSha256: String?,
     val signatureScheme: String,

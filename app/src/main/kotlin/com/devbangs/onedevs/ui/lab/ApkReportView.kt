@@ -105,11 +105,16 @@ fun ApkReportView(
             stringResource(R.string.apk_contents),
             buildList {
                 add(stringResource(R.string.apk_size) to report.fileBytes.readable())
-                add(stringResource(R.string.apk_dex) to "${report.dex.files}")
-                add(
-                    stringResource(R.string.apk_methods) to
-                        String.format(locale, "%,d", report.dex.methods),
-                )
+                add(stringResource(R.string.apk_dex) to "${report.dexEntries}")
+                // The method count is only honest when every .dex entry parsed.
+                // Where they did not, it describes the loader, and the finding
+                // above says so rather than this row implying otherwise.
+                if (report.dexEntries == report.dex.files) {
+                    add(
+                        stringResource(R.string.apk_methods) to
+                            String.format(locale, "%,d", report.dex.methods),
+                    )
+                }
                 // "2 · 0 · 1 · 1" is a number nobody can read. One row per
                 // kind, and only the kinds this APK actually has.
                 with(report.components) {

@@ -51,6 +51,7 @@ object Findings {
     private const val MULTIDEX_NATIVE_FROM = 21
 
     fun of(report: ApkReport): List<Finding> = buildList {
+        packed(report)?.let(::add)
         debug(report)?.let(::add)
         targetSdk(report)?.let(::add)
         unsigned(report)?.let(::add)
@@ -78,6 +79,42 @@ object Findings {
                 "not the one you would upload.",
             action = "Analyse the release artifact instead: " +
                 "app/build/outputs/bundle/release or the AAB from your CI.",
+        )
+    }
+
+    /**
+     * Entries named .dex that are not DEX files.
+     *
+     * The signature of a packer: a small real classes.dex that loads
+     * everything else at runtime from encrypted blobs stored under .dex names.
+     * It showed up as a 61 MB DEX slice reporting 106 methods -- two numbers
+     * from two code paths, one counting entries and one counting headers, and
+     * their disagreement is the finding.
+     *
+     * Not a verdict on the app. Packers are used by legitimate apps against
+     * cloning, and by malware against analysis. What it does mean is that the
+     * artifact does not contain the code that will run, so nothing else in
+     * this report describes the real application.
+     */
+    private fun packed(r: ApkReport): Finding? {
+        val unreadable = r.dexEntries - r.dex.files
+        if (unreadable <= 0) return null
+        return Finding(
+            severity = Severity.Worth,
+            what = if (r.dex.files == 0) {
+                "No readable DEX in ${r.dexEntries} .dex entries."
+            } else {
+                "$unreadable of ${r.dexEntries} .dex entries are not DEX files."
+            },
+            why = "Android will not load these directly, so they are payloads " +
+                "decrypted at runtime -- the signature of a packer. The code " +
+                "that actually runs is not in this artifact, which means the " +
+                "method count, and any inspection of this file, describes the " +
+                "loader rather than the app.",
+            action = "If this is your build, check what your shrinker or " +
+                "protection tool is producing. If it is not, treat every other " +
+                "finding here as describing a stub.",
+            evidence = listOf("${r.dex.files} readable", "${r.dexEntries} named .dex"),
         )
     }
 
