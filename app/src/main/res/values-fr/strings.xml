@@ -188,4 +188,15 @@
     <string name="check_retry">Réessayer</string>
     <string name="check_dialog_title">Déjà sur Play</string>
     <string name="check_dialog_change_link">Modifier le lien</string>
+
+    <!-- The Play check, on the details screen -->
+    <string name="details_check_title">Vérification Play</string>
+    <string name="details_check_live">Fiche publique sur Play</string>
+    <string name="details_check_not_public">Aucune fiche publique</string>
+    <string name="details_check_never">Pas encore vérifié</string>
+    <string name="details_check_now_live">Cette app est désormais publiée : elle n\'a plus sa place dans le Tableau de test.</string>
+    <string name="details_move_live">Déplacer vers les apps publiées</string>
+    <string name="details_check_unreachable">Impossible de joindre Play. Le dernier résultat est inchangé.</string>
+    <string name="details_recheck">Vérifier à nouveau</string>
+    <string name="details_checking">Vérification…</string>
 </resources>

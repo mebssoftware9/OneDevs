@@ -187,4 +187,15 @@
     <string name="check_retry">Try again</string>
     <string name="check_dialog_title">Already on Play</string>
     <string name="check_dialog_change_link">Change the link</string>
+
+    <!-- The Play check, on the details screen -->
+    <string name="details_check_title">Play check</string>
+    <string name="details_check_live">Public listing on Play</string>
+    <string name="details_check_not_public">No public listing</string>
+    <string name="details_check_never">Not checked yet</string>
+    <string name="details_check_now_live">This app is live now, so it no longer belongs on the Testing Board.</string>
+    <string name="details_move_live">Move to Live Apps</string>
+    <string name="details_check_unreachable">Could not reach Play. The last result is unchanged.</string>
+    <string name="details_recheck">Re-check</string>
+    <string name="details_checking">Checking…</string>
 </resources>

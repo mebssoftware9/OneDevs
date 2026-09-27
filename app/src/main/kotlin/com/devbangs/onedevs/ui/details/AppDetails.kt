@@ -2,6 +2,7 @@ package com.devbangs.onedevs.ui.details
 
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.text.format.DateUtils
 import android.text.format.Formatter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -9,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,9 +34,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -51,7 +53,10 @@ import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.data.listings.Listing
+import com.devbangs.onedevs.data.play.PlayListing
+import com.devbangs.onedevs.data.play.PlayListings
 import com.devbangs.onedevs.ui.board.openPlayListing
+import com.devbangs.onedevs.ui.components.DevBotMark
 import java.text.DateFormat
 import java.util.Date
 import kotlinx.coroutines.launch
@@ -74,12 +79,38 @@ fun AppDetailsScreen(
     val context = LocalContext.current
     val app = context.applicationContext as OneDevsApplication
     val scope = rememberCoroutineScope()
-    val listing by produceState<Listing?>(initialValue = null, listingId) {
-        value = app.listings.find(listingId)
-    }
+    // Collected rather than read once. This screen stays in the back stack
+    // while Edit sits on top of it, so a one-shot read would still be showing
+    // the old title after a save. Now every write to the store lands here: an
+    // edit, a re-check, a move between boards.
+    val all by app.listings.listings.collectAsState(emptyList())
     var confirmingDelete by remember { mutableStateOf(false) }
+    var rechecking by remember { mutableStateOf(false) }
+    var recheckUnreachable by remember { mutableStateOf(false) }
 
-    val current = listing ?: return
+    val current = all.firstOrNull { it.id == listingId } ?: return
+
+    // An unreachable Play must never overwrite a good answer. Forgetting that a
+    // listing checked out, because a request timed out, is worse than showing an
+    // answer a few days old -- so only a real verdict writes a new record.
+    val recheck: () -> Unit = {
+        scope.launch {
+            rechecking = true
+            recheckUnreachable = false
+            when (val result = PlayListings.check(current.packageName)) {
+                is PlayListing.Unknown -> recheckUnreachable = true
+                else -> app.listings.add(
+                    current.copy(
+                        check = current.check.copy(
+                            publicListing = result == PlayListing.Live,
+                            checkedAt = System.currentTimeMillis(),
+                        ),
+                    ),
+                )
+            }
+            rechecking = false
+        }
+    }
 
     Column(
         modifier = modifier
@@ -160,6 +191,81 @@ fun AppDetailsScreen(
         }
 
         if (current.packageName.isNotBlank()) {
+            Spacer(Modifier.height(12.dp))
+            SectionCard(title = stringResource(R.string.details_check_title)) {
+                val record = current.check
+                Text(
+                    text = when (record.publicListing) {
+                        true -> stringResource(R.string.details_check_live)
+                        false -> stringResource(R.string.details_check_not_public)
+                        null -> stringResource(R.string.details_check_never)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                // Relative, because what matters about a check is how old it is.
+                // "3 days ago" answers that; a formatted date makes you work it
+                // out, and staleness is the whole point of showing this at all.
+                if (record.checkedAt > 0L) {
+                    Text(
+                        text = DateUtils.getRelativeTimeSpanString(
+                            record.checkedAt,
+                            System.currentTimeMillis(),
+                            DateUtils.MINUTE_IN_MILLIS,
+                        ).toString(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+                // The case the one-time stamp at save could never catch: a closed
+                // test promoted to production keeps sitting on the Testing Board
+                // looking valid, and testers spend 14 days on an app that is done
+                // needing them.
+                if (current.channel == Channel.Testing && record.publicListing == true) {
+                    Spacer(Modifier.height(10.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        DevBotMark(size = 28.dp)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.details_check_now_live),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                    TextButton(
+                        onClick = {
+                            scope.launch {
+                                app.listings.add(current.copy(channel = Channel.Live))
+                            }
+                        },
+                        contentPadding = PaddingValues(vertical = 4.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.details_move_live),
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
+                if (recheckUnreachable) {
+                    Text(
+                        text = stringResource(R.string.details_check_unreachable),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                TextButton(
+                    onClick = recheck,
+                    enabled = !rechecking,
+                    contentPadding = PaddingValues(vertical = 4.dp),
+                ) {
+                    Text(
+                        text = stringResource(
+                            if (rechecking) R.string.details_checking else R.string.details_recheck,
+                        ),
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
+
             Spacer(Modifier.height(18.dp))
             Button(
                 onClick = { openPlayListing(context, current.packageName) },
