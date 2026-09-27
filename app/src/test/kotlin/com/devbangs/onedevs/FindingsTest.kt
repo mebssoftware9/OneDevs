@@ -30,6 +30,7 @@ class FindingsTest {
         methods: Int = 120_710,
         dexFiles: Int = 10,
         dexEntries: Int = 10,
+        dexBytes: Long = 30_000_000,
         signature: String? = "AA:BB",
     ) = ApkReport(
         fileName = "x.apk", fileBytes = 1_000, packageName = "com.x",
@@ -41,7 +42,10 @@ class FindingsTest {
         abis = abis, nativeLibraries = abis.size,
         dex = DexCounts(dexFiles, methods, 1, 1, 1),
         dexEntries = dexEntries,
-        sizes = listOf(SizeSlice("Native libraries", 40_000, 4)),
+        sizes = listOf(
+            SizeSlice("Native libraries", 40_000, 4),
+            SizeSlice("DEX", dexBytes, dexFiles),
+        ),
         signatureSha256 = signature, signatureScheme = "v2 or later",
     )
 
@@ -105,7 +109,7 @@ class FindingsTest {
         assertEquals(Severity.Worth, finding.severity)
         assertTrue(finding.what.contains("11 of 12"))
         assertTrue(finding.why.contains("packer"))
-        assertTrue(finding.evidence.contains("1 readable"))
+        assertTrue(finding.evidence.contains("1 readable of 12"))
     }
 
     @Test
@@ -118,6 +122,36 @@ class FindingsTest {
     fun `an ordinary multidex app is not a packer`() {
         // Ten entries, ten parsed. The count matching is the whole test.
         assertTrue(Findings.of(report(dexFiles = 10, dexEntries = 10)).isEmpty())
+    }
+
+    @Test
+    fun `one enormous DEX with almost no methods is a packer too`() {
+        // MovieBox: 61.1 MB of DEX declaring 106 methods, in a single entry.
+        // The entry count matches, so only the ratio catches this shape.
+        val movieBox = report(dexFiles = 1, dexEntries = 1, dexBytes = 64_072_581, methods = 106)
+        val finding = Findings.of(movieBox).single()
+        assertEquals(Severity.Worth, finding.severity)
+        assertTrue(finding.what.contains("per method"))
+        assertFalse(Findings.methodCountIsMeaningful(movieBox))
+    }
+
+    @Test
+    fun `a normal build is nowhere near the ceiling`() {
+        // OneDevs itself: 29.1 MB across 120,636 methods, which is 253 bytes
+        // each. The threshold is eighty times that, so ordinary apps have
+        // room to be unusual without being accused.
+        val ordinary = report(dexFiles = 10, dexEntries = 10, dexBytes = 30_513_561, methods = 120_636)
+        assertTrue(Findings.of(ordinary).isEmpty())
+        assertTrue(Findings.methodCountIsMeaningful(ordinary))
+    }
+
+    @Test
+    fun `a tiny app is not flagged for having few methods`() {
+        // Small apps have a worse ratio by nature; the rule must not punish
+        // them for it.
+        assertTrue(
+            Findings.of(report(dexFiles = 1, dexEntries = 1, dexBytes = 400_000, methods = 900)).isEmpty(),
+        )
     }
 
     @Test

@@ -109,7 +109,7 @@ fun ApkReportView(
                 // The method count is only honest when every .dex entry parsed.
                 // Where they did not, it describes the loader, and the finding
                 // above says so rather than this row implying otherwise.
-                if (report.dexEntries == report.dex.files) {
+                if (Findings.methodCountIsMeaningful(report)) {
                     add(
                         stringResource(R.string.apk_methods) to
                             String.format(locale, "%,d", report.dex.methods),

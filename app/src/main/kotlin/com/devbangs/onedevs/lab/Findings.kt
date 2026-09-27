@@ -50,6 +50,19 @@ object Findings {
     /** Above this, native multidex handles it and nothing is wrong. */
     private const val MULTIDEX_NATIVE_FROM = 21
 
+    /**
+     * Bytes of DEX per method, above which the file is carrying something
+     * other than code.
+     *
+     * Measured rather than guessed. A normal build sits near 250 bytes per
+     * method -- OneDevs itself is 29.1 MB across 120,636, which is 253. The
+     * file that prompted this was 61.1 MB across 106, which is 604,415, or
+     * about two thousand times heavier. Twenty thousand is eighty times a
+     * normal build and thirty times below the case it catches, which is as
+     * much room as a threshold like this can ask for.
+     */
+    private const val DEX_BYTES_PER_METHOD_CEILING = 20_000L
+
     fun of(report: ApkReport): List<Finding> = buildList {
         packed(report)?.let(::add)
         debug(report)?.let(::add)
@@ -98,13 +111,18 @@ object Findings {
      */
     private fun packed(r: ApkReport): Finding? {
         val unreadable = r.dexEntries - r.dex.files
-        if (unreadable <= 0) return null
+        val perMethod = bytesPerMethod(r)
+        val bloated = perMethod > DEX_BYTES_PER_METHOD_CEILING
+        if (unreadable <= 0 && !bloated) return null
         return Finding(
             severity = Severity.Worth,
-            what = if (r.dex.files == 0) {
-                "No readable DEX in ${r.dexEntries} .dex entries."
-            } else {
-                "$unreadable of ${r.dexEntries} .dex entries are not DEX files."
+            what = when {
+                r.dex.files == 0 && r.dexEntries > 0 ->
+                    "No readable DEX in ${r.dexEntries} .dex entries."
+                unreadable > 0 ->
+                    "$unreadable of ${r.dexEntries} .dex entries are not DEX files."
+                else ->
+                    "The DEX is ${perMethod.readableBytes()} per method."
             },
             why = "Android will not load these directly, so they are payloads " +
                 "decrypted at runtime -- the signature of a packer. The code " +
@@ -114,9 +132,32 @@ object Findings {
             action = "If this is your build, check what your shrinker or " +
                 "protection tool is producing. If it is not, treat every other " +
                 "finding here as describing a stub.",
-            evidence = listOf("${r.dex.files} readable", "${r.dexEntries} named .dex"),
+            evidence = buildList {
+                add("${r.dex.files} readable of ${r.dexEntries}")
+                if (perMethod > 0) add("${perMethod.readableBytes()} per method")
+            },
         )
     }
+
+    /**
+     * How heavy the DEX is for the code it declares.
+     *
+     * A packer leaves a header the platform will accept and hides the payload
+     * behind it, so the counts stay small while the file does not. Zero when
+     * there is nothing to divide, which is not a signal either way.
+     */
+    private fun bytesPerMethod(r: ApkReport): Long {
+        if (r.dex.methods <= 0) return 0
+        val bytes = r.sizes.firstOrNull { it.label == "DEX" }?.bytes ?: return 0
+        return bytes / r.dex.methods
+    }
+
+    /**
+     * Whether the method count describes the app or a loader. The report uses
+     * this to withhold a number that would otherwise look like an answer.
+     */
+    fun methodCountIsMeaningful(r: ApkReport): Boolean =
+        r.dexEntries == r.dex.files && bytesPerMethod(r) <= DEX_BYTES_PER_METHOD_CEILING
 
     private fun targetSdk(r: ApkReport) = if (r.meetsPlayTargetFloor) {
         null
