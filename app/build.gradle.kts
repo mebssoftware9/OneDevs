@@ -1,4 +1,19 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+
+// Backend configuration lives outside the repository. The publishable key is
+// public by design -- row-level security is what protects the data, not the
+// secrecy of this string -- but a key committed to a public repo is a key that
+// cannot be rotated without a commit, so it stays in an ignored file.
+//
+// A missing file is not an error. A fresh clone still builds; it just cannot
+// reach the backend until someone fills in secrets.properties.
+val secrets = Properties().apply {
+    val file = rootProject.file("secrets.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+fun secret(key: String): String = secrets.getProperty(key).orEmpty()
 
 plugins {
     alias(libs.plugins.android.application)
@@ -16,6 +31,9 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
+
+        buildConfigField("String", "SUPABASE_URL", "\"" + secret("SUPABASE_URL") + "\"")
+        buildConfigField("String", "SUPABASE_KEY", "\"" + secret("SUPABASE_KEY") + "\"")
     }
 
     bundle {
@@ -75,6 +93,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
         // Sample rows for the board exist in debug only. The board has no
         // backend yet, and a list component cannot be judged against an empty
