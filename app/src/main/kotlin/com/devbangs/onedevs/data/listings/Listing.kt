@@ -86,8 +86,11 @@ data class Listings(val items: List<Listing> = emptyList())
  */
 internal fun Listings.withAdded(listing: Listing): Listings = copy(
     items = items.filterNot {
-        it.packageName.equals(listing.packageName, ignoreCase = true) &&
-            it.channel == listing.channel
+        it.id == listing.id ||
+            (
+                it.packageName.equals(listing.packageName, ignoreCase = true) &&
+                    it.channel == listing.channel
+                )
     } + listing,
 )
 

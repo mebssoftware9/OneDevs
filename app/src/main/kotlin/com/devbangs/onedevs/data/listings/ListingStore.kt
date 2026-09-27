@@ -6,6 +6,7 @@ import androidx.datastore.core.Serializer
 import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -46,6 +47,9 @@ interface ListingRepository {
     val listings: Flow<List<Listing>>
     suspend fun add(listing: Listing)
     suspend fun remove(id: String)
+
+    /** One listing, for a screen that was handed an id rather than a record. */
+    suspend fun find(id: String): Listing?
 }
 
 class DataStoreListingRepository(
@@ -61,4 +65,7 @@ class DataStoreListingRepository(
     override suspend fun remove(id: String) {
         store.updateData { it.without(id) }
     }
+
+    override suspend fun find(id: String): Listing? =
+        store.data.first().items.firstOrNull { it.id == id }
 }

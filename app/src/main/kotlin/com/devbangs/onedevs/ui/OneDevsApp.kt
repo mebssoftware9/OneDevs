@@ -40,7 +40,9 @@ import com.devbangs.onedevs.ui.components.ProfileAction
 import androidx.navigation.toRoute
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.ui.launch.AddListingScreen
+import com.devbangs.onedevs.ui.details.AppDetailsScreen
 import com.devbangs.onedevs.ui.navigation.AddListing
+import com.devbangs.onedevs.ui.navigation.AppDetails
 import com.devbangs.onedevs.ui.navigation.Badge
 import com.devbangs.onedevs.ui.navigation.Board
 import com.devbangs.onedevs.ui.navigation.Lab
@@ -204,12 +206,29 @@ fun OneDevsApp() {
                                 launchSingleTop = true
                             }
                         },
+                        onOpen = { id -> navController.navigate(AppDetails(id)) },
+                    )
+                }
+                composable<AppDetails> { entry ->
+                    val route = entry.toRoute<AppDetails>()
+                    AppDetailsScreen(
+                        listingId = route.id,
+                        onBack = { navController.popBackStack() },
+                        onEdit = { listing ->
+                            navController.navigate(
+                                AddListing(
+                                    live = listing.channel == Channel.Live,
+                                    id = listing.id,
+                                ),
+                            )
+                        },
                     )
                 }
                 composable<AddListing> { entry ->
                     val board = entry.toRoute<AddListing>()
                     AddListingScreen(
                         channel = if (board.live) Channel.Live else Channel.Testing,
+                        listingId = board.id,
                         onDone = { navController.popBackStack() },
                     )
                 }

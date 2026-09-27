@@ -55,6 +55,16 @@ class ListingTest {
     }
 
     @Test
+    fun `editing a listing replaces it rather than adding a second`() {
+        val original = listing("a", pkg = "one.a")
+        val edited = original.copy(title = "Renamed", packageName = "one.b")
+        val store = Listings().withAdded(original).withAdded(edited)
+        assertEquals(1, store.items.size)
+        assertEquals("Renamed", store.items.single().title)
+        assertEquals("one.b", store.items.single().packageName)
+    }
+
+    @Test
     fun `removing by id leaves the rest`() {
         val store = Listings()
             .withAdded(listing("a", pkg = "one.a"))

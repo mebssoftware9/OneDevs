@@ -36,6 +36,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -95,7 +96,8 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
      * anything is saved. A listing abandoned halfway leaves one orphaned file,
      * which is cheaper than writing the record early to hold a filename.
      */
-    private val draftId: String = UUID.randomUUID().toString()
+    private var draftId: String = UUID.randomUUID().toString()
+    private var loaded = false
 
     var title by mutableStateOf("")
     var category by mutableStateOf("")
@@ -115,6 +117,29 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
 
     val linkLooksWrong: Boolean
         get() = optInLink.isNotBlank() && packageName == null
+
+    /**
+     * Fills the form from a listing already on file. Keeps its id, so saving
+     * replaces that record rather than filing a second copy of the same app.
+     */
+    fun load(id: String) {
+        if (loaded) return
+        loaded = true
+        viewModelScope.launch {
+            val existing = repository.find(id) ?: return@launch
+            draftId = existing.id
+            title = existing.title
+            category = existing.category
+            testNote = existing.testNote.orEmpty()
+            optInLink = existing.optInLink.orEmpty()
+            iconPath = existing.iconPath
+            iconImage = existing.iconPath?.let { path ->
+                withContext(Dispatchers.IO) {
+                    BitmapFactory.decodeFile(path)?.asImageBitmap()
+                }
+            }
+        }
+    }
 
     fun setIcon(context: Context, uri: Uri) {
         viewModelScope.launch {
@@ -183,12 +208,14 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
 @Composable
 fun AddListingScreen(
     channel: Channel,
+    listingId: String?,
     onDone: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AddListingViewModel = viewModel(factory = AddListingViewModel.Factory),
 ) {
     val testing = channel == Channel.Testing
     val context = LocalContext.current
+    LaunchedEffect(listingId) { listingId?.let(viewModel::load) }
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
     ) { uri -> uri?.let { viewModel.setIcon(context, it) } }
@@ -278,7 +305,11 @@ fun AddListingScreen(
         ) {
             Text(
                 text = stringResource(
-                    if (testing) R.string.add_testing_title else R.string.add_live_title,
+                    when {
+                        listingId != null -> R.string.add_save_changes
+                        testing -> R.string.add_testing_title
+                        else -> R.string.add_live_title
+                    },
                 ),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,

@@ -22,7 +22,13 @@ import kotlinx.serialization.Serializable
  * thing that differs -- a testing listing needing its two opt-in links -- is a
  * branch inside it, not a second screen to keep in step with the first.
  */
-@Serializable data class AddListing(val live: Boolean)
+@Serializable data class AddListing(val live: Boolean, val id: String? = null)
+
+/**
+ * One filed app. Carries the id rather than the record: a route is a place, and
+ * a place that embeds its own contents goes stale the moment they are edited.
+ */
+@Serializable data class AppDetails(val id: String)
 
 /** Top-level destinations. DevCoins is reached from the balance chip, not a tab. */
 enum class TopLevel(

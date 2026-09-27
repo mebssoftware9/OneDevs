@@ -148,7 +148,6 @@
     <string name="add_optin_link">Play link</string>
     <string name="add_note">What should testers try?</string>
     <string name="common_cancel">Cancel</string>
-    <string name="cd_remove">Remove</string>
     <string name="launch_channel_testing">Testing</string>
     <string name="launch_channel_live">Live</string>
     <string name="launch_remove_title">Remove this listing?</string>
@@ -160,4 +159,19 @@
     <string name="add_group_heading">Add this group to your closed test</string>
     <string name="add_group_copy">Copy</string>
     <string name="add_group_copied">Copied</string>
+    <string name="details_no_package">No Play link yet</string>
+    <string name="details_added">Added %1$s</string>
+    <string name="details_instructions">Testing instructions</string>
+    <string name="details_no_instructions">No instructions given</string>
+    <string name="details_reports">Reports</string>
+    <string name="details_feedback">Feedback report</string>
+    <string name="details_feedback_empty">No feedback collected yet</string>
+    <string name="details_production">Production access</string>
+    <string name="details_production_empty">Available once a test has run</string>
+    <string name="details_open_play">Open in Play</string>
+    <string name="menu_share">Share</string>
+    <string name="menu_edit">Edit app</string>
+    <string name="menu_delete">Delete</string>
+    <string name="cd_more">More</string>
+    <string name="add_save_changes">Save changes</string>
 </resources>

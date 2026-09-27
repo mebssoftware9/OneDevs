@@ -149,7 +149,6 @@
     <string name="add_optin_link">Link da Play</string>
     <string name="add_note">O que os testadores devem testar?</string>
     <string name="common_cancel">Cancelar</string>
-    <string name="cd_remove">Remover</string>
     <string name="launch_channel_testing">Testes</string>
     <string name="launch_channel_live">Publicado</string>
     <string name="launch_remove_title">Remover esta ficha?</string>
@@ -161,4 +160,19 @@
     <string name="add_group_heading">Adicione este grupo ao seu teste fechado</string>
     <string name="add_group_copy">Copiar</string>
     <string name="add_group_copied">Copiado</string>
+    <string name="details_no_package">Ainda sem link da Play</string>
+    <string name="details_added">Adicionado em %1$s</string>
+    <string name="details_instructions">Instruções de teste</string>
+    <string name="details_no_instructions">Sem instruções</string>
+    <string name="details_reports">Relatórios</string>
+    <string name="details_feedback">Relatório de feedback</string>
+    <string name="details_feedback_empty">Ainda sem feedback</string>
+    <string name="details_production">Acesso à produção</string>
+    <string name="details_production_empty">Disponível após um teste</string>
+    <string name="details_open_play">Abrir na Play</string>
+    <string name="menu_share">Compartilhar</string>
+    <string name="menu_edit">Editar app</string>
+    <string name="menu_delete">Excluir</string>
+    <string name="cd_more">Mais</string>
+    <string name="add_save_changes">Salvar alterações</string>
 </resources>

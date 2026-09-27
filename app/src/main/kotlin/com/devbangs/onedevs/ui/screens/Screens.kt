@@ -43,13 +43,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.BuildConfig
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.ui.launch.LaunchRow
-import kotlinx.coroutines.launch
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.ui.badges.BadgeCatalogue
 import com.devbangs.onedevs.ui.badges.BadgeGroupCard
@@ -316,7 +314,11 @@ private val CardGap = 12.dp
  * does work -- what this place is for -- runs directly under the top bar.
  */
 @Composable
-fun LaunchesScreen(onAdd: (Channel) -> Unit, modifier: Modifier = Modifier) {
+fun LaunchesScreen(
+    onAdd: (Channel) -> Unit,
+    onOpen: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var filter by rememberSaveable { mutableStateOf(LaunchFilter.All) }
     Column(modifier = modifier.fillMaxSize()) {
         Text(
@@ -390,7 +392,6 @@ fun LaunchesScreen(onAdd: (Channel) -> Unit, modifier: Modifier = Modifier) {
         // maintain in exchange for nothing.
         val app = LocalContext.current.applicationContext as OneDevsApplication
         val listings by app.listings.listings.collectAsStateWithLifecycle(emptyList())
-        val scope = rememberCoroutineScope()
         val mine = listings.filter {
             when (filter) {
                 LaunchFilter.All -> true
@@ -407,15 +408,11 @@ fun LaunchesScreen(onAdd: (Channel) -> Unit, modifier: Modifier = Modifier) {
             }
         } else {
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 16.dp),
                 modifier = Modifier.weight(1f),
             ) {
                 items(mine, key = { it.id }) { listing ->
-                    LaunchRow(
-                        listing = listing,
-                        onRemove = { scope.launch { app.listings.remove(listing.id) } },
-                    )
+                    LaunchRow(listing = listing, onOpen = { onOpen(listing.id) })
                 }
             }
         }
