@@ -1,6 +1,7 @@
 package com.devbangs.onedevs.ui.launch
 
 import android.graphics.BitmapFactory
+import android.text.format.Formatter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +51,7 @@ fun LaunchRow(
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     val icon = remember(listing.iconPath) {
         listing.iconPath?.let { path -> BitmapFactory.decodeFile(path)?.asImageBitmap() }
     }
@@ -89,9 +92,14 @@ fun LaunchRow(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = listOf(listing.category, listing.packageName)
-                    .filter { it.isNotBlank() }
-                    .joinToString(" \u00b7 "),
+                // Size rather than package name. A package identifies an app
+                // to a machine; a tester deciding whether to spend their data
+                // on it wants to know it is 8MB and not 78MB, and wants to know
+                // before Play tells them.
+                text = listOfNotNull(
+                    listing.category.takeIf { it.isNotBlank() },
+                    listing.sizeBytes?.let { Formatter.formatShortFileSize(context, it) },
+                ).joinToString(" \u00b7 "),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,

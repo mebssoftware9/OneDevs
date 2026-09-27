@@ -44,8 +44,6 @@ ICONS = {
     "star": ("bold", "fill"), "clipboard-text": ("bold",), "shield-check": ("bold",),
     "device-mobile": ("bold",), "user-check": ("bold",), "lock-open": ("bold",),
     "check": ("bold",),
-    # Leading glyph on the category field.
-    "tag": ("bold",),
     # The overflow menu on App Details.
     "dots-three-vertical": ("bold",),
     # Board. The star is the only glyph in the app that ships filled without a

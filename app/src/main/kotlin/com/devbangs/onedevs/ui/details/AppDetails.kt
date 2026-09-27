@@ -2,6 +2,7 @@ package com.devbangs.onedevs.ui.details
 
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.text.format.Formatter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -112,7 +113,10 @@ fun AppDetailsScreen(
 
         Spacer(Modifier.height(14.dp))
         Text(
-            text = current.packageName.ifBlank { stringResource(R.string.details_no_package) },
+            text = listOfNotNull(
+                current.packageName.ifBlank { null } ?: stringResource(R.string.details_no_package),
+                current.sizeBytes?.let { Formatter.formatShortFileSize(context, it) },
+            ).joinToString(" \u00b7 "),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

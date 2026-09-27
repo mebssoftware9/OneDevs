@@ -175,4 +175,5 @@
     <string name="menu_delete">Excluir</string>
     <string name="cd_more">Mais</string>
     <string name="add_save_changes">Salvar alterações</string>
+    <string name="add_size">Tamanho (MB)</string>
 </resources>

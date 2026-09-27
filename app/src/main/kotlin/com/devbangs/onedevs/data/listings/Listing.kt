@@ -68,6 +68,12 @@ data class Listing(
      */
     val iconPath: String? = null,
     val reward: Int = 0,
+    /**
+     * Download size as the developer reported it. Null when they did not say.
+     * Self-reported by necessity -- nothing available to a phone or to Play
+     * can measure an app that was never uploaded here.
+     */
+    val sizeBytes: Long? = null,
     val createdAt: Long = 0L,
     val check: CheckRecord = CheckRecord(),
 )

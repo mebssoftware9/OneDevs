@@ -175,4 +175,5 @@
     <string name="menu_delete">Supprimer</string>
     <string name="cd_more">Plus</string>
     <string name="add_save_changes">Enregistrer</string>
+    <string name="add_size">Taille (Mo)</string>
 </resources>

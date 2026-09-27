@@ -71,6 +71,8 @@ import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.data.listings.Listing
 import com.devbangs.onedevs.data.listings.ListingRepository
+import com.devbangs.onedevs.data.listings.megabytesOf
+import com.devbangs.onedevs.data.listings.parseMegabytes
 import com.devbangs.onedevs.data.play.packageOrNull
 import com.devbangs.onedevs.data.play.parseOptInLink
 import java.io.File
@@ -101,6 +103,7 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
 
     var title by mutableStateOf("")
     var category by mutableStateOf("")
+    var sizeMb by mutableStateOf("")
     var testNote by mutableStateOf("")
     var optInLink by mutableStateOf("")
 
@@ -130,6 +133,7 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
             draftId = existing.id
             title = existing.title
             category = existing.category
+            sizeMb = existing.sizeBytes?.let(::megabytesOf).orEmpty()
             testNote = existing.testNote.orEmpty()
             optInLink = existing.optInLink.orEmpty()
             iconPath = existing.iconPath
@@ -185,6 +189,7 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
                     channel = channel,
                     optInLink = optInLink.trim().ifBlank { null },
                     testNote = testNote.trim().ifBlank { null },
+                    sizeBytes = parseMegabytes(sizeMb),
                     createdAt = System.currentTimeMillis(),
                     iconPath = iconPath,
                 ),
@@ -256,12 +261,26 @@ fun AddListingScreen(
             leading = R.drawable.ic_squares_four,
         )
         Spacer(Modifier.height(10.dp))
-        FormField(
-            value = viewModel.category,
-            onValueChange = { viewModel.category = it },
-            label = stringResource(R.string.add_category),
-            leading = R.drawable.ic_tag,
-        )
+        // Side by side, and without leading glyphs. At 155dp a 30dp icon box
+        // and its padding leave about 100dp for the text -- two plain fields
+        // read as a decision, six cramped ones read as a mistake.
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            FormField(
+                value = viewModel.category,
+                onValueChange = { viewModel.category = it },
+                label = stringResource(R.string.add_category),
+                leading = null,
+                modifier = Modifier.weight(1f),
+            )
+            FormField(
+                value = viewModel.sizeMb,
+                onValueChange = { viewModel.sizeMb = it },
+                label = stringResource(R.string.add_size),
+                leading = null,
+                keyboardType = KeyboardType.Decimal,
+                modifier = Modifier.weight(1f),
+            )
+        }
         Spacer(Modifier.height(10.dp))
         FormField(
             value = viewModel.testNote,
@@ -331,7 +350,7 @@ private fun FormField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    leading: Int,
+    leading: Int?,
     modifier: Modifier = Modifier,
     supporting: String? = null,
     isError: Boolean = false,
@@ -343,10 +362,11 @@ private fun FormField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        leadingIcon = {
+        leadingIcon = leading?.let {
             // Boxed, but in neutral rather than blue. The glyph is there to
             // name the field at a glance; a tinted container per row would put
             // the accent colour on five things that cannot be interacted with.
+            {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -360,6 +380,7 @@ private fun FormField(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(15.dp),
                 )
+            }
             }
         },
         supportingText = supporting?.let { { Text(it) } },
