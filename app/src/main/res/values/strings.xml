@@ -231,20 +231,21 @@
     <string name="lab_working">Reading the package…</string>
     <string name="lab_failed">Could not read it: %1$s</string>
     <string name="lab_close">Close</string>
-    <string name="apk_finding_none">Nothing here would stop a release.</string>
-    <string name="apk_finding_debuggable">Debuggable. Play rejects this build.</string>
-    <string name="apk_finding_target">Targets API %1$d. Play requires %2$d or higher.</string>
-    <string name="apk_finding_unsigned">No signature Android could read.</string>
-    <string name="apk_finding_cleartext">Allows cleartext HTTP traffic.</string>
     <string name="apk_sdk">SDK levels</string>
     <string name="apk_contents">Contents</string>
-    <string name="apk_breakdown">Size breakdown</string>
     <string name="apk_signing">Signing</string>
     <string name="apk_size">File size</string>
-    <string name="apk_components">Components</string>
-    <string name="apk_permissions">Permissions (dangerous)</string>
-    <plurals name="apk_finding_multidex">
-        <item quantity="one">%1$,d method, past the single-DEX ceiling.</item>
-        <item quantity="other">%1$,d methods, past the single-DEX ceiling.</item>
-    </plurals>
+    <string name="sev_blocking">BLOCKING</string>
+    <string name="sev_worth">WORTH FIXING</string>
+    <string name="sev_note">NOTE</string>
+    <string name="apk_clear">Nothing here would stop a release.</string>
+    <string name="apk_breakdown_uncompressed">Size breakdown (uncompressed)</string>
+    <string name="apk_copy">Copy</string>
+    <string name="apk_signing_compare">Compare with Play Console → App integrity → App signing.</string>
+    <string name="comp_activities">Activities</string>
+    <string name="comp_services">Services</string>
+    <string name="comp_receivers">Receivers</string>
+    <string name="comp_providers">Providers</string>
+    <string name="apk_dex">DEX files</string>
+    <string name="apk_methods">Methods</string>
 </resources>

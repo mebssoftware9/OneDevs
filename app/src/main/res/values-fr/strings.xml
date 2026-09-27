@@ -232,21 +232,21 @@
     <string name="lab_working">Lecture du paquet…</string>
     <string name="lab_failed">Lecture impossible : %1$s</string>
     <string name="lab_close">Fermer</string>
-    <string name="apk_finding_none">Rien ici n\'empêcherait une publication.</string>
-    <string name="apk_finding_debuggable">Débogable. Play refuse ce build.</string>
-    <string name="apk_finding_target">Cible l\'API %1$d. Play exige %2$d ou plus.</string>
-    <string name="apk_finding_unsigned">Aucune signature lisible par Android.</string>
-    <string name="apk_finding_cleartext">Autorise le trafic HTTP en clair.</string>
     <string name="apk_sdk">Niveaux de SDK</string>
     <string name="apk_contents">Contenu</string>
-    <string name="apk_breakdown">Répartition de la taille</string>
     <string name="apk_signing">Signature</string>
     <string name="apk_size">Taille du fichier</string>
-    <string name="apk_components">Composants</string>
-    <string name="apk_permissions">Autorisations (dangereuses)</string>
-    <plurals name="apk_finding_multidex">
-        <item quantity="one">%1$,d méthode, au-delà de la limite d\'un seul DEX.</item>
-        <item quantity="many">%1$,d de méthodes, au-delà de la limite d\'un seul DEX.</item>
-        <item quantity="other">%1$,d méthodes, au-delà de la limite d\'un seul DEX.</item>
-    </plurals>
+    <string name="sev_blocking">BLOQUANT</string>
+    <string name="sev_worth">À CORRIGER</string>
+    <string name="sev_note">NOTE</string>
+    <string name="apk_clear">Rien ici n\'empêcherait une publication.</string>
+    <string name="apk_breakdown_uncompressed">Répartition de la taille (non compressée)</string>
+    <string name="apk_copy">Copier</string>
+    <string name="apk_signing_compare">À comparer dans Play Console → Intégrité de l\'application → Signature.</string>
+    <string name="comp_activities">Activités</string>
+    <string name="comp_services">Services</string>
+    <string name="comp_receivers">Receivers</string>
+    <string name="comp_providers">Providers</string>
+    <string name="apk_dex">Fichiers DEX</string>
+    <string name="apk_methods">Méthodes</string>
 </resources>
