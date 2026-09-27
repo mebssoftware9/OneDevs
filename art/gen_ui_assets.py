@@ -46,6 +46,8 @@ ICONS = {
     "check": ("bold",),
     # Removing a listing you filed by mistake.
     "x": ("bold",),
+    # Leading glyph on the category field.
+    "tag": ("bold",),
     # Board. The star is the only glyph in the app that ships filled without a
     # bold twin: a rating star is a mark, not a toggle, and an outlined one at
     # 12dp reads as an empty rating.

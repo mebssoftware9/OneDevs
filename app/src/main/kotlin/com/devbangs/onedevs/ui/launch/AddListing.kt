@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -192,27 +193,24 @@ fun AddListingScreen(
         ActivityResultContracts.PickVisualMedia(),
     ) { uri -> uri?.let { viewModel.setIcon(context, it) } }
 
+    // No page title. The button at the foot says what this does, the tab says
+    // where you are, and a heading repeating it costs 64dp -- which is the
+    // difference between this form fitting a phone and not.
+    //
+    // The scroll is a safety net rather than the layout. At default text size
+    // everything here is visible at once on a 360dp phone; at a large font
+    // scale it has somewhere to go instead of being clipped.
     Column(
         modifier = modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 28.dp),
+            // Without this the form keeps its full height behind the keyboard,
+            // so the fields below it have nowhere to scroll to and simply stay
+            // covered. imePadding shrinks the scrollable area to what is
+            // actually visible, and Compose then brings the focused field up.
+            .imePadding()
+            .padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 12.dp),
     ) {
-        Text(
-            text = stringResource(if (testing) R.string.add_testing_title else R.string.add_live_title),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = stringResource(
-                if (testing) R.string.add_testing_subtitle else R.string.add_live_subtitle,
-            ),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        Spacer(Modifier.height(20.dp))
         IconDropzone(
             image = viewModel.iconImage,
             onPick = {
@@ -223,34 +221,37 @@ fun AddListingScreen(
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(12.dp))
         FormField(
             value = viewModel.title,
             onValueChange = { viewModel.title = it },
             label = stringResource(R.string.add_app_name),
+            leading = R.drawable.ic_squares_four,
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
         FormField(
             value = viewModel.category,
             onValueChange = { viewModel.category = it },
             label = stringResource(R.string.add_category),
+            leading = R.drawable.ic_tag,
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
         FormField(
             value = viewModel.testNote,
             onValueChange = { viewModel.testNote = it },
             label = stringResource(R.string.add_note),
+            leading = R.drawable.ic_clipboard_text,
             singleLine = false,
-            minLines = 3,
+            minLines = 2,
         )
 
         if (testing) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(10.dp))
             FormField(
                 value = viewModel.optInLink,
                 onValueChange = { viewModel.optInLink = it },
                 label = stringResource(R.string.add_optin_link),
-                placeholder = stringResource(R.string.add_optin_hint),
+            leading = R.drawable.ic_globe,
                 isError = viewModel.linkLooksWrong,
                 supporting = if (viewModel.linkLooksWrong) {
                     stringResource(R.string.add_optin_invalid)
@@ -259,11 +260,11 @@ fun AddListingScreen(
                 },
                 keyboardType = KeyboardType.Uri,
             )
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(12.dp))
             GroupAddressCard()
         }
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(14.dp))
         Button(
             onClick = { viewModel.save(channel, onDone) },
             enabled = viewModel.canSave(channel),
@@ -283,29 +284,24 @@ fun AddListingScreen(
                 fontWeight = FontWeight.SemiBold,
             )
         }
-        Spacer(Modifier.height(4.dp))
-        TextButton(onClick = onDone, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Text(stringResource(R.string.common_cancel))
-        }
     }
 }
 
 /**
  * One field, one shape, everywhere on this form.
  *
- * Colour is spent only where it means something: the border is a hairline in
- * outlineVariant at rest and the brand blue while focused, and nothing else on
- * the field carries a tint. A filled blue container on every input is the thing
- * that makes a form read as a mockup -- it puts the loudest colour on the parts
- * that are doing nothing.
+ * Colour is spent only where something is interactive: a hairline border in
+ * outlineVariant at rest, the brand blue while focused, and no tint anywhere
+ * else. A filled blue container on every input puts the loudest colour on the
+ * parts that are doing nothing, which is what makes a form read as a mockup.
  */
 @Composable
 private fun FormField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
+    leading: Int,
     modifier: Modifier = Modifier,
-    placeholder: String? = null,
     supporting: String? = null,
     isError: Boolean = false,
     singleLine: Boolean = true,
@@ -316,7 +312,25 @@ private fun FormField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        placeholder = placeholder?.let { { Text(it) } },
+        leadingIcon = {
+            // Boxed, but in neutral rather than blue. The glyph is there to
+            // name the field at a glance; a tinted container per row would put
+            // the accent colour on five things that cannot be interacted with.
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(RoundedCornerShape(9.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+            ) {
+                Icon(
+                    painter = painterResource(leading),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(15.dp),
+                )
+            }
+        },
         supportingText = supporting?.let { { Text(it) } },
         isError = isError,
         singleLine = singleLine,
@@ -334,13 +348,11 @@ private fun FormField(
 }
 
 /**
- * The icon, centred and 96dp.
+ * The icon, centred at 72dp.
  *
- * Deliberately not bigger. It is here to say which app this is, and a dropzone
- * that dominates the form implies the icon is the work -- it is the smallest
- * part of it. Dashed hairline rather than a filled blue panel: the dashes carry
- * "put something here" on their own, without spending the accent colour on a
- * control that is optional.
+ * Smaller than it was. It is here to say which app this is, and every point it
+ * takes is a point the fields underneath do not have -- the whole form has to
+ * land above the fold without anyone scrolling to find the button.
  */
 @Composable
 private fun IconDropzone(
@@ -349,18 +361,19 @@ private fun IconDropzone(
     modifier: Modifier = Modifier,
 ) {
     val outline = MaterialTheme.colorScheme.outlineVariant
-    val shape = RoundedCornerShape(22.dp)
+    val shape = RoundedCornerShape(18.dp)
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(96.dp)
+                .size(72.dp)
                 .clip(shape)
                 .background(MaterialTheme.colorScheme.surface)
                 .clickable(onClick = onPick)
                 // Drawn after the fill, not before it. background() paints in
                 // modifier order, so an outline declared earlier is painted
-                // over by the surface behind it and the box simply vanishes.
+                // over by the surface and the box simply disappears -- which
+                // reads as a deliberately borderless design rather than a bug.
                 .drawWithContent {
                     drawContent()
                     val stroke = 1.dp.toPx()
@@ -368,13 +381,11 @@ private fun IconDropzone(
                         color = outline,
                         topLeft = Offset(stroke / 2, stroke / 2),
                         size = Size(size.width - stroke, size.height - stroke),
-                        cornerRadius = CornerRadius(22.dp.toPx()),
+                        cornerRadius = CornerRadius(18.dp.toPx()),
                         style = Stroke(
                             width = stroke,
                             pathEffect = if (image == null) {
-                                PathEffect.dashPathEffect(
-                                    floatArrayOf(8.dp.toPx(), 6.dp.toPx()),
-                                )
+                                PathEffect.dashPathEffect(floatArrayOf(7.dp.toPx(), 5.dp.toPx()))
                             } else {
                                 null
                             },
@@ -387,26 +398,21 @@ private fun IconDropzone(
                     painter = painterResource(R.drawable.ic_plus),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(22.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             } else {
                 Image(
                     bitmap = image,
                     contentDescription = null,
-                    modifier = Modifier.size(96.dp).clip(shape),
+                    modifier = Modifier.size(72.dp).clip(shape),
                 )
             }
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(6.dp))
         Text(
             text = stringResource(if (image == null) R.string.add_icon else R.string.add_icon_change),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = stringResource(R.string.add_icon_hint),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.outline,
         )
     }
 }
@@ -414,55 +420,49 @@ private fun IconDropzone(
 /**
  * What the developer takes to Play Console.
  *
- * The one thing on this form that is not a question. It is the group address
- * they paste into their closed test's tester list, and it is here rather than
- * in help text because it is the step that actually connects the two products.
+ * One row rather than a panel. Google's own guidance is that a tester has to
+ * join the group before they can opt in, so this address is the step that
+ * makes the rest work -- but it is a thing to copy, not a thing to read twice.
  */
 @Composable
 private fun GroupAddressCard(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var copied by remember { mutableStateOf(false) }
-    Column(
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
-            .padding(14.dp),
+            .padding(start = 14.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
     ) {
-        Text(
-            text = stringResource(R.string.add_group_heading),
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Text(
-            text = stringResource(R.string.add_group_body),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.add_group_heading),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Text(
                 text = OneDevsTesterGroup,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Medium,
                 fontSize = 13.sp,
-                modifier = Modifier.weight(1f),
             )
-            TextButton(
-                onClick = {
-                    val clipboard = context.getSystemService(ClipboardManager::class.java)
-                    clipboard?.setPrimaryClip(
-                        ClipData.newPlainText(OneDevsTesterGroup, OneDevsTesterGroup),
-                    )
-                    copied = true
-                },
-            ) {
-                Text(
-                    text = stringResource(
-                        if (copied) R.string.add_group_copied else R.string.add_group_copy,
-                    ),
+        }
+        TextButton(
+            onClick = {
+                val clipboard = context.getSystemService(ClipboardManager::class.java)
+                clipboard?.setPrimaryClip(
+                    ClipData.newPlainText(OneDevsTesterGroup, OneDevsTesterGroup),
                 )
-            }
+                copied = true
+            },
+        ) {
+            Text(
+                text = stringResource(
+                    if (copied) R.string.add_group_copied else R.string.add_group_copy,
+                ),
+            )
         }
     }
 }

@@ -155,14 +155,10 @@
     <string name="launch_remove_title">Remover esta ficha?</string>
     <string name="launch_remove_body">%1$s sai da sua lista. Nada é enviado aos testadores.</string>
     <string name="launch_remove_confirm">Remover</string>
-    <string name="add_testing_subtitle">Deixe os testadores experimentarem seu app e darem feedback.</string>
-    <string name="add_live_subtitle">Publique para que os primeiros usuários encontrem você.</string>
     <string name="add_icon">Adicionar ícone</string>
     <string name="add_icon_change">Trocar ícone</string>
-    <string name="add_icon_hint">PNG ou JPG \u00b7 512 \u00d7 512 px</string>
     <string name="add_optin_invalid">Cole o link da Play do seu app</string>
-    <string name="add_group_heading">Adicione o OneDevs aos seus testadores</string>
-    <string name="add_group_body">Cole este endereço na lista de testadores do seu teste fechado no Play Console. Todos os testadores do OneDevs já estão neste grupo.</string>
+    <string name="add_group_heading">Adicione este grupo ao seu teste fechado</string>
     <string name="add_group_copy">Copiar</string>
     <string name="add_group_copied">Copiado</string>
 </resources>

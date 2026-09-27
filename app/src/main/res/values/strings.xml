@@ -146,7 +146,6 @@
     <string name="add_app_name">App name</string>
     <string name="add_category">Category</string>
     <string name="add_optin_link">Play link</string>
-    <string name="add_optin_hint" translatable="false">https://play.google.com/store/apps/details?id=\u2026</string>
     <string name="add_note">What should testers try?</string>
     <string name="common_cancel">Cancel</string>
     <string name="cd_remove">Remove</string>
@@ -155,14 +154,10 @@
     <string name="launch_remove_title">Remove this listing?</string>
     <string name="launch_remove_body">%1$s comes off your list. Nothing is sent to testers.</string>
     <string name="launch_remove_confirm">Remove</string>
-    <string name="add_testing_subtitle">Let testers try your app and give feedback.</string>
-    <string name="add_live_subtitle">Publish so early users can find you.</string>
     <string name="add_icon">Add app icon</string>
     <string name="add_icon_change">Change icon</string>
-    <string name="add_icon_hint">PNG or JPG \u00b7 512 \u00d7 512 px</string>
     <string name="add_optin_invalid">Paste your app\'s Play link</string>
-    <string name="add_group_heading">Add OneDevs to your testers</string>
-    <string name="add_group_body">Paste this address into your closed test\'s tester list in Play Console. Every OneDevs tester is already in this group.</string>
+    <string name="add_group_heading">Add this group to your closed test</string>
     <string name="add_group_copy">Copy</string>
     <string name="add_group_copied">Copied</string>
 </resources>
