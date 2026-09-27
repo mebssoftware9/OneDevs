@@ -71,8 +71,6 @@
     <string name="launches_empty_live_body">Os apps que você publicar aparecem aqui, onde os primeiros usuários podem encontrá-los.</string>
     <string name="launches_empty_title">Nada lançado ainda</string>
     <string name="launches_empty_body">Os apps que você colocar em teste aparecem aqui com o número de testadores e quanto já correu dos 14 dias.</string>
-    <string name="lab_empty_title">Nada para inspecionar ainda</string>
-    <string name="lab_empty_body">O inspetor de apps, o analisador de APK, o verificador de permissões e o diagnóstico do aparelho rodam daqui.</string>
     <string name="badge_intro">Emblemas se ganham com trabalho real de teste. Aqui nada se compra.</string>
     <string name="badge_your_badges">Seus emblemas</string>
     <string name="badge_group_testing">Testes</string>
@@ -214,4 +212,21 @@
     <string name="device_abi">Arquitetura</string>
     <string name="about_version">Versão</string>
     <string name="about_licenses">Licenças de código aberto</string>
+    <string name="lab_intro">Analise, teste, melhore. Sete camadas entre uma ideia e uma ficha.</string>
+    <string name="lab_ready">%1$d/%2$d</string>
+    <string name="lab_soon">Em breve</string>
+    <string name="lab_l1">Qualidade do código</string>
+    <string name="lab_l1_q">Entenda e corrija o código</string>
+    <string name="lab_l2">Build e artefato</string>
+    <string name="lab_l2_q">Verifique o que foi gerado</string>
+    <string name="lab_l3">Saúde do app</string>
+    <string name="lab_l3_q">O app funciona direito?</string>
+    <string name="lab_l4">Testes</string>
+    <string name="lab_l4_q">Funciona em todo lugar?</string>
+    <string name="lab_l5">Publicação</string>
+    <string name="lab_l5_q">É seguro publicar?</string>
+    <string name="lab_l6">Ficha pronta</string>
+    <string name="lab_l6_q">A ficha está pronta?</string>
+    <string name="lab_l7">ASO</string>
+    <string name="lab_l7_q">As pessoas conseguem descobrir?</string>
 </resources>

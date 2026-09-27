@@ -52,6 +52,9 @@ ICONS = {
     "pulse": ("bold",), "plus": ("bold",),
     # Settings rows: a caret that opens a row and one that closes it.
     "caret-right": ("bold",), "caret-up": ("bold",),
+    # The Lab's seven layers, one glyph each.
+    "code": ("bold",), "package": ("bold",), "heartbeat": ("bold",),
+    "storefront": ("bold",), "chart-line-up": ("bold",),
 }
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
 COIN_DP, HERO_DP = 32, 96

@@ -73,8 +73,6 @@
     <string name="launches_empty_live_body">Las apps que publiques aparecen aquí, donde los primeros usuarios pueden encontrarlas.</string>
     <string name="launches_empty_title">Nada lanzado todavía</string>
     <string name="launches_empty_body">Las apps que pongas a prueba aparecen aquí con su número de testers y cuánto llevan de los 14 días.</string>
-    <string name="lab_empty_title">Nada que inspeccionar todavía</string>
-    <string name="lab_empty_body">El inspector de apps, el analizador de APK, el verificador de permisos y el diagnóstico del dispositivo se ejecutan desde aquí.</string>
     <string name="badge_intro">Las insignias se ganan con trabajo real de pruebas. Aquí no se compra nada.</string>
     <string name="badge_your_badges">Tus insignias</string>
     <string name="badge_group_testing">Pruebas</string>
@@ -216,4 +214,21 @@
     <string name="device_abi">Arquitectura</string>
     <string name="about_version">Versión</string>
     <string name="about_licenses">Licencias de código abierto</string>
+    <string name="lab_intro">Analiza, prueba, mejora. Siete capas entre una idea y una ficha publicada.</string>
+    <string name="lab_ready">%1$d/%2$d</string>
+    <string name="lab_soon">Pronto</string>
+    <string name="lab_l1">Calidad del código</string>
+    <string name="lab_l1_q">Entiende y corrige el código</string>
+    <string name="lab_l2">Compilación y artefacto</string>
+    <string name="lab_l2_q">Verifica lo que se compiló</string>
+    <string name="lab_l3">Salud de la app</string>
+    <string name="lab_l3_q">¿Funciona bien la app?</string>
+    <string name="lab_l4">Pruebas</string>
+    <string name="lab_l4_q">¿Funciona en todas partes?</string>
+    <string name="lab_l5">Publicación</string>
+    <string name="lab_l5_q">¿Es seguro publicarla?</string>
+    <string name="lab_l6">Ficha lista</string>
+    <string name="lab_l6_q">¿Está lista la ficha?</string>
+    <string name="lab_l7">ASO</string>
+    <string name="lab_l7_q">¿Puede la gente descubrirla?</string>
 </resources>

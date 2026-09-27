@@ -63,6 +63,8 @@ import com.devbangs.onedevs.ui.components.ActionCard
 import com.devbangs.onedevs.ui.components.DevBotMark
 import com.devbangs.onedevs.ui.components.EmptyState
 import com.devbangs.onedevs.ui.components.FilterPills
+import com.devbangs.onedevs.ui.lab.LabCatalogue
+import com.devbangs.onedevs.ui.lab.LabLayerCard
 import com.devbangs.onedevs.ui.components.IconBadge
 import com.devbangs.onedevs.ui.missions.MissionCard
 import com.devbangs.onedevs.ui.missions.SampleMissions
@@ -439,11 +441,32 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun LabScreen(modifier: Modifier = Modifier) = EmptyState(
-    title = stringResource(R.string.lab_empty_title),
-    body = stringResource(R.string.lab_empty_body),
-    modifier = modifier,
-) { IconBadge(painterResource(R.drawable.ic_flask)) }
+fun LabScreen(modifier: Modifier = Modifier) {
+    // One layer open at a time. Seven cards all open is the wall of ninety-six
+    // names the closed state exists to avoid.
+    var open by rememberSaveable { mutableStateOf(-1) }
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 24.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.lab_intro),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 4.dp),
+        )
+        LabCatalogue.forEach { layer ->
+            LabLayerCard(
+                layer = layer,
+                expanded = open == layer.number,
+                onToggle = { open = if (open == layer.number) -1 else layer.number },
+            )
+        }
+    }
+}
 
 /**
  * The catalogue, not a profile. Every badge OneDevs awards is listed with what

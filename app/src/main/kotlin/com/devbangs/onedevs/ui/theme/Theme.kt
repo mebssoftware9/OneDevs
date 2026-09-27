@@ -51,6 +51,10 @@ data class OneDevsColors(
     val feedback: Accent,
     /** Helping other developers. */
     val community: Accent,
+    /** Something that wants looking at before it ships. */
+    val caution: Accent,
+    /** Something that will stop a release. */
+    val critical: Accent,
 )
 
 val LocalOneDevsColors = staticCompositionLocalOf {
@@ -62,6 +66,8 @@ val LocalOneDevsColors = staticCompositionLocalOf {
         live = accentLiveLight,
         feedback = accentFeedbackLight,
         community = accentCommunityLight,
+        caution = accentCautionLight,
+        critical = accentCriticalLight,
     )
 }
 
@@ -87,6 +93,8 @@ fun OneDevsTheme(
             live = if (darkTheme) accentLiveDark else accentLiveLight,
             feedback = if (darkTheme) accentFeedbackDark else accentFeedbackLight,
             community = if (darkTheme) accentCommunityDark else accentCommunityLight,
+            caution = if (darkTheme) accentCautionDark else accentCautionLight,
+            critical = if (darkTheme) accentCriticalDark else accentCriticalLight,
         ),
     ) {
         MaterialTheme(

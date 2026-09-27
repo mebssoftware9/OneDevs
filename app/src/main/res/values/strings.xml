@@ -73,8 +73,6 @@
     <string name="launches_empty_live_body">Apps you publish to Live Apps appear here, where early users can find them.</string>
     <string name="launches_empty_title">Nothing launched yet</string>
     <string name="launches_empty_body">Apps you put up for testing appear here with their tester count and how far through the 14 days they are.</string>
-    <string name="lab_empty_title">Nothing to inspect yet</string>
-    <string name="lab_empty_body">App inspector, APK analyzer, permission checker and device diagnostics run from here.</string>
     <string name="badge_intro">Badges are earned through real testing work. Nothing here can be bought.</string>
     <string name="badge_your_badges">Your badges</string>
     <string name="badge_group_testing">Testing</string>
@@ -213,4 +211,21 @@
     <string name="device_abi">Architecture</string>
     <string name="about_version">Version</string>
     <string name="about_licenses">Open source licenses</string>
+    <string name="lab_intro">Analyze, test, improve. Seven layers between an idea and a listing.</string>
+    <string name="lab_ready">%1$d/%2$d</string>
+    <string name="lab_soon">Soon</string>
+    <string name="lab_l1">Code Quality</string>
+    <string name="lab_l1_q">Understand and fix the code</string>
+    <string name="lab_l2">Build &amp; Artifact</string>
+    <string name="lab_l2_q">Verify what was built</string>
+    <string name="lab_l3">App Health</string>
+    <string name="lab_l3_q">Does the app work properly?</string>
+    <string name="lab_l4">Testing</string>
+    <string name="lab_l4_q">Does it work everywhere?</string>
+    <string name="lab_l5">Release</string>
+    <string name="lab_l5_q">Is it safe to ship?</string>
+    <string name="lab_l6">Store Readiness</string>
+    <string name="lab_l6_q">Is the listing ready?</string>
+    <string name="lab_l7">ASO</string>
+    <string name="lab_l7_q">Can people discover it?</string>
 </resources>

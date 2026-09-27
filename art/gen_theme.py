@@ -165,7 +165,11 @@ BRAND_TINT_DARK = over(DARK["primary"], DARK["surface"], 0.20)
 # tone machinery as the brand, so every accent inherits the same contrast floor
 # and the same light/dark behaviour. Seeds are measured off the product mockups.
 ACCENTS = {"testing": "#2189FC", "mission": "#A968FC", "live": "#24DBA5",
-           "feedback": "#5F53EB", "community": "#2AB2BF"}
+           "feedback": "#5F53EB", "community": "#2AB2BF",
+           # The Lab needs seven distinguishable layers and five was not
+           # enough. These two are also the app's first real warning and
+           # danger tones, which it will want elsewhere.
+           "caution": "#F59E0B", "critical": "#F43F5E"}
 
 def vivid_on(seed, bg, floor=4.5):
     """The most saturated tone of this hue that still carries a label on bg.

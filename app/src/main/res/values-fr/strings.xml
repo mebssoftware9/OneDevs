@@ -71,8 +71,6 @@
     <string name="launches_empty_live_body">Les applis que vous publiez apparaissent ici, là où les premiers utilisateurs peuvent les trouver.</string>
     <string name="launches_empty_title">Rien de lancé pour l\'instant</string>
     <string name="launches_empty_body">Les applis que vous mettez en test apparaissent ici avec leur nombre de testeurs et où elles en sont dans les 14 jours.</string>
-    <string name="lab_empty_title">Rien à inspecter pour l\'instant</string>
-    <string name="lab_empty_body">L\'inspecteur d\'applis, l\'analyseur d\'APK, le vérificateur d\'autorisations et le diagnostic de l\'appareil s\'exécutent ici.</string>
     <string name="badge_intro">Les badges se gagnent par un vrai travail de test. Rien ici ne s\'achète.</string>
     <string name="badge_your_badges">Vos badges</string>
     <string name="badge_group_testing">Tests</string>
@@ -214,4 +212,21 @@
     <string name="device_abi">Architecture</string>
     <string name="about_version">Version</string>
     <string name="about_licenses">Licences open source</string>
+    <string name="lab_intro">Analysez, testez, améliorez. Sept couches entre une idée et une fiche.</string>
+    <string name="lab_ready">%1$d/%2$d</string>
+    <string name="lab_soon">Bientôt</string>
+    <string name="lab_l1">Qualité du code</string>
+    <string name="lab_l1_q">Comprendre et corriger le code</string>
+    <string name="lab_l2">Build et artefact</string>
+    <string name="lab_l2_q">Vérifier ce qui a été construit</string>
+    <string name="lab_l3">Santé de l\'appli</string>
+    <string name="lab_l3_q">L\'appli fonctionne-t-elle bien ?</string>
+    <string name="lab_l4">Tests</string>
+    <string name="lab_l4_q">Fonctionne-t-elle partout ?</string>
+    <string name="lab_l5">Publication</string>
+    <string name="lab_l5_q">Peut-on la publier sans risque ?</string>
+    <string name="lab_l6">Fiche prête</string>
+    <string name="lab_l6_q">La fiche est-elle prête ?</string>
+    <string name="lab_l7">ASO</string>
+    <string name="lab_l7_q">Peut-on la découvrir ?</string>
 </resources>

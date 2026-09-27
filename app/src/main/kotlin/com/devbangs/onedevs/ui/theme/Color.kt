@@ -169,6 +169,30 @@ internal val accentCommunityDark = Accent(
     tint = Color(0xFF002326),
 )
 
+internal val accentCautionLight = Accent(
+    solid = Color(0xFFA76900),
+    onSolid = Color(0xFFFFFFFF),
+    tint = Color(0xFFF9F4ED),
+)
+
+internal val accentCautionDark = Accent(
+    solid = Color(0xFFCA8100),
+    onSolid = Color(0xFF281900),
+    tint = Color(0xFF2C1C00),
+)
+
+internal val accentCriticalLight = Accent(
+    solid = Color(0xFFBE003B),
+    onSolid = Color(0xFFFFFFFF),
+    tint = Color(0xFFFAEDF1),
+)
+
+internal val accentCriticalDark = Accent(
+    solid = Color(0xFFFF5069),
+    onSolid = Color(0xFF41000B),
+    tint = Color(0xFF381217),
+)
+
 internal val lightScheme = lightColorScheme(
     primary = lightPrimary,
     onPrimary = lightOnPrimary,
