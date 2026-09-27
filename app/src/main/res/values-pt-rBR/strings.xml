@@ -186,4 +186,6 @@
     <string name="check_not_public_warn">Nenhuma página pública encontrada. Publique-o primeiro ou adicione-o ao Painel de testes.</string>
     <string name="check_unreachable">Não foi possível acessar o Play. Você ainda pode adicioná-lo.</string>
     <string name="check_retry">Tentar novamente</string>
+    <string name="check_dialog_title">Já está no Play</string>
+    <string name="check_dialog_change_link">Alterar o link</string>
 </resources>

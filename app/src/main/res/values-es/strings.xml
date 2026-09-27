@@ -188,4 +188,6 @@
     <string name="check_not_public_warn">No se encontró ninguna ficha pública. Publícala primero o añádela al Tablero de pruebas.</string>
     <string name="check_unreachable">No se pudo conectar con Play. Aun así puedes añadirla.</string>
     <string name="check_retry">Reintentar</string>
+    <string name="check_dialog_title">Ya está en Play</string>
+    <string name="check_dialog_change_link">Cambiar el enlace</string>
 </resources>

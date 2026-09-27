@@ -2,6 +2,7 @@ package com.devbangs.onedevs.data.play
 
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -70,6 +71,10 @@ object PlayListings {
                 HttpURLConnection.HTTP_NOT_FOUND -> PlayListing.NotPublic
                 else -> PlayListing.Unknown(status)
             }
+        } catch (cancelled: CancellationException) {
+            // Catching Exception below would swallow this and report a network
+            // failure instead of letting the caller's cancellation through.
+            throw cancelled
         } catch (_: Exception) {
             PlayListing.Unknown(null)
         } finally {

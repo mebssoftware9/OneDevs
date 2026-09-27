@@ -9,6 +9,13 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,6 +36,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -56,6 +64,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -222,15 +231,22 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
      * Asks Play once per link. Called when the field loses focus rather than on
      * every keystroke: a request per character would be both useless and rude.
      */
-    fun checkLink() {
+    /**
+     * Makes sure an answer exists for the link as it stands, asking Play only
+     * if there isn't one yet. Suspends, so a save can wait on it.
+     */
+    private suspend fun ensureChecked() {
         val pkg = packageName ?: return
-        if (pkg == checkedPackage) return
+        if (pkg == checkedPackage && check is CheckState.Done) return
         checkedPackage = pkg
         check = CheckState.Checking
-        viewModelScope.launch {
-            val result = PlayListings.check(pkg)
-            check = CheckState.Done(result, System.currentTimeMillis())
-        }
+        check = CheckState.Done(PlayListings.check(pkg), System.currentTimeMillis())
+    }
+
+    /** Asks early, so the verdict is usually on screen before the button is. */
+    fun checkLink() {
+        if (packageName == null) return
+        viewModelScope.launch { ensureChecked() }
     }
 
     /** Forgets the answer so the same link can be asked about again. */
@@ -243,6 +259,15 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
         if (!canSave) return
         saving = true
         viewModelScope.launch {
+            // The gate, and the only one that cannot be walked around. Tapping
+            // this button does not move focus off the link field, so the blur
+            // check may never have run -- waiting on the answer here is what
+            // makes the rule real rather than decorative.
+            ensureChecked()
+            if (blocksListing(channel, (check as? CheckState.Done)?.result)) {
+                saving = false
+                return@launch
+            }
             repository.add(
                 Listing(
                     id = draftId,
@@ -394,8 +419,12 @@ fun AddListingScreen(
             // Asked once the field is done with, not per keystroke. The guard
             // matters: onFocusChanged also reports "not focused" on the first
             // composition, which would fire a request before anyone typed.
+            // hasFocus, not isFocused: this modifier lands on FormField's outer
+            // container and the focus goes to the TextField inside it, so
+            // isFocused here is false even while the field is being typed in.
+            // hasFocus is true when this node or any descendant holds focus.
             modifier = Modifier.onFocusChanged { state ->
-                if (state.isFocused) {
+                if (state.hasFocus) {
                     linkHadFocus = true
                 } else if (linkHadFocus) {
                     viewModel.checkLink()
@@ -409,13 +438,37 @@ fun AddListingScreen(
             GroupAddressCard()
         }
 
-        CheckPanel(
-            state = viewModel.check,
-            testing = testing,
-            onSwitchToLive = { live = true },
-            onRetry = viewModel::recheck,
+        // The verdict lands in two places on purpose. The panel is the record --
+        // it stays put, and it is where the non-blocking answers live, since a
+        // modal saying "found it" would be a nuisance. The dialog is only for
+        // the one answer that refuses the save, because a refusal the person
+        // can miss is the same as no refusal at all.
+        val verdict = viewModel.check as? CheckState.Done
+        val refused = testing && verdict?.result == PlayListing.Live
+        var dialogSeen by remember(verdict) { mutableStateOf(false) }
+        if (refused && !dialogSeen) {
+            LiveAppDialog(
+                onSwitch = {
+                    live = true
+                    dialogSeen = true
+                },
+                onDismiss = { dialogSeen = true },
+            )
+        }
+
+        AnimatedVisibility(
+            visible = viewModel.check != CheckState.Idle,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut(),
             modifier = Modifier.padding(top = 12.dp),
-        )
+        ) {
+            CheckPanel(
+                state = viewModel.check,
+                testing = testing,
+                onSwitchToLive = { live = true },
+                onRetry = viewModel::recheck,
+            )
+        }
 
         Spacer(Modifier.height(14.dp))
         Button(
@@ -703,4 +756,50 @@ private fun CheckPanel(
             }
         }
     }
+}
+
+/**
+ * DevBot refusing a Testing Board listing, as a modal.
+ *
+ * Modal because it is the one verdict with a consequence: the save did not
+ * happen, and the way out is a choice between two boards. The panel behind it
+ * still carries the same message, so dismissing this loses nothing.
+ */
+@Composable
+private fun LiveAppDialog(onSwitch: () -> Unit, onDismiss: () -> Unit) {
+    // Compose dialogs do not animate in, and a verdict that simply materialises
+    // reads as a glitch rather than an answer. 180ms of scale and fade is
+    // enough to make it arrive without making anyone wait for it.
+    var shown by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { shown = true }
+    val entrance by animateFloatAsState(
+        targetValue = if (shown) 1f else 0f,
+        animationSpec = tween(durationMillis = 180),
+        label = "devbotDialogEntrance",
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { DevBotMark(size = 44.dp) },
+        title = { Text(stringResource(R.string.check_dialog_title)) },
+        text = { Text(stringResource(R.string.check_live_wrong_board)) },
+        confirmButton = {
+            TextButton(onClick = onSwitch) {
+                Text(
+                    text = stringResource(R.string.check_live_switch),
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.check_dialog_change_link))
+            }
+        },
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier.graphicsLayer {
+            scaleX = 0.92f + 0.08f * entrance
+            scaleY = 0.92f + 0.08f * entrance
+            alpha = entrance
+        },
+    )
 }

@@ -185,4 +185,6 @@
     <string name="check_not_public_warn">No public listing found. Publish it first, or add it to the Testing Board.</string>
     <string name="check_unreachable">Could not reach Play. You can still add this.</string>
     <string name="check_retry">Try again</string>
+    <string name="check_dialog_title">Already on Play</string>
+    <string name="check_dialog_change_link">Change the link</string>
 </resources>

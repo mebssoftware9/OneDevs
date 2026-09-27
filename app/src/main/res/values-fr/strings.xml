@@ -186,4 +186,6 @@
     <string name="check_not_public_warn">Aucune fiche publique trouvée. Publiez-la d\'abord, ou ajoutez-la au Tableau de test.</string>
     <string name="check_unreachable">Impossible de joindre Play. Vous pouvez quand même l\'ajouter.</string>
     <string name="check_retry">Réessayer</string>
+    <string name="check_dialog_title">Déjà sur Play</string>
+    <string name="check_dialog_change_link">Modifier le lien</string>
 </resources>
