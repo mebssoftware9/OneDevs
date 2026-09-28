@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,20 +53,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devbangs.onedevs.BuildConfig
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.R
+import com.devbangs.onedevs.data.backend.PlatformStats
 import com.devbangs.onedevs.data.listings.Channel
+import com.devbangs.onedevs.data.listings.Listing
 import com.devbangs.onedevs.lab.ApkAnalyzer
 import com.devbangs.onedevs.lab.ApkReport
 import com.devbangs.onedevs.ui.badges.BadgeCatalogue
 import com.devbangs.onedevs.ui.badges.BadgeGroupCard
-import com.devbangs.onedevs.ui.board.LiveAppRow
-import com.devbangs.onedevs.ui.board.LiveApps
+import com.devbangs.onedevs.ui.board.BoardRow
 import com.devbangs.onedevs.ui.board.LiveCard
-import com.devbangs.onedevs.ui.board.SampleActive
-import com.devbangs.onedevs.ui.board.SampleTestingApps
-import com.devbangs.onedevs.ui.board.SampleTrend
-import com.devbangs.onedevs.ui.board.TestAppRow
 import com.devbangs.onedevs.ui.board.openPlayListing
 import com.devbangs.onedevs.ui.components.ActionCard
+import com.devbangs.onedevs.ui.components.BrandedLoading
 import com.devbangs.onedevs.ui.components.DevBotMark
 import com.devbangs.onedevs.ui.components.EmptyState
 import com.devbangs.onedevs.ui.components.FilterPills
@@ -137,17 +136,27 @@ private enum class BoardCategory(
 @Composable
 fun BoardScreen(modifier: Modifier = Modifier) {
     var category by rememberSaveable { mutableStateOf(BoardCategory.Testing) }
-    // Testing has no backend, so it is samples in debug and empty in release.
-    // Live Apps does not need one: these are real listings with real package
-    // names, and the deep link into Play works with nothing behind it.
-    val testing = if (BuildConfig.DEBUG) SampleTestingApps else emptyList()
     val context = LocalContext.current
-    val active = if (BuildConfig.DEBUG) SampleActive else null
-    val trend = if (BuildConfig.DEBUG) SampleTrend else emptyList()
+    val app = context.applicationContext as OneDevsApplication
+
+    // null is "not read yet", which has to look different from an empty board
+    // or a new platform looks broken on its first day.
+    var testing by remember { mutableStateOf<List<Listing>?>(null) }
+    var live by remember { mutableStateOf<List<Listing>?>(null) }
+    var stats by remember { mutableStateOf<PlatformStats?>(null) }
+
+    LaunchedEffect(Unit) {
+        stats = app.backend.platformStats()
+        testing = app.listings.board(Channel.Testing)
+        live = app.listings.board(Channel.Live)
+    }
+
+    val shown = if (category == BoardCategory.Testing) testing else live
+
     Column(modifier = modifier.fillMaxSize()) {
         LiveCard(
-            active = active,
-            trend = trend,
+            active = stats?.activeTesters,
+            trend = stats?.pulse.orEmpty().map { it.testers.toFloat() },
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp),
         )
         FilterPills(
@@ -160,30 +169,34 @@ fun BoardScreen(modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .padding(start = 20.dp, end = 20.dp, top = 14.dp),
         )
-        val empty = if (category == BoardCategory.Testing) testing.isEmpty() else LiveApps.isEmpty()
-        if (empty) {
-            Box(modifier = Modifier.weight(1f)) {
+        when {
+            shown == null -> Box(modifier = Modifier.weight(1f)) { BrandedLoading() }
+
+            shown.isEmpty() -> Box(modifier = Modifier.weight(1f)) {
                 EmptyState(
                     title = stringResource(category.emptyTitle),
                     body = stringResource(category.emptyBody),
                 ) { IconBadge(painterResource(R.drawable.ic_squares_four)) }
             }
-        } else {
-            Text(
-                text = stringResource(category.heading),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 18.dp, bottom = 4.dp),
-            )
-            LazyColumn(
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                modifier = Modifier.weight(1f),
-            ) {
-                if (category == BoardCategory.Testing) {
-                    items(testing, key = { it.name }) { app -> TestAppRow(app = app, onClick = {}) }
-                } else {
-                    items(LiveApps, key = { it.packageName }) { app ->
-                        LiveAppRow(app = app, onClick = { openPlayListing(context, app.packageName) })
+
+            else -> {
+                Text(
+                    text = stringResource(category.heading),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(
+                        start = 20.dp, end = 20.dp, top = 18.dp, bottom = 4.dp,
+                    ),
+                )
+                LazyColumn(
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    modifier = Modifier.weight(1f),
+                ) {
+                    items(shown, key = { it.id }) { listing ->
+                        BoardRow(
+                            listing = listing,
+                            onClick = { openPlayListing(context, listing.packageName) },
+                        )
                     }
                 }
             }

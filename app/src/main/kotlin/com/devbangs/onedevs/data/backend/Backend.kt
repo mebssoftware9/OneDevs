@@ -1,5 +1,8 @@
 package com.devbangs.onedevs.data.backend
 
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -8,6 +11,22 @@ import kotlinx.serialization.json.JsonPrimitive
 
 @kotlinx.serialization.Serializable
 internal data class BalanceRow(val balance: Int)
+
+/** One hour's observation, as the pulse table recorded it. */
+@kotlinx.serialization.Serializable
+data class PulsePoint(val at: String = "", val testers: Int = 0)
+
+/** What the board's hero says, counted by the server rather than invented. */
+@kotlinx.serialization.Serializable
+data class PlatformStats(
+    @kotlinx.serialization.SerialName("testers_active_24h") val activeTesters: Int = 0,
+    @kotlinx.serialization.SerialName("apps_in_testing") val appsInTesting: Int = 0,
+    @kotlinx.serialization.SerialName("open_missions") val openMissions: Int = 0,
+    val pulse: List<PulsePoint> = emptyList(),
+)
+
+/** Long enough to be a wait rather than a network. */
+private const val SlowRequestMs = 3_500L
 
 internal val BackendJson = Json {
     ignoreUnknownKeys = true
@@ -32,6 +51,14 @@ class Backend(
     private val key: String,
     private val sessions: SessionHolder,
 ) {
+    /**
+     * Emitted when a request took long enough that someone noticed. Measured
+     * from what actually happened rather than from the system's opinion of the
+     * connection, which is the only version that matches the wait.
+     */
+    private val _slow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val slow: SharedFlow<Unit> = _slow.asSharedFlow()
+
     /** One refresh at a time, however many calls discover the token is stale. */
     private val refreshing = Mutex()
 
@@ -113,6 +140,43 @@ class Backend(
         }
     }
 
+    /**
+     * Puts an app icon in the public bucket and returns the URL everyone else
+     * will load it from, or null if it could not be stored.
+     *
+     * Named by owner and listing, which is also what the storage policy checks:
+     * a developer can replace their own icons and nobody else's.
+     */
+    internal suspend fun uploadIcon(userId: String, listingId: String, png: ByteArray): String? {
+        val session = sessions.current() ?: return null
+        val path = "$userId/$listingId.png"
+        val result = httpUpload(
+            url = "$url/storage/v1/object/icons/$path",
+            // upsert so re-saving a listing replaces its icon instead of
+            // failing on a name that is already taken.
+            method = "POST",
+            headers = mapOf(
+                "apikey" to key,
+                "Authorization" to "Bearer ${'$'}{session.accessToken}",
+                "x-upsert" to "true",
+            ),
+            bytes = png,
+            contentType = "image/png",
+        )
+        return if (result.ok) "$url/storage/v1/object/public/icons/$path" else null
+    }
+
+    /** The numbers at the top of the Board, or null if they could not be read. */
+    suspend fun platformStats(): PlatformStats? {
+        val result = rpc("platform_stats", kotlinx.serialization.json.JsonObject(emptyMap()))
+        if (!result.ok) return null
+        return try {
+            BackendJson.decodeFromString<PlatformStats>(result.body)
+        } catch (e: kotlinx.serialization.SerializationException) {
+            null
+        }
+    }
+
     /** A database function. Every coin movement arrives through here. */
     internal suspend fun rpc(function: String, args: JsonObject): HttpResult = authorised(
         path = "/rest/v1/rpc/$function",
@@ -154,6 +218,21 @@ class Backend(
     }
 
     private suspend fun send(
+        path: String,
+        method: String,
+        body: String?,
+        session: Session,
+        extra: Map<String, String>,
+    ): HttpResult {
+        val started = System.currentTimeMillis()
+        val result = sendNow(path, method, body, session, extra)
+        if (System.currentTimeMillis() - started > SlowRequestMs && !result.offline) {
+            _slow.tryEmit(Unit)
+        }
+        return result
+    }
+
+    private suspend fun sendNow(
         path: String,
         method: String,
         body: String?,

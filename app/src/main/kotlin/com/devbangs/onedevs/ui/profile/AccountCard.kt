@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,8 +44,10 @@ import androidx.compose.ui.unit.dp
 import com.devbangs.onedevs.BuildConfig
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.R
+import com.devbangs.onedevs.data.backend.Balance
 import com.devbangs.onedevs.data.backend.SignInOutcome
 import com.devbangs.onedevs.data.backend.signInWithGoogle
+import com.devbangs.onedevs.ui.components.Waiting
 import kotlinx.coroutines.launch
 
 /**
@@ -161,13 +164,37 @@ fun AccountCard(modifier: Modifier = Modifier) {
                         modifier = Modifier.size(24.dp),
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text(
-                        // An em dash, not a zero. Nothing has been read back
-                        // yet, and zero is a claim about your balance.
-                        text = sharedBalance?.toString() ?: "\u2014",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                    )
+                    when (sharedBalance) {
+                        Balance.Unknown, Balance.Loading -> Waiting(size = 20.dp)
+
+                        is Balance.Known -> Text(
+                            text = (sharedBalance as Balance.Known).coins.toString(),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+
+                        // The one state worth an action: the server was asked
+                        // and could not answer, so offer to ask again rather
+                        // than leaving a dash with no way forward.
+                        Balance.Unavailable -> {
+                            Text(
+                                text = "\u2014",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            TextButton(
+                                onClick = { app.account.retryBalance() },
+                                contentPadding = PaddingValues(horizontal = 8.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.account_retry),
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

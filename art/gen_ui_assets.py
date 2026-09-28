@@ -41,7 +41,6 @@ ICONS = {
     "seal-check": ("bold",), "test-tube": ("bold",), "trophy": ("bold",),
     "fire": ("bold",), "chat-circle-dots": ("bold",), "lightbulb": ("bold",),
     "bug": ("bold",), "handshake": ("bold",), "users": ("bold",),
-    "star": ("bold", "fill"), "clipboard-text": ("bold",), "shield-check": ("bold",),
     "device-mobile": ("bold",), "user-check": ("bold",), "lock-open": ("bold",),
     "check": ("bold",),
     # The overflow menu on App Details.
@@ -49,7 +48,6 @@ ICONS = {
     # Board. The star is the only glyph in the app that ships filled without a
     # bold twin: a rating star is a mark, not a toggle, and an outlined one at
     # 12dp reads as an empty rating.
-    "pulse": ("bold",), "plus": ("bold",),
     # Settings rows: a caret that opens a row and one that closes it.
     "caret-right": ("bold",), "caret-up": ("bold",),
     # The Lab's seven layers, one glyph each.

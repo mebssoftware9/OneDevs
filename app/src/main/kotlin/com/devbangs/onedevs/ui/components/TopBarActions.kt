@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.devbangs.onedevs.R
+import com.devbangs.onedevs.data.backend.Balance
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 
 /** The chip's drawn height, set against the wordmark rather than picked. */
@@ -52,7 +53,7 @@ private val GlyphSize = 24.dp
  */
 @Composable
 fun DevCoinChip(
-    balance: Int?,
+    balance: Balance,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -81,16 +82,25 @@ fun DevCoinChip(
         Column(verticalArrangement = Arrangement.Center) {
             // Both line heights are tightened from the type scale's defaults:
             // stacked at their natural leading the pair overflows the chip.
-            // A spinner where the number will be, rather than a zero that is
-            // not yet true or a dash that says nothing is happening.
-            if (balance == null) {
-                Waiting(size = 13.dp, stroke = 2.dp)
-            } else {
-                Text(
-                    text = balance.toString(),
+            when (balance) {
+                // Still asking. A spinner is a promise that something is
+                // happening, and here it is one the app can keep.
+                Balance.Unknown, Balance.Loading -> Waiting(size = 13.dp, stroke = 2.dp)
+
+                is Balance.Known -> Text(
+                    text = balance.coins.toString(),
                     style = MaterialTheme.typography.labelLarge.copy(lineHeight = 16.sp),
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
+                )
+
+                // Asked, and not answered. A dash says that. A spinner here
+                // would claim the app is still trying after it stopped.
+                Balance.Unavailable -> Text(
+                    text = "\u2014",
+                    style = MaterialTheme.typography.labelLarge.copy(lineHeight = 16.sp),
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Text(

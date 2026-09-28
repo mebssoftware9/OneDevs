@@ -33,7 +33,6 @@
     <string name="board_early_heading">Pruébalas y ayúdalas a crecer</string>
     <string name="board_empty_early_title">Ninguna app necesita primeros usuarios todavía</string>
     <string name="board_empty_early_body">Las apps que ya se publicaron y buscan sus primeros usuarios aparecen aquí. Probar una también da DevCoins.</string>
-    <string name="live_meta_installed">%1$s &#183; instalada %2$s</string>
     <string name="board_empty_title">Ninguna app necesita testers todavía</string>
     <string name="board_empty_body">Las apps que buscan testers aparecen aquí. Pruébalas para ganar DevCoins y luego gástalos para poner tu propia app en el tablero.</string>
     <string name="missions_intro">Prueba apps, gana DevCoins y ayuda a crecer a otros desarrolladores.</string>
@@ -266,4 +265,10 @@
     <string name="signin_body">OneDevs organiza las pruebas cerradas de Google Play. Prueba las apps de otros desarrolladores para ganar DevCoins y gasta esos DevCoins en que prueben la tuya.</string>
     <string name="signin_cta">Continuar con Google</string>
     <string name="signin_note">Tu cuenta de Google solo sirve para iniciar sesión. No se publica nada en tu nombre.</string>
+
+    <!-- When there is nothing to work with -->
+    <string name="offline_title">Estás sin conexión</string>
+    <string name="offline_body">OneDevs necesita conexión. Los tableros, las misiones y los DevCoins viven en el servidor para que digan lo mismo a todo el mundo: no hay una copia sin conexión que mostrarte.</string>
+    <string name="slow_title">Conexión lenta</string>
+    <string name="account_retry">Reintentar</string>
 </resources>

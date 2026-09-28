@@ -47,6 +47,7 @@ import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.ui.components.DevCoinChip
 import com.devbangs.onedevs.ui.components.ProfileAction
+import com.devbangs.onedevs.ui.components.SlowNotice
 import com.devbangs.onedevs.ui.details.AppDetailsScreen
 import com.devbangs.onedevs.ui.launch.AddListingScreen
 import com.devbangs.onedevs.ui.navigation.AddListing
@@ -60,6 +61,7 @@ import com.devbangs.onedevs.ui.navigation.Profile
 import com.devbangs.onedevs.ui.navigation.TopLevel
 import com.devbangs.onedevs.ui.navigation.Wallet
 import com.devbangs.onedevs.ui.components.BrandedLoading
+import com.devbangs.onedevs.ui.components.OfflineScreen
 import com.devbangs.onedevs.ui.profile.SignInScreen
 import com.devbangs.onedevs.ui.profile.loadAvatar
 import com.devbangs.onedevs.ui.screens.BadgeScreen
@@ -69,6 +71,7 @@ import com.devbangs.onedevs.ui.screens.LaunchesScreen
 import com.devbangs.onedevs.ui.screens.MissionsScreen
 import com.devbangs.onedevs.ui.screens.ProfileScreen
 import com.devbangs.onedevs.ui.screens.WalletScreen
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3AdaptiveNavigationSuiteApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -84,11 +87,43 @@ fun OneDevsApp() {
     // cold start shows a signed-in developer the door for a frame. The window
     // already carries the palette's surface colour, so the gap is a blank page
     // in the right colour rather than a flash of white.
-    val account = (LocalContext.current.applicationContext as OneDevsApplication).account
+    val oneDevs = LocalContext.current.applicationContext as OneDevsApplication
+    val account = oneDevs.account
+    val online by oneDevs.network.online.collectAsState()
+
+    // Held for a moment before believing it. Connections blink -- a lift, a
+    // handover between towers -- and an app that throws you out of what you
+    // were reading over a two-second gap is worse than the gap.
+    var reallyOffline by remember { mutableStateOf(false) }
+    LaunchedEffect(online) {
+        if (online) {
+            reallyOffline = false
+        } else {
+            delay(1500)
+            reallyOffline = true
+        }
+    }
+
+    // Raised by the backend when a request actually kept someone waiting.
+    // Collecting with the delay inside means a burst of slow calls shows one
+    // notice rather than a stutter of them.
+    var slowVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        oneDevs.backend.slow.collect {
+            slowVisible = true
+            delay(4000)
+            slowVisible = false
+        }
+    }
     val ready by account.ready.collectAsState()
     val session by account.session.collectAsState()
     if (!ready) {
         BrandedLoading()
+        return
+    }
+    // Before the session check, because signing in needs a connection too.
+    if (reallyOffline) {
+        OfflineScreen()
         return
     }
     if (session == null) {
@@ -186,6 +221,9 @@ fun OneDevsApp() {
     ) {
         Scaffold(
             containerColor = surface,
+            // The slot exists for exactly this: something that appears over the
+            // page, says one thing, and leaves without being acknowledged.
+            snackbarHost = { SlowNotice(visible = slowVisible) },
             topBar = {
                 TopAppBar(
                     title = { Wordmark() },

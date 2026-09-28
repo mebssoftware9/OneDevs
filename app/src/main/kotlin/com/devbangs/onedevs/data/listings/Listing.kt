@@ -67,6 +67,13 @@ data class Listing(
      * the whole file each time any listing changed.
      */
     val iconPath: String? = null,
+    /**
+     * Where the icon lives for everyone else. The local path above is this
+     * developer's own copy, chosen before it was uploaded; the URL is what a
+     * tester on the other side of the Board actually loads. A listing that has
+     * been saved to the server has the URL, and rows prefer it.
+     */
+    val iconUrl: String? = null,
     val reward: Int = 0,
     /**
      * Download size as the developer reported it. Null when they did not say.

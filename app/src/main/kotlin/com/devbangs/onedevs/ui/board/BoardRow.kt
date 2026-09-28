@@ -1,5 +1,7 @@
 package com.devbangs.onedevs.ui.board
 
+import android.text.format.Formatter
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,108 +19,117 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.devbangs.onedevs.R
-import com.devbangs.onedevs.ui.theme.Accent
+import com.devbangs.onedevs.data.images.cachedImage
+import com.devbangs.onedevs.data.listings.Listing
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 
-/** An app on the board, as the list needs it. */
-data class BoardApp(
-    val name: String,
-    val category: String,
-    val rating: String,
-    val size: String,
-    val reward: Int,
-    val icon: Int,
-    val accent: Int,
-)
-
 /**
- * One app waiting for testers.
+ * One app waiting for testers, on either board.
  *
- * Play puts rating and size on one metadata line under the name, and that is
- * the right call on a phone: the mockup's separate columns for star, size and
- * reward leave about 100dp for the name, which is not enough for one. Only the
- * reward keeps its own place on the right, because it is the reason to tap.
+ * One component for both, because a listing is a listing: the only thing that
+ * differs between the boards is whether the app is already public, and that is
+ * a property of the listing rather than of the row.
+ *
+ * The icon comes from the listing, not from the device. Asking PackageManager
+ * was wrong twice over -- a tester browsing the board has not installed the app
+ * yet, and Android 11 hides packages the manifest never declared, so it could
+ * only ever have resolved for three apps.
+ *
+ * No rating. There is no rating system, and a star with a number beside it is
+ * the most believable thing on a row.
  */
 @Composable
-fun TestAppRow(
-    app: BoardApp,
+fun BoardRow(
+    listing: Listing,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val accents = listOf(
-        oneDevsColors.testing, oneDevsColors.mission, oneDevsColors.live,
-        oneDevsColors.feedback, oneDevsColors.community,
-    )
-    val accent: Accent = accents[app.accent % accents.size]
+    val context = LocalContext.current
+    var icon by remember(listing.id) { mutableStateOf<ImageBitmap?>(null) }
+    LaunchedEffect(listing.id, listing.iconUrl) {
+        icon = cachedImage(context, "icon-${listing.id}", listing.iconUrl)
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp, horizontal = 4.dp),
     ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(44.dp)
                 .clip(RoundedCornerShape(13.dp))
-                .background(accent.solid),
+                .background(oneDevsColors.brandTint),
         ) {
-            Icon(
-                painter = painterResource(app.icon),
-                contentDescription = null,
-                tint = accent.onSolid,
-                modifier = Modifier.size(22.dp),
-            )
+            val art = icon
+            if (art != null) {
+                Image(
+                    bitmap = art,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(13.dp)),
+                )
+            } else {
+                // Never pretends to be the app's own mark.
+                Text(
+                    text = listing.title.trim().take(1).uppercase(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = scheme.primary,
+                )
+            }
         }
+
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(
-                text = app.name,
+                text = listing.title,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = scheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            Text(
+                text = listOfNotNull(
+                    listing.category.ifBlank { null },
+                    listing.sizeBytes?.let { Formatter.formatShortFileSize(context, it) },
+                ).joinToString(" \u00b7 "),
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                color = scheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(top = 2.dp),
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_star_fill),
-                    contentDescription = null,
-                    tint = scheme.onSurfaceVariant,
-                    modifier = Modifier.size(11.dp),
-                )
-                Text(
-                    text = stringResource(R.string.board_app_meta, app.rating, app.size, app.category),
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                    color = scheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+            )
         }
+
         Spacer(Modifier.width(8.dp))
-        // No chevron. The whole row is the target, and Play's own lists carry
-        // none -- an arrow at the end of every row is a hint nobody needed
-        // twice, taking width from the name that did. The coin says what the
-        // tap is for, which the arrow never did.
+        // What this test pays, from the listing itself. The board only shows
+        // apps whose owner can still afford it, so the number is a promise the
+        // platform can keep.
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -134,7 +145,7 @@ fun TestAppRow(
                 modifier = Modifier.size(13.dp),
             )
             Text(
-                text = pluralStringResource(R.plurals.board_reward, app.reward, app.reward),
+                text = pluralStringResource(R.plurals.board_reward, listing.reward, listing.reward),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                 fontWeight = FontWeight.SemiBold,
                 color = scheme.primary,

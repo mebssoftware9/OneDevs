@@ -7,9 +7,8 @@ import com.devbangs.onedevs.data.backend.Backend
 import com.devbangs.onedevs.data.backend.DataStoreSessionHolder
 import com.devbangs.onedevs.data.backend.SessionHolder
 import com.devbangs.onedevs.data.backend.SessionSerializer
-import com.devbangs.onedevs.data.listings.DataStoreListingRepository
-import com.devbangs.onedevs.data.listings.ListingRepository
-import com.devbangs.onedevs.data.listings.ListingsSerializer
+import com.devbangs.onedevs.data.listings.RemoteListingRepository
+import com.devbangs.onedevs.data.net.Connectivity
 import com.devbangs.onedevs.notifications.DevBot
 import com.devbangs.onedevs.settings.ThemeStore
 import java.io.File
@@ -60,11 +59,15 @@ class OneDevsApplication : Application() {
         )
     }
 
+    /** Whether anything can reach the server at all. */
+    val network: Connectivity by lazy { Connectivity(this) }
+
     /** Who is signed in and what they hold, shared by every screen that asks. */
     val account: AccountState by lazy {
         AccountState(
             sessions = sessions,
             backend = backend,
+            online = network.online,
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
         )
     }
@@ -78,13 +81,11 @@ class OneDevsApplication : Application() {
         )
     }
 
-    val listings: ListingRepository by lazy {
-        DataStoreListingRepository(
-            DataStoreFactory.create(
-                serializer = ListingsSerializer,
-                scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-                produceFile = { File(filesDir, "listings.json") },
-            ),
+    val listings: RemoteListingRepository by lazy {
+        RemoteListingRepository(
+            backend = backend,
+            account = account,
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
         )
     }
 }

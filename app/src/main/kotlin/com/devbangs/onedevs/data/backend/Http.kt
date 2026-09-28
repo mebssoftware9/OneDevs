@@ -20,6 +20,38 @@ internal data class HttpResult(val code: Int, val body: String) {
     val offline: Boolean get() = code == 0
 }
 
+/** The same request, carrying bytes. Used for uploads, where a String is wrong. */
+internal suspend fun httpUpload(
+    url: String,
+    method: String,
+    headers: Map<String, String>,
+    bytes: ByteArray,
+    contentType: String,
+    timeoutMs: Int = 30_000,
+): HttpResult = withContext(Dispatchers.IO) {
+    var connection: HttpURLConnection? = null
+    try {
+        connection = (URL(url).openConnection() as HttpURLConnection).apply {
+            requestMethod = method
+            connectTimeout = timeoutMs
+            readTimeout = timeoutMs
+            doOutput = true
+            setRequestProperty("Content-Type", contentType)
+            headers.forEach { (name, value) -> setRequestProperty(name, value) }
+        }
+        connection.outputStream.use { it.write(bytes) }
+        val code = connection.responseCode
+        val stream = if (code in 200..299) connection.inputStream else connection.errorStream
+        HttpResult(code, stream?.bufferedReader()?.use { it.readText() }.orEmpty())
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (e: IOException) {
+        HttpResult(0, e.message.orEmpty())
+    } finally {
+        connection?.disconnect()
+    }
+}
+
 internal suspend fun httpRequest(
     url: String,
     method: String = "GET",
