@@ -13,6 +13,13 @@ data class Session(
     /** Epoch millis, computed from the server's expires_in and the local clock. */
     val expiresAt: Long,
     val userId: String,
+    /**
+     * From the Google credential, not the token -- so it survives a refresh
+     * only because the refresh carries it forward deliberately. Defaulted so a
+     * session stored before this field existed still reads.
+     */
+    val displayName: String? = null,
+    val photoUrl: String? = null,
 )
 
 /**

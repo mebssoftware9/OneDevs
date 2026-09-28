@@ -17,10 +17,17 @@ import androidx.compose.material3.adaptive.navigationsuite.ExperimentalMaterial3
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -36,6 +43,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.ui.components.DevCoinChip
 import com.devbangs.onedevs.ui.components.ProfileAction
@@ -51,6 +59,7 @@ import com.devbangs.onedevs.ui.navigation.Missions
 import com.devbangs.onedevs.ui.navigation.Profile
 import com.devbangs.onedevs.ui.navigation.TopLevel
 import com.devbangs.onedevs.ui.navigation.Wallet
+import com.devbangs.onedevs.ui.profile.loadAvatar
 import com.devbangs.onedevs.ui.screens.BadgeScreen
 import com.devbangs.onedevs.ui.screens.BoardScreen
 import com.devbangs.onedevs.ui.screens.LabScreen
@@ -156,6 +165,21 @@ fun OneDevsApp() {
                 TopAppBar(
                     title = { Wordmark() },
                     actions = {
+                        // One source for both controls. Loaded here rather than
+                        // inside each, or signing in on Profile would leave the
+                        // bar showing a glyph and a stale count until restart.
+                        val application =
+                            LocalContext.current.applicationContext as OneDevsApplication
+                        val session by application.account.session.collectAsState()
+                        val coins by application.account.balance.collectAsState()
+                        val barContext = LocalContext.current
+                        var avatar by remember { mutableStateOf<ImageBitmap?>(null) }
+                        LaunchedEffect(session) {
+                            avatar = session?.let {
+                                loadAvatar(barContext, it.userId, it.photoUrl)
+                            }
+                        }
+
                         // Both actions are 38dp inside a 48dp touch target, so
                         // each carries 5dp of its own on either side. 6dp here
                         // puts 11dp between them and 11dp from the edge.
@@ -165,7 +189,7 @@ fun OneDevsApp() {
                             modifier = Modifier.padding(end = 6.dp),
                         ) {
                             DevCoinChip(
-                                balance = 0,
+                                balance = coins,
                                 onClick = {
                                     navController.navigate(Wallet) { launchSingleTop = true }
                                 },
@@ -177,6 +201,7 @@ fun OneDevsApp() {
                             // opening Badge because there was nothing else to
                             // open, which made settings look like a reward.
                             ProfileAction(
+                                avatar = avatar,
                                 onClick = {
                                     navController.navigate(Profile) { launchSingleTop = true }
                                 },

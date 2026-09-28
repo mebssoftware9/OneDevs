@@ -20,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,7 +52,7 @@ private val GlyphSize = 24.dp
  */
 @Composable
 fun DevCoinChip(
-    balance: Int,
+    balance: Int?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -78,7 +80,9 @@ fun DevCoinChip(
             // Both line heights are tightened from the type scale's defaults:
             // stacked at their natural leading the pair overflows the chip.
             Text(
-                text = balance.toString(),
+                // A dash until the server has answered. Zero is a claim
+                // about someone's money, and an unread balance is not it.
+                text = balance?.toString() ?: "\u2014",
                 style = MaterialTheme.typography.labelLarge.copy(lineHeight = 16.sp),
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -102,6 +106,7 @@ fun DevCoinChip(
 fun ProfileAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    avatar: ImageBitmap? = null,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -113,14 +118,27 @@ fun ProfileAction(
             .background(oneDevsColors.brandTint)
             .clickable(onClick = onClick),
     ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_user_circle),
-            contentDescription = stringResource(R.string.cd_profile),
-            // onSurface, matching the mockup. On the tint a muted glyph washes
-            // out; the navigation bar's own glyphs sit on the bare page, which
-            // is a different problem with a different answer.
-            tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.size(22.dp),
-        )
+        if (avatar != null) {
+            // Signed in, so this stops being one of the app's glyphs and becomes
+            // the person using it. It fills the whole control rather than
+            // sitting inside it: a photo inset on a tinted disc reads as a
+            // sticker, not as you.
+            Image(
+                bitmap = avatar,
+                contentDescription = stringResource(R.string.cd_profile),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(ChipHeight).clip(CircleShape),
+            )
+        } else {
+            Icon(
+                painter = painterResource(R.drawable.ic_user_circle),
+                contentDescription = stringResource(R.string.cd_profile),
+                // onSurface, matching the mockup. On the tint a muted glyph
+                // washes out; the navigation bar's own glyphs sit on the bare
+                // page, which is a different problem with a different answer.
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(22.dp),
+            )
+        }
     }
 }

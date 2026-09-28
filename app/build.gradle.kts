@@ -34,6 +34,11 @@ android {
 
         buildConfigField("String", "SUPABASE_URL", "\"" + secret("SUPABASE_URL") + "\"")
         buildConfigField("String", "SUPABASE_KEY", "\"" + secret("SUPABASE_KEY") + "\"")
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"" + secret("GOOGLE_WEB_CLIENT_ID") + "\"",
+        )
     }
 
     bundle {
@@ -123,6 +128,13 @@ kotlin {
 }
 
 dependencies {
+    // Sign in with Google without a browser. Credential Manager shows the
+    // account sheet inside the app and returns an ID token, so there is no
+    // OAuth redirect and therefore no project URL for anyone to read.
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.google.identity.googleid)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.activity.compose)

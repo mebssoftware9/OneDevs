@@ -6,6 +6,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
+@kotlinx.serialization.Serializable
+internal data class BalanceRow(val balance: Int)
+
 internal val BackendJson = Json {
     ignoreUnknownKeys = true
     encodeDefaults = true
@@ -34,7 +37,12 @@ class Backend(
 
     val configured: Boolean get() = url.isNotBlank() && key.isNotBlank()
 
-    suspend fun signInWithGoogle(idToken: String, nonce: String? = null): Session? {
+    suspend fun signInWithGoogle(
+        idToken: String,
+        nonce: String? = null,
+        displayName: String? = null,
+        photoUrl: String? = null,
+    ): Session? {
         val payload = buildString {
             append("""{"provider":"google","id_token":""")
             append(JsonPrimitive(idToken))
@@ -53,6 +61,7 @@ class Backend(
         if (!result.ok) return null
         val session = BackendJson.decodeFromString<TokenResponse>(result.body)
             .toSession(System.currentTimeMillis())
+            ?.copy(displayName = displayName, photoUrl = photoUrl)
         if (session != null) sessions.save(session)
         return session
     }
@@ -86,6 +95,23 @@ class Backend(
         body = body,
         extra = if (prefer != null) mapOf("Prefer" to prefer) else emptyMap(),
     )
+
+    /**
+     * The signed-in developer's DevCoins, as the server counts them.
+     *
+     * null means the question could not be answered -- offline, or refused --
+     * which the card shows as a dash. No row means zero, which is a real
+     * answer and shows as 0.
+     */
+    suspend fun balance(): Int? {
+        val result = rest("coin_balance?select=balance")
+        if (!result.ok) return null
+        return try {
+            BackendJson.decodeFromString<List<BalanceRow>>(result.body).firstOrNull()?.balance ?: 0
+        } catch (e: kotlinx.serialization.SerializationException) {
+            null
+        }
+    }
 
     /** A database function. Every coin movement arrives through here. */
     internal suspend fun rpc(function: String, args: JsonObject): HttpResult = authorised(
@@ -165,6 +191,9 @@ class Backend(
             // A refresh response carries no user object, so the id we already
             // know is the only source for it.
             .toSession(System.currentTimeMillis(), fallbackUserId = stale.userId)
+            // Same trap as the user id: a refresh response knows neither, so
+            // anything not in the token has to be carried across by hand.
+            ?.copy(displayName = stale.displayName, photoUrl = stale.photoUrl)
         if (session != null) sessions.save(session)
         session
     }

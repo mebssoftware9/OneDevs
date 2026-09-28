@@ -77,6 +77,7 @@ import com.devbangs.onedevs.ui.lab.LabLayerCard
 import com.devbangs.onedevs.ui.launch.LaunchRow
 import com.devbangs.onedevs.ui.missions.MissionCard
 import com.devbangs.onedevs.ui.missions.SampleMissions
+import com.devbangs.onedevs.ui.profile.AccountCard
 import com.devbangs.onedevs.ui.settings.AboutGroup
 import com.devbangs.onedevs.ui.settings.AppSettingsGroup
 import com.devbangs.onedevs.ui.settings.DeviceGroup
@@ -445,7 +446,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
             .verticalScroll(rememberScrollState())
             .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 28.dp),
     ) {
-        ProfileHeader()
+        AccountCard()
         AppSettingsGroup()
         DeviceGroup()
         AboutGroup()

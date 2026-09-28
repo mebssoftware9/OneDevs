@@ -248,4 +248,13 @@
     <string name="comp_providers">Providers</string>
     <string name="apk_dex">DEX files</string>
     <string name="apk_methods">Methods</string>
+
+    <!-- The account card on Profile -->
+    <string name="account_signed_out">Not signed in</string>
+    <string name="account_sign_in_to_earn">Sign in to start earning</string>
+    <string name="account_no_apps">You have no apps</string>
+    <string name="account_devcoins">DevCoins</string>
+    <string name="account_sign_in">Sign in</string>
+    <string name="account_no_google">No Google account on this device</string>
+    <string name="account_sign_out">Sign out</string>
 </resources>

@@ -2,6 +2,11 @@ package com.devbangs.onedevs
 
 import android.app.Application
 import androidx.datastore.core.DataStoreFactory
+import com.devbangs.onedevs.data.backend.AccountState
+import com.devbangs.onedevs.data.backend.Backend
+import com.devbangs.onedevs.data.backend.DataStoreSessionHolder
+import com.devbangs.onedevs.data.backend.SessionHolder
+import com.devbangs.onedevs.data.backend.SessionSerializer
 import com.devbangs.onedevs.data.listings.DataStoreListingRepository
 import com.devbangs.onedevs.data.listings.ListingRepository
 import com.devbangs.onedevs.data.listings.ListingsSerializer
@@ -40,6 +45,39 @@ class OneDevsApplication : Application() {
      * lives. DataStore serialises its own writes, so one instance per file is
      * not a convenience -- a second would corrupt the first.
      */
+    /**
+     * The signed-in session, and the only thing that survives a cold start
+     * about who this is. Its own file: a corrupt listings file should not sign
+     * anyone out, and a sign-out should not touch their apps.
+     */
+    val sessions: SessionHolder by lazy {
+        DataStoreSessionHolder(
+            DataStoreFactory.create(
+                serializer = SessionSerializer,
+                scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+                produceFile = { File(filesDir, "session.json") },
+            ),
+        )
+    }
+
+    /** Who is signed in and what they hold, shared by every screen that asks. */
+    val account: AccountState by lazy {
+        AccountState(
+            sessions = sessions,
+            backend = backend,
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+        )
+    }
+
+    /** Everything that leaves this device for OneDevs' own backend. */
+    val backend: Backend by lazy {
+        Backend(
+            url = BuildConfig.SUPABASE_URL,
+            key = BuildConfig.SUPABASE_KEY,
+            sessions = sessions,
+        )
+    }
+
     val listings: ListingRepository by lazy {
         DataStoreListingRepository(
             DataStoreFactory.create(

@@ -249,4 +249,13 @@
     <string name="comp_providers">Providers</string>
     <string name="apk_dex">Arquivos DEX</string>
     <string name="apk_methods">Métodos</string>
+
+    <!-- The account card on Profile -->
+    <string name="account_signed_out">Sem sessão iniciada</string>
+    <string name="account_sign_in_to_earn">Entre para começar a ganhar</string>
+    <string name="account_no_apps">Você não tem apps</string>
+    <string name="account_devcoins">DevCoins</string>
+    <string name="account_sign_in">Entrar</string>
+    <string name="account_no_google">Nenhuma conta Google neste aparelho</string>
+    <string name="account_sign_out">Sair</string>
 </resources>
