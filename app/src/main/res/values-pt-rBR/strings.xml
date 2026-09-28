@@ -269,4 +269,5 @@
     <string name="offline_body">O OneDevs precisa de conexão. Painéis, missões e DevCoins ficam no servidor para dizerem o mesmo a todos — não há uma cópia offline para mostrar.</string>
     <string name="slow_title">Conexão lenta</string>
     <string name="account_retry">Tentar de novo</string>
+    <string name="details_test_now">Testar agora</string>
 </resources>

@@ -80,18 +80,24 @@ class RemoteListingRepository(
     }
 
     /**
-     * Everyone else's apps on a board. Excluding your own is not a courtesy:
-     * testing your own app proves nothing, and join_mission refuses it anyway.
+     * Every app on a board, yours included.
+     *
+     * Hiding your own was wrong: a developer needs to see their listing sitting
+     * among the others, and watch it move down as newer apps arrive and
+     * disappear when they can no longer fund a test. A board you cannot find
+     * yourself on tells you nothing about how you are doing on it.
+     *
+     * Testing your own app is still refused, but that belongs to the button,
+     * not to the list.
+     *
+     * board_listings rather than listings: the view drops any app whose owner
+     * can no longer pay, because a row that cannot pay wastes a tester's
+     * thirty-two seconds and then refuses them.
      */
     suspend fun board(channel: Channel, limit: Int = 50): List<Listing> {
-        val owner = account.session.value?.userId ?: return emptyList()
         val name = if (channel == Channel.Live) "live" else "testing"
-        // board_listings, not listings: the view drops any app whose owner can
-        // no longer pay for a test. A row that cannot pay would waste a
-        // tester's thirty-two seconds and then refuse them.
         val result = backend.rest(
-            "board_listings?channel=eq.$name&owner=neq.$owner" +
-                "&select=*&order=created_at.desc&limit=$limit",
+            "board_listings?channel=eq.$name&select=*&order=created_at.desc&limit=$limit",
         )
         return if (result.ok) decode(result.body) else emptyList()
     }

@@ -50,6 +50,7 @@ private fun Long.toIsoOrNull(): String? =
 
 internal fun ListingRow.toListing(): Listing = Listing(
     id = id,
+    owner = owner,
     packageName = packageName,
     title = title,
     category = category,

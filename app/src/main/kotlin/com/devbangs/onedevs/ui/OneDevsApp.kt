@@ -285,7 +285,9 @@ fun OneDevsApp() {
                 startDestination = Board,
                 modifier = Modifier.padding(innerPadding),
             ) {
-                composable<Board> { BoardScreen() }
+                composable<Board> {
+                    BoardScreen(onOpen = { id -> navController.navigate(AppDetails(id)) })
+                }
                 composable<Missions> { MissionsScreen() }
                 composable<Launches> {
                     LaunchesScreen(

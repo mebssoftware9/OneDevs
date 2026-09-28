@@ -269,4 +269,5 @@
     <string name="offline_body">OneDevs a besoin d\'une connexion. Les tableaux, les missions et les DevCoins vivent sur le serveur afin de dire la même chose à tout le monde : il n\'y a pas de copie hors ligne à vous montrer.</string>
     <string name="slow_title">Connexion lente</string>
     <string name="account_retry">Réessayer</string>
+    <string name="details_test_now">Tester maintenant</string>
 </resources>

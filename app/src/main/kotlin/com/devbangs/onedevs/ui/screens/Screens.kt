@@ -62,7 +62,6 @@ import com.devbangs.onedevs.ui.badges.BadgeCatalogue
 import com.devbangs.onedevs.ui.badges.BadgeGroupCard
 import com.devbangs.onedevs.ui.board.BoardRow
 import com.devbangs.onedevs.ui.board.LiveCard
-import com.devbangs.onedevs.ui.board.openPlayListing
 import com.devbangs.onedevs.ui.components.ActionCard
 import com.devbangs.onedevs.ui.components.BrandedLoading
 import com.devbangs.onedevs.ui.components.DevBotMark
@@ -134,7 +133,10 @@ private enum class BoardCategory(
  * so BuildConfig.DEBUG decides rather than a constant anyone has to remember.
  */
 @Composable
-fun BoardScreen(modifier: Modifier = Modifier) {
+fun BoardScreen(
+    onOpen: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var category by rememberSaveable { mutableStateOf(BoardCategory.Testing) }
     val context = LocalContext.current
     val app = context.applicationContext as OneDevsApplication
@@ -193,10 +195,10 @@ fun BoardScreen(modifier: Modifier = Modifier) {
                     modifier = Modifier.weight(1f),
                 ) {
                     items(shown, key = { it.id }) { listing ->
-                        BoardRow(
-                            listing = listing,
-                            onClick = { openPlayListing(context, listing.packageName) },
-                        )
+                        // Opens the listing, not the store. A tester decides
+                        // from what the developer wrote, not from a Play page
+                        // they were dropped on without being asked.
+                        BoardRow(listing = listing, onClick = { onOpen(listing.id) })
                     }
                 }
             }

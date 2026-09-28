@@ -271,4 +271,5 @@
     <string name="offline_body">OneDevs necesita conexión. Los tableros, las misiones y los DevCoins viven en el servidor para que digan lo mismo a todo el mundo: no hay una copia sin conexión que mostrarte.</string>
     <string name="slow_title">Conexión lenta</string>
     <string name="account_retry">Reintentar</string>
+    <string name="details_test_now">Probar ahora</string>
 </resources>

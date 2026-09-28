@@ -53,6 +53,13 @@ data class CheckRecord(
 @Serializable
 data class Listing(
     val id: String,
+    /**
+     * Who put it up. Null for a listing this device wrote before it was sent,
+     * which is the only moment a listing exists without an owner. The board
+     * needs it to tell your own row from everyone else's -- the row looks the
+     * same either way, but what you can do with it does not.
+     */
+    val owner: String? = null,
     val packageName: String,
     val title: String,
     val category: String,

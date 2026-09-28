@@ -266,4 +266,5 @@
     <string name="offline_body">OneDevs needs a connection. Boards, missions and DevCoins live on the server so they say the same thing to everyone — there is no offline copy to show you.</string>
     <string name="slow_title">Slow connection</string>
     <string name="account_retry">Try again</string>
+    <string name="details_test_now">Test now</string>
 </resources>

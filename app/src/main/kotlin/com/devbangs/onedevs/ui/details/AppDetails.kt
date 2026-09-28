@@ -90,6 +90,12 @@ fun AppDetailsScreen(
 
     val current = all.firstOrNull { it.id == listingId } ?: return
 
+    // A listing with no owner has not left this device yet, so it is yours.
+    // Everything that edits, deletes or re-checks belongs to the owner; a
+    // tester gets the app, the instructions, and one thing to press.
+    val session by app.account.session.collectAsState()
+    val mine = current.owner == null || current.owner == session?.userId
+
     // An unreachable Play must never overwrite a good answer. Forgetting that a
     // listing checked out, because a request timed out, is worse than showing an
     // answer a few days old -- so only a real verdict writes a new record.
@@ -135,11 +141,13 @@ fun AppDetailsScreen(
                 Spacer(Modifier.height(6.dp))
                 ChannelChip(current.channel)
             }
-            OverflowMenu(
-                onShare = { share(context, current) },
-                onEdit = { onEdit(current) },
-                onDelete = { confirmingDelete = true },
-            )
+            if (mine) {
+                OverflowMenu(
+                    onShare = { share(context, current) },
+                    onEdit = { onEdit(current) },
+                    onDelete = { confirmingDelete = true },
+                )
+            }
         }
 
         Spacer(Modifier.height(14.dp))
@@ -190,7 +198,7 @@ fun AppDetailsScreen(
             )
         }
 
-        if (current.packageName.isNotBlank()) {
+        if (mine && current.packageName.isNotBlank()) {
             Spacer(Modifier.height(12.dp))
             SectionCard(title = stringResource(R.string.details_check_title)) {
                 val record = current.check
@@ -266,6 +274,9 @@ fun AppDetailsScreen(
                 }
             }
 
+        }
+
+        if (current.packageName.isNotBlank()) {
             Spacer(Modifier.height(18.dp))
             Button(
                 onClick = { openPlayListing(context, current.packageName) },
@@ -276,7 +287,9 @@ fun AppDetailsScreen(
                 modifier = Modifier.fillMaxWidth().height(50.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.details_open_play),
+                    text = stringResource(
+                        if (mine) R.string.details_open_play else R.string.details_test_now,
+                    ),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
