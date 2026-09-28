@@ -12,6 +12,14 @@ import kotlinx.serialization.json.JsonPrimitive
 @kotlinx.serialization.Serializable
 internal data class BalanceRow(val balance: Int)
 
+/** What the server made of a claim. */
+@kotlinx.serialization.Serializable
+data class ClaimResult(
+    val claimed: Boolean = false,
+    val coins: Int = 0,
+    val reason: String? = null,
+)
+
 /** One hour's observation, as the pulse table recorded it. */
 @kotlinx.serialization.Serializable
 data class PulsePoint(val at: String = "", val testers: Int = 0)
@@ -172,6 +180,32 @@ class Backend(
         if (!result.ok) return null
         return try {
             BackendJson.decodeFromString<PlatformStats>(result.body)
+        } catch (e: kotlinx.serialization.SerializationException) {
+            null
+        }
+    }
+
+    /**
+     * Claims the reward for a test.
+     *
+     * The device says how many seconds it observed; the server decides
+     * everything else -- whether the listing can still pay, whether this
+     * tester already claimed, whether it is their own app. A refusal comes
+     * back as claimed=false with a reason rather than as an error, because
+     * "you already claimed this" is an answer, not a fault.
+     */
+    suspend fun claimTest(listingId: String, seconds: Int, device: String): ClaimResult? {
+        val result = rpc(
+            "claim_test",
+            kotlinx.serialization.json.buildJsonObject {
+                put("p_listing", kotlinx.serialization.json.JsonPrimitive(listingId))
+                put("p_seconds", kotlinx.serialization.json.JsonPrimitive(seconds))
+                put("p_device", kotlinx.serialization.json.JsonPrimitive(device))
+            },
+        )
+        if (!result.ok) return null
+        return try {
+            BackendJson.decodeFromString<ClaimResult>(result.body)
         } catch (e: kotlinx.serialization.SerializationException) {
             null
         }

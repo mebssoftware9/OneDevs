@@ -278,21 +278,23 @@ fun AppDetailsScreen(
 
         if (current.packageName.isNotBlank()) {
             Spacer(Modifier.height(18.dp))
-            Button(
-                onClick = { openPlayListing(context, current.packageName) },
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                ),
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-            ) {
-                Text(
-                    text = stringResource(
-                        if (mine) R.string.details_open_play else R.string.details_test_now,
+            if (mine) {
+                Button(
+                    onClick = { openPlayListing(context, current.packageName) },
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
                     ),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.details_open_play),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            } else {
+                TestPanel(listing = current)
             }
         }
     }

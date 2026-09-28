@@ -270,4 +270,23 @@
     <string name="slow_title">Conexão lenta</string>
     <string name="account_retry">Tentar de novo</string>
     <string name="details_test_now">Testar agora</string>
+
+    <!-- Testing someone else's app -->
+    <string name="test_access_body">O OneDevs precisa ver quando um app é aberto para distinguir um teste real de um toque. Nada mais é lido.</string>
+    <string name="test_allow_access">Permitir acesso de uso</string>
+    <string name="test_waiting">Abra o app e use por 32 segundos, depois volte.</string>
+    <string name="test_open_again">Abrir de novo</string>
+    <string name="test_claim">Resgatar %1$d DevCoins</string>
+    <string name="test_done">Resgatado</string>
+    <string name="test_claimed_body">%1$d DevCoins são seus. Obrigado pelo teste.</string>
+    <string name="test_already">Você já testou este app.</string>
+    <string name="test_unfunded">Esta listagem não pode pagar outro teste agora.</string>
+    <string name="test_full">Esta listagem já tem todos os testes que pagou.</string>
+    <string name="test_refused">Não foi possível resgatar.</string>
+    <string name="test_unreachable">Não foi possível acessar o OneDevs. Tente em instantes.</string>
+    <plurals name="test_too_short">
+        <item quantity="one">Ainda não — cerca de %1$d segundo a mais no app.</item>
+        <item quantity="other">Ainda não — cerca de %1$d segundos a mais no app.</item>
+        <item quantity="many">Ainda não — cerca de %1$d segundos a mais no app.</item>
+    </plurals>
 </resources>

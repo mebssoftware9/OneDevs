@@ -1,5 +1,7 @@
 package com.devbangs.onedevs.ui.components
 
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -87,12 +90,21 @@ fun DevCoinChip(
                 // happening, and here it is one the app can keep.
                 Balance.Unknown, Balance.Loading -> Waiting(size = 13.dp, stroke = 2.dp)
 
-                is Balance.Known -> Text(
-                    text = balance.coins.toString(),
-                    style = MaterialTheme.typography.labelLarge.copy(lineHeight = 16.sp),
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                is Balance.Known -> {
+                    // Counts to the new number instead of replacing the old
+                    // one. Earning twenty-five should look like earning it.
+                    val shown by animateIntAsState(
+                        targetValue = balance.coins,
+                        animationSpec = tween(durationMillis = 900),
+                        label = "coins",
+                    )
+                    Text(
+                        text = shown.toString(),
+                        style = MaterialTheme.typography.labelLarge.copy(lineHeight = 16.sp),
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
 
                 // Asked, and not answered. A dash says that. A spinner here
                 // would claim the app is still trying after it stopped.

@@ -267,4 +267,22 @@
     <string name="slow_title">Slow connection</string>
     <string name="account_retry">Try again</string>
     <string name="details_test_now">Test now</string>
+
+    <!-- Testing someone else's app -->
+    <string name="test_access_body">OneDevs needs to see when an app is open so it can tell a real test from a tap. Nothing else is read.</string>
+    <string name="test_allow_access">Allow usage access</string>
+    <string name="test_waiting">Open the app and use it for 32 seconds, then come back.</string>
+    <string name="test_open_again">Open it again</string>
+    <string name="test_claim">Claim %1$d DevCoins</string>
+    <string name="test_done">Claimed</string>
+    <string name="test_claimed_body">%1$d DevCoins are yours. Thanks for the test.</string>
+    <string name="test_already">You have already tested this app.</string>
+    <string name="test_unfunded">This listing cannot pay for another test right now.</string>
+    <string name="test_full">This listing has all the tests it paid for.</string>
+    <string name="test_refused">That could not be claimed.</string>
+    <string name="test_unreachable">Could not reach OneDevs. Try again in a moment.</string>
+    <plurals name="test_too_short">
+        <item quantity="one">Not there yet — about %1$d more second in the app.</item>
+        <item quantity="other">Not there yet — about %1$d more seconds in the app.</item>
+    </plurals>
 </resources>
