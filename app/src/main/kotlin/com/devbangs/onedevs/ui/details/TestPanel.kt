@@ -1,21 +1,31 @@
 package com.devbangs.onedevs.ui.details
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,172 +49,238 @@ import com.devbangs.onedevs.ui.components.DevBotMark
 import com.devbangs.onedevs.ui.components.Waiting
 import kotlinx.coroutines.launch
 
-/** Where a test has got to. */
-private sealed interface TestState {
-    data object Idle : TestState
-
-    /** Usage access has not been granted, so nothing can be observed yet. */
-    data object NeedsAccess : TestState
-
-    /** The app was opened at this moment; time is accumulating. */
-    data class Open(val startedAt: Long) : TestState
-
-    /** Came back, but not enough of it happened yet. Keeps the clock running. */
-    data class Short(val startedAt: Long, val seconds: Int) : TestState
-
-    data class Ready(val seconds: Int) : TestState
-    data object Claiming : TestState
-    data class Claimed(val coins: Int) : TestState
-    data class Refused(val reason: String) : TestState
-}
-
 /** Thirty-two seconds, matching the rule the database enforces. */
 private const val RequiredSeconds = 32
+
+private enum class Phase { Idle, NeedsAccess, Testing, Claiming, Claimed, Refused }
+
+/**
+ * How much of the thirty-two seconds has been done.
+ *
+ * It does not tick. Nothing accumulates while this screen is the thing being
+ * looked at -- the time only accrues inside the app being tested -- so a
+ * counting-down number here would be an animation impersonating a measurement.
+ * It moves when there is new evidence, which is on the way back in.
+ */
+@Composable
+private fun SecondsRing(seconds: Int, modifier: Modifier = Modifier) {
+    val fraction by animateFloatAsState(
+        targetValue = (seconds.toFloat() / RequiredSeconds).coerceIn(0f, 1f),
+        animationSpec = tween(durationMillis = 700),
+        label = "testProgress",
+    )
+    Box(contentAlignment = Alignment.Center, modifier = modifier.size(92.dp)) {
+        CircularProgressIndicator(
+            progress = { 1f },
+            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+            strokeWidth = 7.dp,
+            gapSize = 0.dp,
+            modifier = Modifier.size(92.dp),
+        )
+        CircularProgressIndicator(
+            progress = { fraction },
+            color = MaterialTheme.colorScheme.primary,
+            strokeWidth = 7.dp,
+            gapSize = 0.dp,
+            modifier = Modifier.size(92.dp),
+        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = seconds.coerceAtMost(RequiredSeconds).toString(),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = stringResource(R.string.test_of_seconds, RequiredSeconds),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
 
 /**
  * A tester's side of a listing.
  *
  * The app is opened through Play rather than launched directly: launching an
- * arbitrary package needs the visibility QUERY_ALL_PACKAGES would buy, which a
- * testing platform cannot justify to Play. It makes no difference to the
- * measurement -- foreground time is foreground time however the app was
- * started.
+ * arbitrary package needs the visibility QUERY_ALL_PACKAGES would buy, and
+ * Play reserves that for device search, antivirus, file managers and browsers.
+ * It costs nothing here -- foreground time is foreground time however the app
+ * was started, and an app that was in front of someone is installed by
+ * definition, which is more than "installed" would have told us.
  *
  * Time is never reset by coming back early. Someone who opens the app, gets
- * interrupted, and opens it again should have both visits counted, because
- * both were real.
+ * interrupted, and opens it again has both visits counted, because both were
+ * real.
  */
 @Composable
 fun TestPanel(listing: Listing, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val app = context.applicationContext as OneDevsApplication
     val scope = rememberCoroutineScope()
-    var state by remember(listing.id) { mutableStateOf<TestState>(TestState.Idle) }
 
-    // Read at composition, not inside the click. Resources fetched through the
-    // context in a callback are not configuration-aware, so changing language
-    // mid-session would leave the old wording behind.
+    // Primitives rather than a sealed state, so a rotation mid-test does not
+    // throw away the clock someone has already spent half a minute on.
+    var phase by rememberSaveable(listing.id) { mutableStateOf(Phase.Idle) }
+    var startedAt by rememberSaveable(listing.id) { mutableLongStateOf(0L) }
+    var seconds by rememberSaveable(listing.id) { mutableIntStateOf(0) }
+    var coins by rememberSaveable(listing.id) { mutableIntStateOf(0) }
+    var refusal by rememberSaveable(listing.id) { mutableStateOf<String?>(null) }
+
+    // Whether they have actually been away. Without this the measurement ran
+    // the instant the Play sheet closed -- before anyone had gone anywhere --
+    // read zero seconds, and reported that all thirty-two were still to do.
+    var wentAway by remember(listing.id) { mutableStateOf(false) }
+
     val saidAlready = stringResource(R.string.test_already)
     val saidUnfunded = stringResource(R.string.test_unfunded)
     val saidFull = stringResource(R.string.test_full)
     val saidRefused = stringResource(R.string.test_refused)
     val saidUnreachable = stringResource(R.string.test_unreachable)
 
-    // Measured on the way back in, which is the only moment the answer can have
-    // changed. Nothing polls while the tester is away.
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        if (phase == Phase.Testing) wentAway = true
+    }
+
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        val current = state
-        val startedAt = when (current) {
-            is TestState.Open -> current.startedAt
-            is TestState.Short -> current.startedAt
-            else -> null
+        // They were just in Settings. Asking again is the whole reason the
+        // button used to be stuck saying "Allow usage access" until a restart.
+        if (phase == Phase.NeedsAccess && hasUsageAccess(context)) {
+            phase = Phase.Idle
         }
-        if (startedAt != null) {
+        if (phase == Phase.Testing && wentAway && startedAt > 0L) {
+            wentAway = false
             scope.launch {
-                val seconds = foregroundSeconds(context, listing.packageName, startedAt)
-                state = if (seconds >= RequiredSeconds) {
-                    TestState.Ready(seconds)
-                } else {
-                    TestState.Short(startedAt, seconds)
-                }
+                seconds = foregroundSeconds(context, listing.packageName, startedAt)
             }
         }
     }
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        val note: String? = when (val s = state) {
-            is TestState.NeedsAccess -> stringResource(R.string.test_access_body)
-            is TestState.Open -> stringResource(R.string.test_waiting)
-            is TestState.Short -> pluralStringResource(
+    val done = phase == Phase.Testing && seconds >= RequiredSeconds
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        if (phase == Phase.Testing) {
+            SecondsRing(seconds)
+            Spacer(Modifier.height(12.dp))
+        }
+
+        val note: String? = when {
+            phase == Phase.NeedsAccess -> stringResource(R.string.test_access_body)
+            phase == Phase.Testing && seconds == 0 -> stringResource(R.string.test_waiting)
+            phase == Phase.Testing && !done -> pluralStringResource(
                 R.plurals.test_too_short,
-                RequiredSeconds - s.seconds,
-                RequiredSeconds - s.seconds,
+                RequiredSeconds - seconds,
+                RequiredSeconds - seconds,
             )
-            is TestState.Claimed -> stringResource(R.string.test_claimed_body, s.coins)
-            is TestState.Refused -> s.reason
+            done -> stringResource(R.string.test_ready)
+            phase == Phase.Claimed -> stringResource(R.string.test_claimed_body, coins)
+            phase == Phase.Refused -> refusal
             else -> null
         }
 
         if (note != null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                DevBotMark(size = 28.dp)
-                Spacer(Modifier.height(0.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                DevBotMark(size = 26.dp)
+                Spacer(Modifier.width(10.dp))
                 Text(
                     text = note,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.weight(1f),
                 )
             }
             Spacer(Modifier.height(12.dp))
         }
 
-        val label = when (state) {
-            TestState.Idle -> stringResource(R.string.details_test_now)
-            TestState.NeedsAccess -> stringResource(R.string.test_allow_access)
-            is TestState.Open, is TestState.Short -> stringResource(R.string.test_open_again)
-            is TestState.Ready -> stringResource(R.string.test_claim, listing.reward)
-            TestState.Claiming -> ""
-            is TestState.Claimed -> stringResource(R.string.test_done)
-            is TestState.Refused -> stringResource(R.string.details_test_now)
+        val label = when {
+            phase == Phase.NeedsAccess -> stringResource(R.string.test_allow_access)
+            done -> stringResource(R.string.test_claim, listing.reward)
+            phase == Phase.Testing -> stringResource(R.string.test_open_again)
+            phase == Phase.Claimed -> stringResource(R.string.test_done)
+            else -> stringResource(R.string.details_test_now)
+        }
+
+        // Offered, never required. Play gives no way to check whether a review
+        // was left, so making it a condition of the reward would mean inventing
+        // a check that does not exist -- and a developer's real prize from a
+        // closed test is the written feedback, so it is worth asking for.
+        if (done || phase == Phase.Claimed) {
+            TextButton(onClick = { openPlayListing(context, listing.packageName) }) {
+                Text(
+                    text = stringResource(R.string.test_leave_review),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Spacer(Modifier.height(4.dp))
         }
 
         Button(
-            enabled = state !is TestState.Claiming && state !is TestState.Claimed,
+            enabled = phase != Phase.Claiming && phase != Phase.Claimed,
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
             ),
             modifier = Modifier.fillMaxWidth().height(52.dp),
             onClick = {
-                when (val s = state) {
-                    TestState.NeedsAccess -> context.startActivity(usageAccessSettings())
+                when {
+                    phase == Phase.NeedsAccess ->
+                        context.startActivity(usageAccessSettings())
 
-                    is TestState.Ready -> scope.launch {
-                        state = TestState.Claiming
+                    done -> scope.launch {
+                        phase = Phase.Claiming
                         val result = app.backend.claimTest(
                             listingId = listing.id,
-                            seconds = s.seconds,
+                            seconds = seconds,
                             device = deviceId(context),
                         )
-                        state = when {
-                            result == null -> TestState.Refused(saidUnreachable)
-                            result.claimed -> {
-                                // The top bar is watching the same state, so the
-                                // count moves without this screen telling it to.
-                                app.account.refreshBalance()
-                                TestState.Claimed(result.coins)
+                        when {
+                            result == null -> {
+                                refusal = saidUnreachable
+                                phase = Phase.Refused
                             }
-                            else -> TestState.Refused(
-                                when (result.reason) {
+                            result.claimed -> {
+                                coins = result.coins
+                                phase = Phase.Claimed
+                                // The top bar watches the same state, so the
+                                // count moves without this screen saying so.
+                                app.account.refreshBalance()
+                            }
+                            else -> {
+                                refusal = when (result.reason) {
                                     "already" -> saidAlready
                                     "unfunded" -> saidUnfunded
                                     "full" -> saidFull
                                     else -> saidRefused
-                                },
-                            )
+                                }
+                                phase = Phase.Refused
+                            }
                         }
                     }
 
                     else -> {
                         // Asked at the moment it is needed rather than at
                         // launch: this is the first point where the permission
-                        // has a reason, and a reason is what makes it grantable.
+                        // has a reason, and a reason is what gets it granted.
                         if (!hasUsageAccess(context)) {
-                            state = TestState.NeedsAccess
+                            phase = Phase.NeedsAccess
                         } else {
-                            val startedAt = when (s) {
-                                is TestState.Short -> s.startedAt
-                                else -> System.currentTimeMillis()
-                            }
-                            state = TestState.Open(startedAt)
+                            if (startedAt == 0L) startedAt = System.currentTimeMillis()
+                            phase = Phase.Testing
                             openPlayListing(context, listing.packageName)
                         }
                     }
                 }
             },
         ) {
-            if (state is TestState.Claiming) {
+            if (phase == Phase.Claiming) {
                 Waiting(size = 22.dp)
             } else {
                 Text(

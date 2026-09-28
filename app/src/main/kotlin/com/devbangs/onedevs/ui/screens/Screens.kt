@@ -49,6 +49,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devbangs.onedevs.BuildConfig
 import com.devbangs.onedevs.OneDevsApplication
@@ -147,17 +149,26 @@ fun BoardScreen(
     var live by remember { mutableStateOf<List<Listing>?>(null) }
     var stats by remember { mutableStateOf<PlatformStats?>(null) }
 
-    LaunchedEffect(Unit) {
+    // Re-read on the way back in. A board that loads once is a board that
+    // still does not show the app you listed a minute ago.
+    var tick by remember { mutableIntStateOf(0) }
+    var opened by remember { mutableStateOf(false) }
+    LaunchedEffect(tick) {
         stats = app.backend.platformStats()
         testing = app.listings.board(Channel.Testing)
         live = app.listings.board(Channel.Live)
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        // The first resume is the one that just loaded; skipping it avoids
+        // fetching everything twice on open.
+        if (opened) tick++ else opened = true
     }
 
     val shown = if (category == BoardCategory.Testing) testing else live
 
     Column(modifier = modifier.fillMaxSize()) {
         LiveCard(
-            active = stats?.activeTesters,
+            active = stats?.liveNow,
             trend = stats?.pulse.orEmpty().map { it.testers.toFloat() },
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp),
         )

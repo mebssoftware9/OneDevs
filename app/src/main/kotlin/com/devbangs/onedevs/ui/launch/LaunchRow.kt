@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.data.listings.Listing
+import com.devbangs.onedevs.ui.components.rememberListingIcon
 
 /**
  * One app this developer filed.
@@ -52,9 +53,7 @@ fun LaunchRow(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val icon = remember(listing.iconPath) {
-        listing.iconPath?.let { path -> BitmapFactory.decodeFile(path)?.asImageBitmap() }
-    }
+    val icon = rememberListingIcon(listing)
     val shape = RoundedCornerShape(12.dp)
 
     Row(

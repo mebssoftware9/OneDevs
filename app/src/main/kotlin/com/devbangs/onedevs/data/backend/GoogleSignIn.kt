@@ -79,6 +79,9 @@ suspend fun signInWithGoogle(
     } catch (cancelled: GetCredentialCancellationException) {
         return SignInOutcome.Cancelled
     } catch (none: NoCredentialException) {
+        // Not always what it sounds like. This is also raised when Play
+        // services cannot offer a credential at that moment, so the message it
+        // maps to says what happened rather than diagnosing the device.
         return SignInOutcome.NoAccounts
     } catch (e: GetCredentialException) {
         return SignInOutcome.Failed(e.message ?: e::class.java.simpleName)

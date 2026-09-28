@@ -255,7 +255,6 @@
     <string name="account_no_apps">Vous n\'avez aucune app</string>
     <string name="account_devcoins">DevCoins</string>
     <string name="account_sign_in">Se connecter</string>
-    <string name="account_no_google">Aucun compte Google sur cet appareil</string>
     <string name="account_sign_out">Se déconnecter</string>
 
     <!-- The door -->
@@ -291,4 +290,14 @@
              French declares a many category and lint requires it defined. -->
         <item quantity="many">Pas encore — environ %1$d secondes de plus dans l\'app.</item>
     </plurals>
+    <string name="test_of_seconds">sur %1$d s</string>
+    <string name="test_ready">C\'est suffisant. Réclamez vos DevCoins.</string>
+    <string name="add_icon_failed">L\'icône n\'a pas pu être envoyée. Vérifiez votre connexion et réessayez.</string>
+    <string name="add_icon_required">Ajoutez une icône : une app sans marque est une app que personne ne regarde.</string>
+    <string name="test_leave_review">Laisser un avis sur Play</string>
+    <string name="account_no_google">Google n\'a pas pu proposer de compte à cet instant. Vérifiez que vous êtes connecté à Google sur cet appareil, puis réessayez.</string>
+    <string name="details_stats_title">Tests jusqu\'ici</string>
+    <string name="details_stats_testers">Testeurs</string>
+    <string name="details_stats_spent">DevCoins dépensés</string>
+    <string name="details_stats_left">Tests que vous pouvez encore financer</string>
 </resources>

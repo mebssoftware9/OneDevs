@@ -12,6 +12,14 @@ import kotlinx.serialization.json.JsonPrimitive
 @kotlinx.serialization.Serializable
 internal data class BalanceRow(val balance: Int)
 
+/** How a listing is doing, for the developer who owns it. */
+@kotlinx.serialization.Serializable
+data class ListingStats(
+    val testers: Int = 0,
+    val spent: Int = 0,
+    @kotlinx.serialization.SerialName("tests_left") val testsLeft: Int = 0,
+)
+
 /** What the server made of a claim. */
 @kotlinx.serialization.Serializable
 data class ClaimResult(
@@ -27,7 +35,9 @@ data class PulsePoint(val at: String = "", val testers: Int = 0)
 /** What the board's hero says, counted by the server rather than invented. */
 @kotlinx.serialization.Serializable
 data class PlatformStats(
-    @kotlinx.serialization.SerialName("testers_active_24h") val activeTesters: Int = 0,
+    /** Developers who had OneDevs open in the last fifteen minutes. */
+    @kotlinx.serialization.SerialName("live_now") val liveNow: Int = 0,
+    @kotlinx.serialization.SerialName("active_24h") val activeTesters: Int = 0,
     @kotlinx.serialization.SerialName("apps_in_testing") val appsInTesting: Int = 0,
     @kotlinx.serialization.SerialName("open_missions") val openMissions: Int = 0,
     val pulse: List<PulsePoint> = emptyList(),
@@ -165,7 +175,7 @@ class Backend(
             method = "POST",
             headers = mapOf(
                 "apikey" to key,
-                "Authorization" to "Bearer ${'$'}{session.accessToken}",
+                "Authorization" to "Bearer ${session.accessToken}",
                 "x-upsert" to "true",
             ),
             bytes = png,
@@ -206,6 +216,22 @@ class Backend(
         if (!result.ok) return null
         return try {
             BackendJson.decodeFromString<ClaimResult>(result.body)
+        } catch (e: kotlinx.serialization.SerializationException) {
+            null
+        }
+    }
+
+    /** Testers so far and DevCoins spent, for a listing you own. */
+    suspend fun listingStats(listingId: String): ListingStats? {
+        val result = rpc(
+            "listing_stats",
+            kotlinx.serialization.json.buildJsonObject {
+                put("p_listing", kotlinx.serialization.json.JsonPrimitive(listingId))
+            },
+        )
+        if (!result.ok) return null
+        return try {
+            BackendJson.decodeFromString<ListingStats>(result.body)
         } catch (e: kotlinx.serialization.SerializationException) {
             null
         }

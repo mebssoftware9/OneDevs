@@ -114,26 +114,45 @@ object Findings {
         val perMethod = bytesPerMethod(r)
         val bloated = perMethod > DEX_BYTES_PER_METHOD_CEILING
         if (unreadable <= 0 && !bloated) return null
+
+        // One conclusion, three reasons. Merging the shapes into a single
+        // finding was right; leaving them one explanation was not, and it
+        // showed: a card reading "the DEX is 590 KB per method" went on to say
+        // "Android will not load these directly", where "these" referred to
+        // nothing. The reason has to match the shape that produced it.
+        val dexBytes = r.sizes.firstOrNull { it.label == "DEX" }?.bytes ?: 0L
+        val (what, why) = when {
+            r.dex.files == 0 && r.dexEntries > 0 -> Pair(
+                "No readable DEX in ${r.dexEntries} .dex entries.",
+                "Not one of them starts with a DEX header, so there is no code " +
+                    "in this artifact that Android could run. Whatever executes " +
+                    "is produced at runtime.",
+            )
+            unreadable > 0 -> Pair(
+                "$unreadable of ${r.dexEntries} .dex entries are not DEX files.",
+                "Android will not load those directly, so they are payloads " +
+                    "decrypted at runtime by the ${r.dex.files} that it will. " +
+                    "The code that runs is not in this file.",
+            )
+            else -> Pair(
+                "${dexBytes.readableBytes()} of DEX declaring ${r.dex.methods} methods.",
+                "The header is real and nearly empty. A build this size " +
+                    "normally declares hundreds of thousands of methods, so the " +
+                    "bulk of the file is data sitting behind a valid header, " +
+                    "unpacked at runtime.",
+            )
+        }
         return Finding(
             severity = Severity.Worth,
-            what = when {
-                r.dex.files == 0 && r.dexEntries > 0 ->
-                    "No readable DEX in ${r.dexEntries} .dex entries."
-                unreadable > 0 ->
-                    "$unreadable of ${r.dexEntries} .dex entries are not DEX files."
-                else ->
-                    "The DEX is ${perMethod.readableBytes()} per method."
-            },
-            why = "Android will not load these directly, so they are payloads " +
-                "decrypted at runtime -- the signature of a packer. The code " +
-                "that actually runs is not in this artifact, which means the " +
-                "method count, and any inspection of this file, describes the " +
-                "loader rather than the app.",
+            what = what,
+            why = why + " This is what a packer looks like, and it means every " +
+                "other finding here describes the loader rather than the app.",
             action = "If this is your build, check what your shrinker or " +
                 "protection tool is producing. If it is not, treat every other " +
                 "finding here as describing a stub.",
             evidence = buildList {
-                add("${r.dex.files} readable of ${r.dexEntries}")
+                // Only worth saying when the counts actually disagree.
+                if (unreadable > 0) add("${r.dex.files} readable of ${r.dexEntries}")
                 if (perMethod > 0) add("${perMethod.readableBytes()} per method")
             },
         )

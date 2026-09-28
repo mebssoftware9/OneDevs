@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,8 +35,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,15 +51,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.R
+import com.devbangs.onedevs.data.backend.ListingStats
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.data.listings.Listing
 import com.devbangs.onedevs.data.play.PlayListing
 import com.devbangs.onedevs.data.play.PlayListings
 import com.devbangs.onedevs.ui.board.openPlayListing
+import com.devbangs.onedevs.ui.components.BrandedLoading
 import com.devbangs.onedevs.ui.components.DevBotMark
+import com.devbangs.onedevs.ui.components.rememberListingIcon
 import java.text.DateFormat
 import java.util.Date
 import kotlinx.coroutines.launch
@@ -88,13 +97,37 @@ fun AppDetailsScreen(
     var rechecking by remember { mutableStateOf(false) }
     var recheckUnreachable by remember { mutableStateOf(false) }
 
-    val current = all.firstOrNull { it.id == listingId } ?: return
+    // Your own listings arrive in the flow. Someone else's -- opened from the
+    // Board -- do not, and returning early on that gave a blank white screen.
+    var fetched by remember(listingId) { mutableStateOf<Listing?>(null) }
+    LaunchedEffect(listingId, all) {
+        if (all.none { it.id == listingId }) fetched = app.listings.find(listingId)
+    }
+
+    val current = all.firstOrNull { it.id == listingId } ?: fetched
+    if (current == null) {
+        BrandedLoading()
+        return
+    }
 
     // A listing with no owner has not left this device yet, so it is yours.
     // Everything that edits, deletes or re-checks belongs to the owner; a
     // tester gets the app, the instructions, and one thing to press.
     val session by app.account.session.collectAsState()
     val mine = current.owner == null || current.owner == session?.userId
+
+    // Only the owner can ask, and the server only answers the owner. Re-read on
+    // the way back in, so coming here from a test shows the new number rather
+    // than the one from before you left.
+    var stats by remember(listingId) { mutableStateOf<ListingStats?>(null) }
+    var statsTick by remember(listingId) { mutableIntStateOf(0) }
+    var statsSeen by remember(listingId) { mutableStateOf(false) }
+    LaunchedEffect(listingId, mine, statsTick) {
+        if (mine) stats = app.backend.listingStats(listingId)
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        if (statsSeen) statsTick++ else statsSeen = true
+    }
 
     // An unreachable Play must never overwrite a good answer. Forgetting that a
     // listing checked out, because a request timed out, is worse than showing an
@@ -167,6 +200,22 @@ fun AppDetailsScreen(
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.outline,
         )
+
+        if (mine) {
+            Spacer(Modifier.height(18.dp))
+            SectionCard(title = stringResource(R.string.details_stats_title)) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    StatFigure(stats?.testers, R.string.details_stats_testers)
+                    StatFigure(stats?.spent, R.string.details_stats_spent)
+                    // The one that matters: the countdown to this app leaving
+                    // the board, in the same units the developer spends.
+                    StatFigure(stats?.testsLeft, R.string.details_stats_left)
+                }
+            }
+        }
 
         Spacer(Modifier.height(18.dp))
         SectionCard(title = stringResource(R.string.details_instructions)) {
@@ -326,9 +375,7 @@ fun AppDetailsScreen(
 
 @Composable
 private fun AppIcon(listing: Listing, modifier: Modifier = Modifier) {
-    val icon = remember(listing.iconPath) {
-        listing.iconPath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
-    }
+    val icon = rememberListingIcon(listing)
     val shape = RoundedCornerShape(16.dp)
     if (icon != null) {
         Image(
@@ -469,4 +516,30 @@ private fun share(context: android.content.Context, listing: Listing) {
         putExtra(Intent.EXTRA_TEXT, "${listing.title}\n$body")
     }
     context.startActivity(Intent.createChooser(intent, listing.title))
+}
+
+/**
+ * One number and what it counts.
+ *
+ * A dash rather than a zero until the server has answered: zero testers is a
+ * fact about a listing, and "we have not asked yet" is not it.
+ */
+@Composable
+private fun RowScope.StatFigure(value: Int?, label: Int) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.weight(1f),
+    ) {
+        Text(
+            text = value?.toString() ?: "\u2014",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = stringResource(label),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
 }

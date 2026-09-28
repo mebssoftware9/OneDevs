@@ -255,7 +255,6 @@
     <string name="account_no_apps">Você não tem apps</string>
     <string name="account_devcoins">DevCoins</string>
     <string name="account_sign_in">Entrar</string>
-    <string name="account_no_google">Nenhuma conta Google neste aparelho</string>
     <string name="account_sign_out">Sair</string>
 
     <!-- The door -->
@@ -289,4 +288,14 @@
         <item quantity="other">Ainda não — cerca de %1$d segundos a mais no app.</item>
         <item quantity="many">Ainda não — cerca de %1$d segundos a mais no app.</item>
     </plurals>
+    <string name="test_of_seconds">de %1$d s</string>
+    <string name="test_ready">É o suficiente. Resgate seus DevCoins.</string>
+    <string name="add_icon_failed">Não foi possível enviar o ícone. Verifique sua conexão e tente de novo.</string>
+    <string name="add_icon_required">Adicione um ícone — um app sem marca é um app que ninguém olha.</string>
+    <string name="test_leave_review">Deixe uma avaliação no Play</string>
+    <string name="account_no_google">O Google não conseguiu oferecer uma conta agora. Verifique se você entrou no Google neste aparelho e tente de novo.</string>
+    <string name="details_stats_title">Testes até agora</string>
+    <string name="details_stats_testers">Testadores</string>
+    <string name="details_stats_spent">DevCoins gastos</string>
+    <string name="details_stats_left">Testes que ainda pode pagar</string>
 </resources>

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.images.cachedImage
 import com.devbangs.onedevs.data.listings.Listing
+import com.devbangs.onedevs.ui.components.rememberListingIcon
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 
 /**
@@ -64,10 +65,7 @@ fun BoardRow(
 ) {
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
-    var icon by remember(listing.id) { mutableStateOf<ImageBitmap?>(null) }
-    LaunchedEffect(listing.id, listing.iconUrl) {
-        icon = cachedImage(context, "icon-${listing.id}", listing.iconUrl)
-    }
+    val icon = rememberListingIcon(listing)
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

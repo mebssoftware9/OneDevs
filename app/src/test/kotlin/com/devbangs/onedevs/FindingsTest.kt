@@ -116,6 +116,28 @@ class FindingsTest {
     fun `nothing readable at all says so differently`() {
         val finding = Findings.of(report(dexFiles = 0, dexEntries = 3)).single()
         assertTrue(finding.what.startsWith("No readable DEX"))
+        assertTrue(finding.why.contains("Not one of them"))
+    }
+
+    @Test
+    fun `each shape explains itself`() {
+        // One conclusion, three reasons. A card reading "the DEX is 590 KB per
+        // method" once went on to say "Android will not load these directly",
+        // where "these" referred to nothing: the explanation belonged to a
+        // different shape. Each reason has to fit the observation above it.
+        val many = Findings.of(report(dexFiles = 1, dexEntries = 12)).single()
+        val huge = Findings.of(
+            report(dexFiles = 1, dexEntries = 1, dexBytes = 64_072_581, methods = 106),
+        ).single()
+        val none = Findings.of(report(dexFiles = 0, dexEntries = 3)).single()
+        assertTrue(many.why.contains("will not load those directly"))
+        assertTrue(huge.why.contains("header is real and nearly empty"))
+        assertTrue(none.why.contains("no code in this artifact"))
+        // All three land on the same conclusion.
+        listOf(many, huge, none).forEach {
+            assertTrue(it.why.contains("packer"))
+            assertTrue(it.why.contains("describes the loader"))
+        }
     }
 
     @Test
@@ -131,7 +153,13 @@ class FindingsTest {
         val movieBox = report(dexFiles = 1, dexEntries = 1, dexBytes = 64_072_581, methods = 106)
         val finding = Findings.of(movieBox).single()
         assertEquals(Severity.Worth, finding.severity)
-        assertTrue(finding.what.contains("per method"))
+        // The headline is the two numbers that do not fit together, not the
+        // arithmetic between them. The ratio is evidence, underneath.
+        assertTrue(finding.what.contains("106 methods"))
+        assertTrue(finding.evidence.any { it.contains("per method") })
+        // Nothing was unreadable here, so saying "1 readable of 1" would be
+        // true and pointless.
+        assertTrue(finding.evidence.none { it.contains("readable") })
         assertFalse(Findings.methodCountIsMeaningful(movieBox))
     }
 

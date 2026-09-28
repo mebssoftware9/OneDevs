@@ -70,6 +70,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.scale
@@ -81,6 +82,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.R
+import com.devbangs.onedevs.data.backend.AccountState
+import com.devbangs.onedevs.data.backend.Backend
+import com.devbangs.onedevs.data.images.cachedImage
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.data.listings.CheckRecord
 import com.devbangs.onedevs.data.listings.Listing
@@ -92,6 +96,7 @@ import com.devbangs.onedevs.data.play.PlayListings
 import com.devbangs.onedevs.data.play.packageOrNull
 import com.devbangs.onedevs.data.play.parseOptInLink
 import com.devbangs.onedevs.ui.components.DevBotMark
+import com.devbangs.onedevs.ui.components.Waiting
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
@@ -127,7 +132,11 @@ sealed interface CheckState {
     data class Done(val result: PlayListing, val checkedAt: Long) : CheckState
 }
 
-class AddListingViewModel(private val repository: ListingRepository) : ViewModel() {
+class AddListingViewModel(
+    private val repository: ListingRepository,
+    private val backend: Backend,
+    private val account: AccountState,
+) : ViewModel() {
 
     /**
      * Fixed when the form opens so a chosen icon has somewhere to live before
@@ -144,6 +153,14 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
     var optInLink by mutableStateOf("")
 
     var iconPath by mutableStateOf<String?>(null)
+        private set
+
+    /**
+     * Where the icon already lives, for a listing being edited. The local path
+     * above is a freshly chosen file waiting to be uploaded; this is one that
+     * already went. Either satisfies the requirement to have an icon.
+     */
+    var iconUrl by mutableStateOf<String?>(null)
         private set
     var iconImage by mutableStateOf<ImageBitmap?>(null)
         private set
@@ -168,7 +185,7 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
      * Fills the form from a listing already on file. Keeps its id, so saving
      * replaces that record rather than filing a second copy of the same app.
      */
-    fun load(id: String) {
+    fun load(context: Context, id: String) {
         if (loaded) return
         loaded = true
         viewModelScope.launch {
@@ -180,11 +197,12 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
             testNote = existing.testNote.orEmpty()
             optInLink = existing.optInLink.orEmpty()
             iconPath = existing.iconPath
+            iconUrl = existing.iconUrl
             iconImage = existing.iconPath?.let { path ->
                 withContext(Dispatchers.IO) {
                     BitmapFactory.decodeFile(path)?.asImageBitmap()
                 }
-            }
+            } ?: cachedImage(context, "icon-${existing.id}", existing.iconUrl)
         }
     }
 
@@ -213,8 +231,21 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
         }
     }
 
+    /**
+     * Set when a save could not finish. A string id rather than a sentence:
+     * a view model that hardcodes English is a view model that ships one
+     * language whatever the four locale files say.
+     */
+    var problem by mutableStateOf<Int?>(null)
+        private set
+
     val canSave: Boolean
-        get() = !saving && title.isNotBlank() && category.isNotBlank() && packageName != null
+        get() = !saving && title.isNotBlank() && category.isNotBlank() &&
+            packageName != null &&
+            // An icon is required. On a board of apps competing for a tester's
+            // attention, one with no mark is one nobody looks at, and letting
+            // it through helps nobody -- least of all the developer who listed it.
+            (iconPath != null || iconUrl != null)
 
     /**
      * The only thing that stops a save.
@@ -268,6 +299,29 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
                 saving = false
                 return@launch
             }
+            // Uploaded before the listing is written, so a row never exists
+            // pointing at an icon that was never sent. A failure stops the save
+            // and says so, rather than quietly producing a listing with a letter
+            // where its mark should be.
+            val owner = account.session.value?.userId
+            val artwork = iconPath?.let { path ->
+                val bytes = withContext(Dispatchers.IO) {
+                    runCatching { File(path).readBytes() }.getOrNull()
+                }
+                if (owner != null && bytes != null) {
+                    backend.uploadIcon(owner, draftId, bytes)
+                } else {
+                    null
+                }
+            } ?: iconUrl
+
+            if (artwork == null) {
+                problem = R.string.add_icon_failed
+                saving = false
+                return@launch
+            }
+            iconUrl = artwork
+
             repository.add(
                 Listing(
                     id = draftId,
@@ -293,6 +347,7 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
                         )
                     } ?: CheckRecord(),
                     iconPath = iconPath,
+                    iconUrl = artwork,
                 ),
             )
             saving = false
@@ -305,7 +360,7 @@ class AddListingViewModel(private val repository: ListingRepository) : ViewModel
             initializer {
                 val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
                     as OneDevsApplication
-                AddListingViewModel(app.listings)
+                AddListingViewModel(app.listings, app.backend, app.account)
             }
         }
     }
@@ -328,7 +383,7 @@ fun AddListingScreen(
     val testing = !live
     var linkHadFocus by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    LaunchedEffect(listingId) { listingId?.let(viewModel::load) }
+    LaunchedEffect(listingId) { listingId?.let { viewModel.load(context, it) } }
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
     ) { uri -> uri?.let { viewModel.setIcon(context, it) } }
@@ -360,6 +415,19 @@ fun AddListingScreen(
             },
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
+
+        // Says why the button is dark rather than leaving it to be worked out.
+        // A disabled control with no reason attached reads as a broken one.
+        if (viewModel.iconImage == null && viewModel.iconUrl == null) {
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = stringResource(R.string.add_icon_required),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         Spacer(Modifier.height(12.dp))
         FormField(
@@ -472,8 +540,12 @@ fun AddListingScreen(
 
         Spacer(Modifier.height(14.dp))
         Button(
-            onClick = { viewModel.save(board, onDone) },
-            enabled = viewModel.canSave && !viewModel.blockedFrom(board),
+            // Stays blue while it works rather than greying out. A disabled
+            // button is the app saying no; this one is saying wait, and the two
+            // should not look the same.
+            onClick = { if (!viewModel.saving) viewModel.save(board, onDone) },
+            enabled = (viewModel.canSave || viewModel.saving) &&
+                !viewModel.blockedFrom(board),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -482,16 +554,29 @@ fun AddListingScreen(
                 .fillMaxWidth()
                 .height(52.dp),
         ) {
+            if (viewModel.saving) {
+                Waiting(size = 22.dp, color = MaterialTheme.colorScheme.onPrimary)
+            } else {
+                Text(
+                    text = stringResource(
+                        when {
+                            listingId != null -> R.string.add_save_changes
+                            testing -> R.string.add_testing_title
+                            else -> R.string.add_live_title
+                        },
+                    ),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+
+        viewModel.problem?.let { message ->
+            Spacer(Modifier.height(10.dp))
             Text(
-                text = stringResource(
-                    when {
-                        listingId != null -> R.string.add_save_changes
-                        testing -> R.string.add_testing_title
-                        else -> R.string.add_live_title
-                    },
-                ),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
+                text = stringResource(message),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
             )
         }
     }
