@@ -26,6 +26,8 @@ data class ClaimResult(
     val claimed: Boolean = false,
     val coins: Int = 0,
     val reason: String? = null,
+    /** True when this claim had already been recorded. Still a success. */
+    val repeat: Boolean = false,
 )
 
 /** One hour's observation, as the pulse table recorded it. */
@@ -205,6 +207,17 @@ class Backend(
      * "you already claimed this" is an answer, not a fault.
      */
     suspend fun claimTest(listingId: String, seconds: Int, device: String): ClaimResult? {
+        // Asked exactly once. Retrying is ClaimWorker's job: it can wait for
+        // a network, back off, and outlive this process, none of which a
+        // caller blocking a button press can do.
+        return claimOnce(listingId, seconds, device)
+    }
+
+    private suspend fun claimOnce(
+        listingId: String,
+        seconds: Int,
+        device: String,
+    ): ClaimResult? {
         val result = rpc(
             "claim_test",
             kotlinx.serialization.json.buildJsonObject {

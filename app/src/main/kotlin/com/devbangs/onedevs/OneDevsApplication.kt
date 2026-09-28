@@ -7,6 +7,8 @@ import com.devbangs.onedevs.data.backend.Backend
 import com.devbangs.onedevs.data.backend.DataStoreSessionHolder
 import com.devbangs.onedevs.data.backend.SessionHolder
 import com.devbangs.onedevs.data.backend.SessionSerializer
+import com.devbangs.onedevs.data.claims.ClaimOutbox
+import com.devbangs.onedevs.data.claims.ClaimWorker
 import com.devbangs.onedevs.data.listings.RemoteListingRepository
 import com.devbangs.onedevs.data.net.Connectivity
 import com.devbangs.onedevs.notifications.DevBot
@@ -15,6 +17,7 @@ import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /**
  * Registers DevBot's channels at install rather than at first notification.
@@ -37,6 +40,11 @@ class OneDevsApplication : Application() {
         // Read before anything draws, so the first frame is already in the
         // right theme rather than flashing the wrong one and correcting.
         ThemeStore.load(this)
+        // Anything owed from a previous run is owed now. Asking on every cold
+        // start costs nothing when the outbox is empty, and is the difference
+        // between a reward arriving late and a reward never arriving.
+        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch { claims.load() }
+        ClaimWorker.drain(this)
     }
 
     /**
@@ -59,6 +67,13 @@ class OneDevsApplication : Application() {
         )
     }
 
+    /**
+     * Tests that have been earned and not yet acknowledged. Survives the
+     * process, so a reward is never lost to a connection that dropped between
+     * the work being done and the server hearing about it.
+     */
+    val claims: ClaimOutbox by lazy { ClaimOutbox(this) }
+
     /** Whether anything can reach the server at all. */
     val network: Connectivity by lazy { Connectivity(this) }
 
@@ -68,6 +83,7 @@ class OneDevsApplication : Application() {
             sessions = sessions,
             backend = backend,
             online = network.online,
+            owed = claims.waiting,
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
         )
     }

@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -40,6 +41,8 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.listings.Listing
+import com.devbangs.onedevs.data.claims.ClaimWorker
+import com.devbangs.onedevs.data.claims.PendingClaim
 import com.devbangs.onedevs.data.usage.deviceId
 import com.devbangs.onedevs.data.usage.foregroundSeconds
 import com.devbangs.onedevs.data.usage.hasUsageAccess
@@ -138,6 +141,28 @@ fun TestPanel(listing: Listing, modifier: Modifier = Modifier) {
     val saidRefused = stringResource(R.string.test_refused)
     val saidUnreachable = stringResource(R.string.test_unreachable)
 
+    // The server's answer, whenever it comes. It may arrive seconds from now,
+    // or after this screen has been closed and opened again, or tomorrow on a
+    // train -- and the only difference that makes is when the number moves.
+    LaunchedEffect(listing.id) {
+        app.claims.settled.collect { settlement ->
+            if (settlement.claim.listingId != listing.id) return@collect
+            if (settlement.paid) {
+                coins = settlement.claim.coins
+                phase = Phase.Claimed
+                app.account.refreshBalance()
+            } else {
+                refusal = when (settlement.reason) {
+                    "device_used" -> saidAlready
+                    "unfunded" -> saidUnfunded
+                    "full" -> saidFull
+                    else -> saidRefused
+                }
+                phase = Phase.Refused
+            }
+        }
+    }
+
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
         if (phase == Phase.Testing) wentAway = true
     }
@@ -201,9 +226,11 @@ fun TestPanel(listing: Listing, modifier: Modifier = Modifier) {
 
         val label = when {
             phase == Phase.NeedsAccess -> stringResource(R.string.test_allow_access)
+            // Asked before `done`, because thirty-two seconds stay done after
+            // the reward is claimed and the button must stop offering it.
+            phase == Phase.Claimed -> stringResource(R.string.test_done)
             done -> stringResource(R.string.test_claim, listing.reward)
             phase == Phase.Testing -> stringResource(R.string.test_open_again)
-            phase == Phase.Claimed -> stringResource(R.string.test_done)
             else -> stringResource(R.string.details_test_now)
         }
 
@@ -234,35 +261,32 @@ fun TestPanel(listing: Listing, modifier: Modifier = Modifier) {
                     phase == Phase.NeedsAccess ->
                         context.startActivity(usageAccessSettings())
 
+                    // Already recorded. Tapping again is not a second reward,
+                    // and must not read like one.
+                    phase == Phase.Claimed -> Unit
+
                     done -> scope.launch {
-                        phase = Phase.Claiming
-                        val result = app.backend.claimTest(
-                            listingId = listing.id,
-                            seconds = seconds,
-                            device = deviceId(context),
+                        val me = app.account.session.value?.userId ?: return@launch
+                        // Written down, not sent. The reward is owed from this
+                        // moment; ClaimWorker is what makes the server agree --
+                        // now if there is a network, later if there is not.
+                        // Nothing on this path waits for a socket, because the
+                        // instant a person finishes work is the worst possible
+                        // moment to ask them to have a connection.
+                        app.claims.add(
+                            PendingClaim(
+                                account = me,
+                                listingId = listing.id,
+                                title = listing.title,
+                                seconds = seconds,
+                                device = deviceId(context),
+                                coins = listing.reward,
+                                at = System.currentTimeMillis(),
+                            ),
                         )
-                        when {
-                            result == null -> {
-                                refusal = saidUnreachable
-                                phase = Phase.Refused
-                            }
-                            result.claimed -> {
-                                coins = result.coins
-                                phase = Phase.Claimed
-                                // The top bar watches the same state, so the
-                                // count moves without this screen saying so.
-                                app.account.refreshBalance()
-                            }
-                            else -> {
-                                refusal = when (result.reason) {
-                                    "already" -> saidAlready
-                                    "unfunded" -> saidUnfunded
-                                    "full" -> saidFull
-                                    else -> saidRefused
-                                }
-                                phase = Phase.Refused
-                            }
-                        }
+                        coins = listing.reward
+                        phase = Phase.Claimed
+                        ClaimWorker.drain(context)
                     }
 
                     else -> {

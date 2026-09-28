@@ -1,11 +1,15 @@
 package com.devbangs.onedevs.data.backend
 
+import com.devbangs.onedevs.data.claims.PendingClaim
 import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 
@@ -40,13 +44,32 @@ class AccountState(
     private val sessions: SessionHolder,
     private val backend: Backend,
     private val online: StateFlow<Boolean>,
+    private val owed: StateFlow<List<PendingClaim>>,
     private val scope: CoroutineScope,
 ) {
     private val _session = MutableStateFlow<Session?>(null)
     val session: StateFlow<Session?> = _session.asStateFlow()
 
     private val _balance = MutableStateFlow<Balance>(Balance.Unknown)
-    val balance: StateFlow<Balance> = _balance.asStateFlow()
+
+    /**
+     * What this developer has, counting work that is finished but not yet
+     * acknowledged by the server.
+     *
+     * A test that has been done is owed the moment it is done. Waiting for a
+     * round trip before the number moves would make the platform look broken
+     * on exactly the connections it most needs to work on -- and the coins are
+     * not a guess: the seconds were measured, the listing was funded when the
+     * board served it, and claim_test is the thing that can still say no. If
+     * it does, the settlement takes them back and says why.
+     *
+     * Scoped to the account that earned them: pending claims belonging to
+     * someone else who used this device are not this developer's balance.
+     */
+    val balance: StateFlow<Balance> = combine(_balance, owed, _session) { held, pending, who ->
+        val mine = pending.filter { it.account == who?.userId }.sumOf { it.coins }
+        if (held is Balance.Known && mine > 0) Balance.Known(held.coins + mine) else held
+    }.stateIn(scope, SharingStarted.Eagerly, Balance.Unknown)
 
     /**
      * False until the stored session has been looked for. Without it, "no
