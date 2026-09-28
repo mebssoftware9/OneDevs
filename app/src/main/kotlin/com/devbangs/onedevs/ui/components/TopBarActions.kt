@@ -70,6 +70,8 @@ fun DevCoinChip(
     ) {
         // No circular clip. The artwork is already a coin, and clipping it to a
         // circle shaved the raised rim off its own edge.
+        // No circular clip. The artwork is already a coin, and clipping it to a
+        // circle shaved the raised rim off its own edge.
         Image(
             painter = painterResource(R.drawable.ic_devcoin),
             contentDescription = null,
@@ -79,14 +81,18 @@ fun DevCoinChip(
         Column(verticalArrangement = Arrangement.Center) {
             // Both line heights are tightened from the type scale's defaults:
             // stacked at their natural leading the pair overflows the chip.
-            Text(
-                // A dash until the server has answered. Zero is a claim
-                // about someone's money, and an unread balance is not it.
-                text = balance?.toString() ?: "\u2014",
-                style = MaterialTheme.typography.labelLarge.copy(lineHeight = 16.sp),
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+            // A spinner where the number will be, rather than a zero that is
+            // not yet true or a dash that says nothing is happening.
+            if (balance == null) {
+                Waiting(size = 13.dp, stroke = 2.dp)
+            } else {
+                Text(
+                    text = balance.toString(),
+                    style = MaterialTheme.typography.labelLarge.copy(lineHeight = 16.sp),
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
             Text(
                 text = stringResource(R.string.devcoin_label),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, lineHeight = 12.sp),

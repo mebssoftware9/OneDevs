@@ -24,7 +24,11 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        // Held until the stored session has been looked for, so the app appears
+        // already decided. Without it the splash hands over to a loading state
+        // and then to a screen -- three things where there should be one.
+        val account = (application as OneDevsApplication).account
+        installSplashScreen().setKeepOnScreenCondition { !account.ready.value }
         // Transparent scrims on both bars: the default adds a translucent band
         // behind 3-button navigation, which breaks the edge-to-edge surface.
         enableEdgeToEdge(

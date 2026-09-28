@@ -258,4 +258,10 @@
     <string name="account_sign_in">Entrar</string>
     <string name="account_no_google">Nenhuma conta Google neste aparelho</string>
     <string name="account_sign_out">Sair</string>
+
+    <!-- The door -->
+    <string name="signin_headline">Teste apps. Ganhe DevCoins. Lance o seu.</string>
+    <string name="signin_body">O OneDevs organiza os testes fechados do Google Play. Teste os apps de outros desenvolvedores para ganhar DevCoins e gaste-os para testarem o seu.</string>
+    <string name="signin_cta">Continuar com o Google</string>
+    <string name="signin_note">Sua conta Google serve apenas para entrar. Nada é publicado em seu nome.</string>
 </resources>

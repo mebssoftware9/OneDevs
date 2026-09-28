@@ -260,4 +260,10 @@
     <string name="account_sign_in">Iniciar sesión</string>
     <string name="account_no_google">No hay ninguna cuenta de Google en este dispositivo</string>
     <string name="account_sign_out">Cerrar sesión</string>
+
+    <!-- The door -->
+    <string name="signin_headline">Prueba apps. Gana DevCoins. Publica la tuya.</string>
+    <string name="signin_body">OneDevs organiza las pruebas cerradas de Google Play. Prueba las apps de otros desarrolladores para ganar DevCoins y gasta esos DevCoins en que prueben la tuya.</string>
+    <string name="signin_cta">Continuar con Google</string>
+    <string name="signin_note">Tu cuenta de Google solo sirve para iniciar sesión. No se publica nada en tu nombre.</string>
 </resources>

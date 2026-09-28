@@ -59,6 +59,8 @@ import com.devbangs.onedevs.ui.navigation.Missions
 import com.devbangs.onedevs.ui.navigation.Profile
 import com.devbangs.onedevs.ui.navigation.TopLevel
 import com.devbangs.onedevs.ui.navigation.Wallet
+import com.devbangs.onedevs.ui.components.BrandedLoading
+import com.devbangs.onedevs.ui.profile.SignInScreen
 import com.devbangs.onedevs.ui.profile.loadAvatar
 import com.devbangs.onedevs.ui.screens.BadgeScreen
 import com.devbangs.onedevs.ui.screens.BoardScreen
@@ -71,6 +73,29 @@ import com.devbangs.onedevs.ui.screens.WalletScreen
 @OptIn(ExperimentalMaterial3AdaptiveNavigationSuiteApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun OneDevsApp() {
+    // The door.
+    //
+    // Everything below this belongs to an account: DevCoins are earned and
+    // spent, missions are joined, listings are owned. A signed-out visitor
+    // browsing apps they cannot test would be the app misdescribing itself.
+    //
+    // Nothing is drawn until the stored session has been looked for. Without
+    // that wait, "not loaded yet" and "signed out" are the same value and every
+    // cold start shows a signed-in developer the door for a frame. The window
+    // already carries the palette's surface colour, so the gap is a blank page
+    // in the right colour rather than a flash of white.
+    val account = (LocalContext.current.applicationContext as OneDevsApplication).account
+    val ready by account.ready.collectAsState()
+    val session by account.session.collectAsState()
+    if (!ready) {
+        BrandedLoading()
+        return
+    }
+    if (session == null) {
+        SignInScreen()
+        return
+    }
+
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val current = backStackEntry?.destination
@@ -267,7 +292,7 @@ fun OneDevsApp() {
 }
 
 @Composable
-private fun Wordmark() {
+internal fun Wordmark() {
     Text(
         text = buildAnnotatedString {
             withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface)) { append("One") }
