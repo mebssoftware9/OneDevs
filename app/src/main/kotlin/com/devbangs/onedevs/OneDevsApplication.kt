@@ -10,6 +10,7 @@ import com.devbangs.onedevs.data.backend.SessionSerializer
 import com.devbangs.onedevs.data.claims.ClaimOutbox
 import com.devbangs.onedevs.data.claims.ClaimWorker
 import com.devbangs.onedevs.data.listings.RemoteListingRepository
+import com.devbangs.onedevs.data.missions.MissionRepository
 import com.devbangs.onedevs.data.net.Connectivity
 import com.devbangs.onedevs.notifications.DevBot
 import com.devbangs.onedevs.settings.ThemeStore
@@ -104,4 +105,6 @@ class OneDevsApplication : Application() {
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
         )
     }
+
+    val missions: MissionRepository by lazy { MissionRepository(backend) }
 }

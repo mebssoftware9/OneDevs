@@ -30,6 +30,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable data class AppDetails(val id: String)
 
+/** One mission's own page, where it is joined. */
+@Serializable data class MissionDetails(val id: String)
+
 /** Top-level destinations. DevCoins is reached from the balance chip, not a tab. */
 enum class TopLevel(
     val route: Any,

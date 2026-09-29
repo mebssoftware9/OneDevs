@@ -56,6 +56,9 @@ import com.devbangs.onedevs.ui.navigation.Badge
 import com.devbangs.onedevs.ui.navigation.Board
 import com.devbangs.onedevs.ui.navigation.Lab
 import com.devbangs.onedevs.ui.navigation.Launches
+import com.devbangs.onedevs.ui.missions.MissionDetailsScreen
+import com.devbangs.onedevs.ui.missions.MissionsScreen
+import com.devbangs.onedevs.ui.navigation.MissionDetails
 import com.devbangs.onedevs.ui.navigation.Missions
 import com.devbangs.onedevs.ui.navigation.Profile
 import com.devbangs.onedevs.ui.navigation.TopLevel
@@ -68,7 +71,6 @@ import com.devbangs.onedevs.ui.screens.BadgeScreen
 import com.devbangs.onedevs.ui.screens.BoardScreen
 import com.devbangs.onedevs.ui.screens.LabScreen
 import com.devbangs.onedevs.ui.screens.LaunchesScreen
-import com.devbangs.onedevs.ui.screens.MissionsScreen
 import com.devbangs.onedevs.ui.screens.ProfileScreen
 import com.devbangs.onedevs.ui.screens.WalletScreen
 import kotlinx.coroutines.delay
@@ -288,7 +290,12 @@ fun OneDevsApp() {
                 composable<Board> {
                     BoardScreen(onOpen = { id -> navController.navigate(AppDetails(id)) })
                 }
-                composable<Missions> { MissionsScreen() }
+                composable<Missions> {
+                    MissionsScreen(onOpen = { id -> navController.navigate(MissionDetails(id)) })
+                }
+                composable<MissionDetails> { entry ->
+                    MissionDetailsScreen(missionId = entry.toRoute<MissionDetails>().id)
+                }
                 composable<Launches> {
                     LaunchesScreen(
                         onAdd = { channel ->

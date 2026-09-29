@@ -24,7 +24,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.devbangs.onedevs.BuildConfig
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.lab.Analysis
 import com.devbangs.onedevs.lab.ApkAnalyzer
@@ -144,11 +143,11 @@ fun LabHome(modifier: Modifier = Modifier) {
     BackHandler(enabled = tool != null) { tool = null }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 24.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 16.dp),
     ) {
         val current = analysis
         val kind = tool
@@ -179,7 +178,7 @@ fun LabHome(modifier: Modifier = Modifier) {
             text = stringResource(R.string.lab_intro),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 4.dp),
+            modifier = Modifier.padding(bottom = 2.dp),
         )
         if (working) {
             Text(
@@ -194,13 +193,6 @@ fun LabHome(modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.bodySmall,
                 color = oneDevsColors.critical.solid,
             )
-        }
-        // The probe keeps its finding runnable, in debug only. It measured
-        // something the documentation does not state and the answer was not
-        // the one assumed, so it earns the right to be re-run on the next
-        // phone rather than being deleted into a commit message.
-        if (BuildConfig.DEBUG) {
-            UsageProbeScreen()
         }
         LabCatalogue.forEach { layer ->
             LabLayerCard(

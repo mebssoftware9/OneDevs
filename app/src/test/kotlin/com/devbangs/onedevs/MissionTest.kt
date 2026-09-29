@@ -1,10 +1,13 @@
 package com.devbangs.onedevs
 
-import com.devbangs.onedevs.ui.missions.Mission
-import com.devbangs.onedevs.ui.missions.MissionRules
-import com.devbangs.onedevs.ui.missions.MissionStage
-import com.devbangs.onedevs.ui.missions.SampleMissions
+import com.devbangs.onedevs.data.missions.JoinResult
+import com.devbangs.onedevs.data.missions.Mission
+import com.devbangs.onedevs.data.missions.MissionRules
+import com.devbangs.onedevs.data.missions.MissionSeat
+import com.devbangs.onedevs.data.missions.MissionStage
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -14,12 +17,14 @@ import org.junit.Test
  */
 class MissionRulesTest {
 
+    private fun seats(n: Int) = (1..n).map { MissionSeat(seat = it, listing = "l$it", title = "App $it") }
+
     @Test
     fun `a full mission leaves every member enough co-testers`() {
         // Sixteen slots exist so that fifteen others test yours. If SLOTS ever
         // drops to thirteen this fails, which is the point: the margin over
         // Google's twelve is the reason for the number.
-        val full = Mission("x", "x", MissionRules.SLOTS, 0, 0, 0, 0, false)
+        val full = Mission("x", "x", seats = seats(MissionRules.SLOTS))
         assertTrue(full.coTesters >= MissionRules.TESTERS_REQUIRED)
         assertTrue(
             "no dropout margin over Google's ${MissionRules.TESTERS_REQUIRED}",
@@ -28,57 +33,49 @@ class MissionRulesTest {
     }
 
     @Test
-    fun `gathering until full, running until the window ends, then elapsed`() {
-        assertEquals(
-            MissionStage.Gathering,
-            Mission("x", "x", MissionRules.SLOTS - 1, 0, 0, 0, 0, false).stage,
-        )
-        assertEquals(
-            MissionStage.Running,
-            Mission("x", "x", MissionRules.SLOTS, 1, 0, 0, 0, false).stage,
-        )
-        assertEquals(
-            MissionStage.Elapsed,
-            Mission("x", "x", MissionRules.SLOTS, MissionRules.WINDOW_DAYS, 0, 0, 0, false).stage,
-        )
+    fun `the stage is the server's word`() {
+        assertEquals(MissionStage.Recruiting, Mission("x", "x", state = "recruiting").stage)
+        assertEquals(MissionStage.Running, Mission("x", "x", state = "running").stage)
+        assertEquals(MissionStage.Elapsed, Mission("x", "x", state = "elapsed").stage)
+        // Anything unknown is treated as still filling, never as finished.
+        assertEquals(MissionStage.Recruiting, Mission("x", "x", state = "something new").stage)
     }
 
     @Test
     fun `open slots and co-testers never go negative`() {
-        val empty = Mission("x", "x", 0, 0, 0, 0, 0, false)
+        val empty = Mission("x", "x")
         assertEquals(MissionRules.SLOTS, empty.open)
         assertEquals(0, empty.coTesters)
-    }
-}
-
-/** The samples have to obey the rules they illustrate. */
-class SampleMissionTest {
-
-    @Test
-    fun `nothing is over-subscribed or past the window`() {
-        SampleMissions.forEach {
-            assertTrue("${it.name} has ${it.joined} in ${MissionRules.SLOTS} slots", it.joined <= MissionRules.SLOTS)
-            assertTrue("${it.name} is on day ${it.day}", it.day in 0..MissionRules.WINDOW_DAYS)
-        }
+        assertEquals(0, Mission("x", "x", seats = seats(MissionRules.SLOTS)).open)
     }
 
     @Test
-    fun `a mission only counts days once it is full`() {
-        SampleMissions.filter { it.stage == MissionStage.Gathering }
-            .forEach { assertEquals("${it.name} counts days while gathering", 0, it.day) }
+    fun `a mission reads from what current_mission returns`() {
+        val body = """
+            {"id":"g1","name":"Mission Ardent","slots":16,"entry_fee":100,"window_days":14,
+             "state":"recruiting","day":0,"member":true,
+             "seats":[{"seat":1,"listing":"a","title":"Beampad","icon_url":null,"mine":true},
+                      {"seat":2,"listing":"b","title":"Morpho","icon_url":"https://x/icon.png","mine":false}]}
+        """.trimIndent()
+        val mission = Json { ignoreUnknownKeys = true }.decodeFromString(Mission.serializer(), body)
+        assertEquals(2, mission.joined)
+        assertEquals(14, mission.open)
+        assertEquals(100, mission.entryFee)
+        assertTrue(mission.member)
+        assertTrue(mission.seats.first().mine)
+        assertEquals("https://x/icon.png", mission.seats[1].iconUrl)
     }
 
     @Test
-    fun `tasks done never exceed tasks total, and every mission pays`() {
-        SampleMissions.forEach {
-            assertTrue("${it.name}: ${it.tasksDone} of ${it.tasksTotal}", it.tasksDone <= it.tasksTotal)
-            assertTrue("${it.name} pays ${it.payout}", it.payout > 0)
-        }
+    fun `a refusal is an answer`() {
+        val refused = Json.decodeFromString(JoinResult.serializer(), """{"joined":false,"reason":"broke"}""")
+        assertFalse(refused.joined)
+        assertEquals("broke", refused.reason)
     }
 
     @Test
-    fun `ids are unique`() {
-        val ids = SampleMissions.map { it.id }
-        assertEquals(ids.size, ids.distinct().size)
+    fun `the fee on the page is the fee in the rules`() {
+        assertEquals(MissionRules.ENTRY_FEE, Mission("x", "x").entryFee)
+        assertEquals(100, MissionRules.ENTRY_FEE)
     }
 }

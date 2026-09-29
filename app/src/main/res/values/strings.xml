@@ -34,8 +34,7 @@
     <string name="board_empty_body">Apps looking for testers show up here. Test them to earn DevCoins, then spend DevCoins to put your own app on the board.</string>
     <string name="missions_intro">Test apps, earn DevCoins, help other developers grow.</string>
     <string name="missions_note">Days are counted by OneDevs. Google Play decides your test on its own record.</string>
-    <string name="mission_create">Create</string>
-    <string name="mission_gathering">GATHERING</string>
+    <string name="mission_recruiting">RECRUITING</string>
     <string name="mission_running">RUNNING</string>
     <string name="mission_elapsed">ELAPSED</string>
     <string name="mission_slots" translatable="false">%1$d/%2$d</string>
@@ -44,6 +43,24 @@
     <string name="mission_cta_open">Open mission</string>
     <string name="mission_cta_report">View report</string>
     <string name="mission_cta_full">Full</string>
+    <string name="mission_not_found">This mission could not be loaded.</string>
+    <string name="mission_member">You are in this mission. Your app has its seat.</string>
+    <string name="mission_err_broke">Not enough DevCoins. Joining costs %1$s.</string>
+    <string name="mission_err_busy">You are already in a mission. One at a time.</string>
+    <string name="mission_err_full">This mission just filled. Go back to see the next one.</string>
+    <string name="mission_err_device">This phone already holds a seat in this mission.</string>
+    <string name="mission_err_generic">Could not join. Check your connection and try again.</string>
+    <string name="mission_your_app">Your app</string>
+    <string name="mission_no_app">Put an app on the Testing board first. That app takes your seat.</string>
+    <string name="mission_balance">Your balance: %1$s DevCoins</string>
+    <string name="mission_join_for">Join for %1$s DevCoins</string>
+    <string name="mission_rules_title">Rules</string>
+    <string name="mission_rule_fee">Joining costs %1$s DevCoins, paid once when you take your seat.</string>
+    <string name="mission_rule_slots">%1$s developers, each bringing one app in closed testing.</string>
+    <string name="mission_rule_window">It starts when every seat is taken and runs for %1$s days.</string>
+    <string name="mission_rule_test">Every day, test the other apps in the group and leave feedback.</string>
+    <string name="mission_rule_standing">Complete at least %1$s of your daily tasks. Fall short for more than %2$s days and your app leaves the group.</string>
+    <string name="mission_rule_one">One mission at a time.</string>
     <string name="missions_available">Available</string>
     <string name="missions_mine">My missions</string>
     <string name="missions_empty_mine_title">You have not joined one yet</string>
@@ -55,7 +72,6 @@
     <string name="launch_testing_body">Get real testers to try your app and send you feedback.</string>
     <string name="launch_testing_status">For eligible developers</string>
     <string name="launch_testing_footer">Build better</string>
-    <string name="cd_locked">Locked</string>
     <string name="launch_live_title">Add to Live Apps</string>
     <string name="launch_live_body">Publish to Live Apps so early users can find you.</string>
     <string name="launch_live_status">For eligible early users</string>

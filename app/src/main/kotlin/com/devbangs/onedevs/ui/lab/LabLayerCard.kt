@@ -64,12 +64,12 @@ fun LabLayerCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onToggle)
-                .padding(14.dp),
+                .padding(horizontal = 14.dp, vertical = 10.dp),
         ) {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(34.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(accent.solid),
             ) {
@@ -77,10 +77,10 @@ fun LabLayerCard(
                     painter = painterResource(layer.icon),
                     contentDescription = null,
                     tint = accent.onSolid,
-                    modifier = Modifier.size(19.dp),
+                    modifier = Modifier.size(17.dp),
                 )
             }
-            Spacer(Modifier.width(11.dp))
+            Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(

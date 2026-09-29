@@ -6,27 +6,22 @@ package com.devbangs.onedevs.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.devbangs.onedevs.BuildConfig
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.backend.PlatformStats
@@ -61,14 +55,11 @@ import com.devbangs.onedevs.ui.board.BoardRow
 import com.devbangs.onedevs.ui.board.LiveCard
 import com.devbangs.onedevs.ui.components.ActionCard
 import com.devbangs.onedevs.ui.components.BrandedLoading
-import com.devbangs.onedevs.ui.components.DevBotMark
 import com.devbangs.onedevs.ui.components.EmptyState
 import com.devbangs.onedevs.ui.components.FilterPills
 import com.devbangs.onedevs.ui.components.IconBadge
 import com.devbangs.onedevs.ui.lab.LabHome
 import com.devbangs.onedevs.ui.launch.LaunchRow
-import com.devbangs.onedevs.ui.missions.MissionCard
-import com.devbangs.onedevs.ui.missions.SampleMissions
 import com.devbangs.onedevs.ui.profile.AccountCard
 import com.devbangs.onedevs.ui.settings.AboutGroup
 import com.devbangs.onedevs.ui.settings.AppSettingsGroup
@@ -203,117 +194,6 @@ fun BoardScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun MissionsScreen(modifier: Modifier = Modifier) {
-    var mine by rememberSaveable { mutableStateOf(false) }
-    val all = if (BuildConfig.DEBUG) SampleMissions else emptyList()
-    val shown = all.filter { it.member == mine }
-    Column(modifier = modifier.fillMaxSize()) {
-        // Sentence and button share a row. At 360dp a "Create Mission" label
-        // leaves the sentence 129dp, which is five lines; one verb beside the
-        // plus leaves 184dp, which is two, in every language we ship.
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.missions_intro),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-            )
-            Spacer(Modifier.width(12.dp))
-            CreateMissionButton()
-        }
-        FilterPills(
-            labels = listOf(
-                stringResource(R.string.missions_available),
-                stringResource(R.string.missions_mine),
-            ),
-            selected = if (mine) 1 else 0,
-            onSelect = { mine = it == 1 },
-            fillWidth = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp, top = 12.dp),
-        )
-        if (shown.isEmpty()) {
-            Box(modifier = Modifier.weight(1f)) {
-                EmptyState(
-                    title = stringResource(
-                        if (mine) R.string.missions_empty_mine_title else R.string.missions_empty_title,
-                    ),
-                    body = stringResource(
-                        if (mine) R.string.missions_empty_mine_body else R.string.missions_empty_body,
-                    ),
-                ) { DevBotMark() }
-            }
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 16.dp),
-                modifier = Modifier.weight(1f),
-            ) {
-                items(shown, key = { it.id }) { mission ->
-                    MissionCard(mission = mission, onClick = {})
-                }
-                // At the foot of the list rather than the head of the screen.
-                // OneDevs counting days and Google Play deciding tests is the
-                // one thing this app must not blur, and it has to be somewhere
-                // -- but above the missions it was lines nobody read before the
-                // thing they came for.
-                item {
-                    Text(
-                        text = stringResource(R.string.missions_note),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * Creating a mission is locked until an account is eligible, and the lock is on
- * the button rather than behind a tap that fails. The Launch screen's mission
- * card says the same thing; this is the second place it is shown, not a second
- * rule.
- */
-@Composable
-private fun CreateMissionButton(modifier: Modifier = Modifier) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primary)
-            .clickable {}
-            .padding(start = 14.dp, end = 12.dp, top = 11.dp, bottom = 11.dp),
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_plus),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier.size(16.dp),
-        )
-        Spacer(Modifier.width(7.dp))
-        Text(
-            text = stringResource(R.string.mission_create),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onPrimary,
-        )
-        Spacer(Modifier.width(7.dp))
-        Icon(
-            painter = painterResource(R.drawable.ic_lock),
-            contentDescription = stringResource(R.string.cd_locked),
-            tint = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier.size(13.dp),
-        )
     }
 }
 
