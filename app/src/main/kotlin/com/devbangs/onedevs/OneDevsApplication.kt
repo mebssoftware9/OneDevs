@@ -11,6 +11,7 @@ import com.devbangs.onedevs.data.claims.ClaimOutbox
 import com.devbangs.onedevs.data.claims.ClaimWorker
 import com.devbangs.onedevs.data.listings.RemoteListingRepository
 import com.devbangs.onedevs.data.missions.MissionRepository
+import com.devbangs.onedevs.data.tests.TestRepository
 import com.devbangs.onedevs.data.net.Connectivity
 import com.devbangs.onedevs.notifications.DevBot
 import com.devbangs.onedevs.settings.ThemeStore
@@ -18,6 +19,9 @@ import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -44,8 +48,16 @@ class OneDevsApplication : Application() {
         // Anything owed from a previous run is owed now. Asking on every cold
         // start costs nothing when the outbox is empty, and is the difference
         // between a reward arriving late and a reward never arriving.
-        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch { claims.load() }
+        val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        scope.launch { claims.load() }
         ClaimWorker.drain(this)
+        // A claim waits for the account that earned it. Signing in is the
+        // moment that account's claims can finally be asked about.
+        scope.launch {
+            account.session.map { it?.userId }.distinctUntilChanged().filterNotNull().collect {
+                ClaimWorker.drain(this@OneDevsApplication)
+            }
+        }
     }
 
     /**
@@ -107,4 +119,7 @@ class OneDevsApplication : Application() {
     }
 
     val missions: MissionRepository by lazy { MissionRepository(backend) }
+
+    /** Starting, checking and finishing tests: the questions that move DevCoins. */
+    val tests: TestRepository by lazy { TestRepository(backend) }
 }

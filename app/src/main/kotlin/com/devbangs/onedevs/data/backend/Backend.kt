@@ -20,16 +20,6 @@ data class ListingStats(
     @kotlinx.serialization.SerialName("tests_left") val testsLeft: Int = 0,
 )
 
-/** What the server made of a claim. */
-@kotlinx.serialization.Serializable
-data class ClaimResult(
-    val claimed: Boolean = false,
-    val coins: Int = 0,
-    val reason: String? = null,
-    /** True when this claim had already been recorded. Still a success. */
-    val repeat: Boolean = false,
-)
-
 /** One hour's observation, as the pulse table recorded it. */
 @kotlinx.serialization.Serializable
 data class PulsePoint(val at: String = "", val testers: Int = 0)
@@ -197,43 +187,6 @@ class Backend(
         }
     }
 
-    /**
-     * Claims the reward for a test.
-     *
-     * The device says how many seconds it observed; the server decides
-     * everything else -- whether the listing can still pay, whether this
-     * tester already claimed, whether it is their own app. A refusal comes
-     * back as claimed=false with a reason rather than as an error, because
-     * "you already claimed this" is an answer, not a fault.
-     */
-    suspend fun claimTest(listingId: String, seconds: Int, device: String): ClaimResult? {
-        // Asked exactly once. Retrying is ClaimWorker's job: it can wait for
-        // a network, back off, and outlive this process, none of which a
-        // caller blocking a button press can do.
-        return claimOnce(listingId, seconds, device)
-    }
-
-    private suspend fun claimOnce(
-        listingId: String,
-        seconds: Int,
-        device: String,
-    ): ClaimResult? {
-        val result = rpc(
-            "claim_test",
-            kotlinx.serialization.json.buildJsonObject {
-                put("p_listing", kotlinx.serialization.json.JsonPrimitive(listingId))
-                put("p_seconds", kotlinx.serialization.json.JsonPrimitive(seconds))
-                put("p_device", kotlinx.serialization.json.JsonPrimitive(device))
-            },
-        )
-        if (!result.ok) return null
-        return try {
-            BackendJson.decodeFromString<ClaimResult>(result.body)
-        } catch (e: kotlinx.serialization.SerializationException) {
-            null
-        }
-    }
-
     /** Testers so far and DevCoins spent, for a listing you own. */
     suspend fun listingStats(listingId: String): ListingStats? {
         val result = rpc(
@@ -275,19 +228,31 @@ class Backend(
     ): HttpResult {
         var session = sessions.current() ?: return HttpResult(401, "not signed in")
         if (session.needsRefresh(System.currentTimeMillis())) {
-            session = renew(session) ?: session
+            session = (renew(session) as? Renewal.Renewed)?.session ?: session
         }
 
         val first = send(path, method, body, session, extra)
         if (first.code != 401) return first
 
-        val renewed = renew(session)
-        if (renewed == null) {
-            // The refresh token is spent too. Signed out is the honest state.
-            sessions.save(null)
-            return first
+        return when (val renewal = renew(session)) {
+            is Renewal.Renewed -> send(path, method, body, renewal.session, extra)
+            // The auth server itself said no: the refresh token is spent, and
+            // signed out is the honest state.
+            Renewal.Refused -> {
+                sessions.save(null)
+                first
+            }
+            // Could not ask. Signing someone out because a tunnel ate the
+            // refresh would lose their session to a bad signal; keep it, and
+            // report the request as unreachable so it is tried again.
+            Renewal.Unreachable -> HttpResult(0, "could not refresh the session")
         }
-        return send(path, method, body, renewed, extra)
+    }
+
+    private sealed interface Renewal {
+        data class Renewed(val session: Session) : Renewal
+        data object Refused : Renewal
+        data object Unreachable : Renewal
     }
 
     private suspend fun send(
@@ -322,11 +287,11 @@ class Backend(
         body = body,
     )
 
-    private suspend fun renew(stale: Session): Session? = refreshing.withLock {
+    private suspend fun renew(stale: Session): Renewal = refreshing.withLock {
         // Another call may have renewed while this one waited for the lock.
         val latest = sessions.current()
         if (latest != null && latest.accessToken != stale.accessToken) {
-            return@withLock latest
+            return@withLock Renewal.Renewed(latest)
         }
 
         val result = httpRequest(
@@ -337,16 +302,27 @@ class Backend(
         )
         // Offline is not "signed out". Keeping the session lets the next
         // attempt, on a better connection, carry on where this left off.
-        if (result.offline || !result.ok) return@withLock null
+        when (classify(result)) {
+            is Reply.Answer -> Unit
+            is Reply.Unreachable -> return@withLock Renewal.Unreachable
+            else -> return@withLock Renewal.Refused
+        }
 
-        val session = BackendJson.decodeFromString<TokenResponse>(result.body)
-            // A refresh response carries no user object, so the id we already
-            // know is the only source for it.
-            .toSession(System.currentTimeMillis(), fallbackUserId = stale.userId)
-            // Same trap as the user id: a refresh response knows neither, so
-            // anything not in the token has to be carried across by hand.
-            ?.copy(displayName = stale.displayName, photoUrl = stale.photoUrl)
-        if (session != null) sessions.save(session)
-        session
+        val session = try {
+            BackendJson.decodeFromString<TokenResponse>(result.body)
+                // A refresh response carries no user object, so the id we
+                // already know is the only source for it.
+                .toSession(System.currentTimeMillis(), fallbackUserId = stale.userId)
+                // Same trap as the user id: a refresh response knows neither,
+                // so anything not in the token has to be carried across by hand.
+                ?.copy(displayName = stale.displayName, photoUrl = stale.photoUrl)
+        } catch (e: kotlinx.serialization.SerializationException) {
+            null
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+        if (session == null) return@withLock Renewal.Unreachable
+        sessions.save(session)
+        Renewal.Renewed(session)
     }
 }

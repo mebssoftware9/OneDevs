@@ -49,6 +49,7 @@ import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.backend.PlatformStats
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.data.listings.Listing
+import com.devbangs.onedevs.data.usage.deviceId
 import com.devbangs.onedevs.ui.badges.BadgeCatalogue
 import com.devbangs.onedevs.ui.badges.BadgeGroupCard
 import com.devbangs.onedevs.ui.board.BoardRow
@@ -135,8 +136,9 @@ fun BoardScreen(
     var opened by remember { mutableStateOf(false) }
     LaunchedEffect(tick) {
         stats = app.backend.platformStats()
-        testing = app.listings.board(Channel.Testing)
-        live = app.listings.board(Channel.Live)
+        val device = deviceId(context)
+        testing = app.listings.board(Channel.Testing, device)
+        live = app.listings.board(Channel.Live, device)
     }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         // The first resume is the one that just loaded; skipping it avoids

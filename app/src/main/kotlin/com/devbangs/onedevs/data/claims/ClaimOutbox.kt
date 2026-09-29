@@ -2,11 +2,8 @@ package com.devbangs.onedevs.data.claims
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -16,14 +13,24 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.UUID
 
+/** Where a claim stands. */
+@Serializable
+enum class ClaimStatus { Pending, Paid, Refused }
+
 /**
- * A test that has been earned and not yet acknowledged by the server.
+ * A finished test and what became of it.
  *
- * The seconds are the measurement, taken before any of this: they are what the
- * tester actually did, and they do not change because a socket did.
+ * Kept after it is settled, not deleted. The old outbox dropped a claim the
+ * moment the server answered and announced the answer to whichever screen
+ * happened to be listening -- usually none -- so a refusal arrived as coins
+ * silently vanishing from the balance. A record that stays says what happened
+ * to anyone who looks, whenever they look.
+ *
+ * The seconds are the measurement, taken before any of this: what the tester
+ * actually did, and they do not change because a socket did.
  */
 @Serializable
-data class PendingClaim(
+data class ClaimRecord(
     val id: String = UUID.randomUUID().toString(),
     val account: String,
     val listingId: String,
@@ -32,23 +39,72 @@ data class PendingClaim(
     val device: String,
     val coins: Int,
     val at: Long,
+    /** The reservation this claim pays from. Null for claims written before sessions. */
+    val session: String? = null,
+    val status: ClaimStatus = ClaimStatus.Pending,
+    val reason: String? = null,
+    val settledAt: Long = 0L,
+    /** Tries that got no answer. Shown so a long wait is explained, never used to give up. */
+    val attempts: Int = 0,
+    val lastTriedAt: Long = 0L,
 )
 
-/** How a claim ended, once the server finally said something. */
-data class Settlement(val claim: PendingClaim, val paid: Boolean, val reason: String?)
+/**
+ * The rules for the record book, apart from the file that holds it, so they
+ * can be tested without a device.
+ */
+internal object ClaimBook {
+
+    /** Settled records older than this are dropped; the server's ledger is the history. */
+    const val KEEP_SETTLED_MS = 30L * 24 * 60 * 60 * 1000
+
+    /**
+     * Adds a claim, replacing an earlier one for the same account and listing
+     * -- unless that one was paid. A paid claim is the last word; nothing on
+     * this phone may overwrite it with a question.
+     */
+    fun add(book: List<ClaimRecord>, claim: ClaimRecord): List<ClaimRecord> {
+        val same = book.firstOrNull { it.account == claim.account && it.listingId == claim.listingId }
+        if (same?.status == ClaimStatus.Paid) return book
+        return book.filterNot { it.account == claim.account && it.listingId == claim.listingId } + claim
+    }
+
+    fun settle(book: List<ClaimRecord>, id: String, paid: Boolean, coins: Int?, reason: String?, now: Long) =
+        book.map {
+            if (it.id != id) {
+                it
+            } else {
+                it.copy(
+                    status = if (paid) ClaimStatus.Paid else ClaimStatus.Refused,
+                    coins = coins ?: it.coins,
+                    reason = if (paid) null else reason,
+                    settledAt = now,
+                )
+            }
+        }
+
+    fun attempted(book: List<ClaimRecord>, id: String, now: Long) =
+        book.map { if (it.id == id) it.copy(attempts = it.attempts + 1, lastTriedAt = now) else it }
+
+    fun prune(book: List<ClaimRecord>, now: Long) =
+        book.filter { it.status == ClaimStatus.Pending || now - it.settledAt < KEEP_SETTLED_MS }
+
+    fun pending(book: List<ClaimRecord>) = book.filter { it.status == ClaimStatus.Pending }
+
+    fun find(book: List<ClaimRecord>, account: String?, listingId: String): ClaimRecord? =
+        if (account == null) null else book.lastOrNull { it.account == account && it.listingId == listingId }
+}
 
 /**
- * Claims that are owed, kept on disk until the server says otherwise.
+ * Every claim this phone has made, kept on disk.
  *
- * The tap that finishes a test does not talk to the network. It writes here and
- * returns, and something else carries the claim the rest of the way. That is
- * the whole point: on a connection that comes and goes, the moment a person
- * presses a button is the worst possible moment to require a round trip, and
- * making them wait for one is how a platform teaches people it cannot be
- * trusted with work they have already done.
+ * The tap that finishes a test does not talk to the network. It writes here
+ * and returns, and [ClaimWorker] carries the claim the rest of the way. On a
+ * connection that comes and goes, the moment a person presses a button is the
+ * worst moment to require a round trip.
  *
- * Writes go to a temporary file and are renamed into place, so a process killed
- * mid-write leaves either the old list or the new one, never half of either.
+ * Writes go to a temporary file and are renamed into place, so a process
+ * killed mid-write leaves either the old book or the new one, never half.
  */
 class ClaimOutbox(context: Context) {
 
@@ -57,44 +113,47 @@ class ClaimOutbox(context: Context) {
     private val lock = Mutex()
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 
-    private val _waiting = MutableStateFlow<List<PendingClaim>>(emptyList())
-    private val _settled = MutableSharedFlow<Settlement>(extraBufferCapacity = 8)
+    private val _records = MutableStateFlow<List<ClaimRecord>>(emptyList())
+    private val _waiting = MutableStateFlow<List<ClaimRecord>>(emptyList())
 
-    /** What is still owed, for a screen that wants to say so. */
-    val waiting: StateFlow<List<PendingClaim>> = _waiting.asStateFlow()
+    /** Everything, settled or not, for the screen that wants to say what happened. */
+    val records: StateFlow<List<ClaimRecord>> = _records.asStateFlow()
 
-    /** Answers as they arrive, for whoever is on screen when they do. */
-    val settled: SharedFlow<Settlement> = _settled.asSharedFlow()
+    /** What is still owed and not yet confirmed. */
+    val waiting: StateFlow<List<ClaimRecord>> = _waiting.asStateFlow()
 
     /** Reads what survived the last process. Safe to call more than once. */
     suspend fun load() {
-        lock.withLock { _waiting.value = readAll() }
+        lock.withLock { publish(ClaimBook.prune(readAll(), System.currentTimeMillis())) }
     }
 
-    /**
-     * Records a claim. One per listing: pressing twice is the same debt, and a
-     * second row would ask the server the same question for no reason.
-     */
-    suspend fun add(claim: PendingClaim) {
+    suspend fun add(claim: ClaimRecord) = change { ClaimBook.add(it, claim) }
+
+    suspend fun settle(id: String, paid: Boolean, coins: Int?, reason: String?) =
+        change { ClaimBook.settle(it, id, paid, coins, reason, System.currentTimeMillis()) }
+
+    suspend fun attempted(id: String) = change { ClaimBook.attempted(it, id, System.currentTimeMillis()) }
+
+    fun find(account: String?, listingId: String): ClaimRecord? =
+        ClaimBook.find(_records.value, account, listingId)
+
+    private suspend fun change(edit: (List<ClaimRecord>) -> List<ClaimRecord>) {
         lock.withLock {
-            write(
-                readAll().filterNot {
-                    it.account == claim.account && it.listingId == claim.listingId
-                } + claim,
-            )
+            val next = edit(readAll())
+            write(next)
+            publish(next)
         }
     }
 
-    /** Drops a claim the server has answered, whichever way it answered. */
-    suspend fun settle(claim: PendingClaim, paid: Boolean, reason: String?) {
-        lock.withLock { write(readAll().filterNot { it.id == claim.id }) }
-        _settled.emit(Settlement(claim, paid, reason))
+    private fun publish(book: List<ClaimRecord>) {
+        _records.value = book
+        _waiting.value = ClaimBook.pending(book)
     }
 
-    private suspend fun readAll(): List<PendingClaim> = withContext(Dispatchers.IO) {
+    private suspend fun readAll(): List<ClaimRecord> = withContext(Dispatchers.IO) {
         if (!file.exists()) return@withContext emptyList()
         try {
-            json.decodeFromString<List<PendingClaim>>(file.readText())
+            json.decodeFromString<List<ClaimRecord>>(file.readText())
         } catch (e: Exception) {
             // A file we cannot read is a file we cannot honour. Losing it is
             // bad; looping forever on it is worse, and the ledger on the
@@ -103,11 +162,8 @@ class ClaimOutbox(context: Context) {
         }
     }
 
-    private suspend fun write(list: List<PendingClaim>) {
-        withContext(Dispatchers.IO) {
-            staging.writeText(json.encodeToString(list))
-            if (!staging.renameTo(file)) file.writeText(staging.readText())
-        }
-        _waiting.value = list
+    private suspend fun write(list: List<ClaimRecord>) = withContext(Dispatchers.IO) {
+        staging.writeText(json.encodeToString(list))
+        if (!staging.renameTo(file)) file.writeText(staging.readText())
     }
 }

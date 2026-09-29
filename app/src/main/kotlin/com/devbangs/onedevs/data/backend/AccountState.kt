@@ -1,6 +1,6 @@
 package com.devbangs.onedevs.data.backend
 
-import com.devbangs.onedevs.data.claims.PendingClaim
+import com.devbangs.onedevs.data.claims.ClaimRecord
 import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -44,7 +44,7 @@ class AccountState(
     private val sessions: SessionHolder,
     private val backend: Backend,
     private val online: StateFlow<Boolean>,
-    private val owed: StateFlow<List<PendingClaim>>,
+    private val owed: StateFlow<List<ClaimRecord>>,
     private val scope: CoroutineScope,
 ) {
     private val _session = MutableStateFlow<Session?>(null)
@@ -162,6 +162,16 @@ class AccountState(
         _session.value = null
         _balance.value = Balance.Unknown
         scope.launch { backend.signOut() }
+    }
+
+    /**
+     * Adds coins the server has just confirmed, before the next read of the
+     * balance arrives. Called before a claim stops counting as pending, so
+     * the number never dips between "owed" and "held".
+     */
+    fun credit(coins: Int) {
+        val held = _balance.value
+        if (held is Balance.Known && coins > 0) _balance.value = Balance.Known(held.coins + coins)
     }
 
     /** For a screen that wants to try again after a failure. */

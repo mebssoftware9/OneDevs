@@ -94,8 +94,23 @@ class RemoteListingRepository(
      * can no longer pay, because a row that cannot pay wastes a tester's
      * thirty-two seconds and then refuses them.
      */
-    suspend fun board(channel: Channel, limit: Int = 50): List<Listing> {
+    suspend fun board(channel: Channel, device: String, limit: Int = 50): List<Listing> {
         val name = if (channel == Channel.Live) "live" else "testing"
+        // board() also drops apps this phone has already been paid for under
+        // any account. Without it someone signed into a second account sees an
+        // app, does the test, and is refused at the end -- which from where
+        // they sit is indistinguishable from being cheated.
+        val fitted = backend.rpc(
+            "board",
+            kotlinx.serialization.json.buildJsonObject {
+                put("p_channel", kotlinx.serialization.json.JsonPrimitive(name))
+                put("p_device", kotlinx.serialization.json.JsonPrimitive(device))
+                put("p_limit", kotlinx.serialization.json.JsonPrimitive(limit))
+            },
+        )
+        if (fitted.ok) return decode(fitted.body)
+        // A database without board() yet: the plain view still works, and the
+        // test screen catches the device rule before anyone starts.
         val result = backend.rest(
             "board_listings?channel=eq.$name&select=*&order=created_at.desc&limit=$limit",
         )
