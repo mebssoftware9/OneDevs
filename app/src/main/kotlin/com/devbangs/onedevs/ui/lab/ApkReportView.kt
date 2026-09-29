@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -33,7 +32,6 @@ import com.devbangs.onedevs.R
 import com.devbangs.onedevs.lab.ApkReport
 import com.devbangs.onedevs.lab.Finding
 import com.devbangs.onedevs.lab.Findings
-import com.devbangs.onedevs.lab.Msg
 import com.devbangs.onedevs.lab.Severity
 import com.devbangs.onedevs.ui.theme.Accent
 import com.devbangs.onedevs.ui.theme.oneDevsColors
@@ -168,22 +166,8 @@ private fun Clear() {
     }
 }
 
-/**
- * Resolves a sentence the rules chose into the reader's language.
- *
- * The rules name a resource and never see a Context; this is the only place
- * that knows what any of it says, which is why adding a language is a file of
- * strings rather than a change to the rules.
- */
 @Composable
-private fun Msg.resolve(): String = when (this) {
-    is Msg.Raw -> text
-    is Msg.Str -> stringResource(id, *args.toTypedArray())
-    is Msg.Plural -> pluralStringResource(id, count, *args.toTypedArray())
-}
-
-@Composable
-private fun FindingCard(finding: Finding) {
+internal fun FindingCard(finding: Finding) {
     val scheme = MaterialTheme.colorScheme
     val accent: Accent = when (finding.severity) {
         Severity.Blocking -> oneDevsColors.critical
@@ -299,7 +283,7 @@ private fun Fingerprint(sha256: String) {
 }
 
 @Composable
-private fun Facts(title: String, rows: List<Pair<String, String>>) {
+internal fun Facts(title: String, rows: List<Pair<String, String>>) {
     val scheme = MaterialTheme.colorScheme
     Column(
         modifier = Modifier

@@ -88,7 +88,7 @@ object Findings {
      * cloning and by malware against analysis. What it means is that the
      * artifact does not contain the code that will run.
      */
-    private fun packed(r: ApkReport): Finding? {
+    internal fun packed(r: ApkReport): Finding? {
         val unreadable = r.dexEntries - r.dex.files
         val perMethod = bytesPerMethod(r)
         if (unreadable <= 0 && perMethod <= DEX_BYTES_PER_METHOD_CEILING) return null

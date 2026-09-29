@@ -24,8 +24,21 @@ sealed interface Msg {
      * harder to search for, not easier to read.
      */
     data class Raw(val text: String) : Msg
+
+    /**
+     * A number, grouped the reader's way: 65,536 in English is 65 536 in
+     * French. The rules cannot format it, because they do not know who reads.
+     */
+    data class Num(val value: Long) : Msg
+
+    /** A calendar date, written the reader's way. */
+    data class Date(val millis: Long) : Msg
 }
 
 internal fun str(id: Int, vararg args: Any) = Msg.Str(id, args.toList())
 
 internal fun plural(id: Int, count: Int, vararg args: Any) = Msg.Plural(id, count, args.toList())
+
+internal fun num(value: Int) = Msg.Num(value.toLong())
+
+internal fun num(value: Long) = Msg.Num(value)

@@ -4,8 +4,6 @@ package com.devbangs.onedevs.ui.screens
 // state. Nothing here fabricates data — screens show what is actually known,
 // which before the data layer exists is nothing.
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,7 +35,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,8 +55,6 @@ import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.backend.PlatformStats
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.data.listings.Listing
-import com.devbangs.onedevs.lab.ApkAnalyzer
-import com.devbangs.onedevs.lab.ApkReport
 import com.devbangs.onedevs.ui.badges.BadgeCatalogue
 import com.devbangs.onedevs.ui.badges.BadgeGroupCard
 import com.devbangs.onedevs.ui.board.BoardRow
@@ -70,10 +65,7 @@ import com.devbangs.onedevs.ui.components.DevBotMark
 import com.devbangs.onedevs.ui.components.EmptyState
 import com.devbangs.onedevs.ui.components.FilterPills
 import com.devbangs.onedevs.ui.components.IconBadge
-import com.devbangs.onedevs.ui.lab.ApkReportView
-import com.devbangs.onedevs.ui.lab.LabCatalogue
-import com.devbangs.onedevs.ui.lab.UsageProbeScreen
-import com.devbangs.onedevs.ui.lab.LabLayerCard
+import com.devbangs.onedevs.ui.lab.LabHome
 import com.devbangs.onedevs.ui.launch.LaunchRow
 import com.devbangs.onedevs.ui.missions.MissionCard
 import com.devbangs.onedevs.ui.missions.SampleMissions
@@ -83,9 +75,6 @@ import com.devbangs.onedevs.ui.settings.AppSettingsGroup
 import com.devbangs.onedevs.ui.settings.DeviceGroup
 import com.devbangs.onedevs.ui.settings.ProfileHeader
 import com.devbangs.onedevs.ui.theme.oneDevsColors
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * The two things a developer can be on the board for. Testing is the 14-day
@@ -481,84 +470,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
 
 @Composable
 fun LabScreen(modifier: Modifier = Modifier) {
-    // One layer open at a time. Seven cards all open is the wall of ninety-six
-    // names the closed state exists to avoid.
-    var open by rememberSaveable { mutableIntStateOf(-1) }
-    var report by remember { mutableStateOf<ApkReport?>(null) }
-    var failure by remember { mutableStateOf<String?>(null) }
-    var working by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        working = true
-        failure = null
-        scope.launch {
-            val result = withContext(Dispatchers.IO) { ApkAnalyzer.analyze(context, uri) }
-            working = false
-            result.onSuccess { report = it }.onFailure { failure = it.message }
-        }
-    }
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 24.dp),
-    ) {
-        val current = report
-        if (current != null) {
-            ApkReportView(report = current, onClose = { report = null })
-            return@Column
-        }
-        Text(
-            text = stringResource(R.string.lab_intro),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 4.dp),
-        )
-        if (working) {
-            Text(
-                text = stringResource(R.string.lab_working),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        }
-        failure?.let {
-            Text(
-                text = stringResource(R.string.lab_failed, it),
-                style = MaterialTheme.typography.bodySmall,
-                color = oneDevsColors.critical.solid,
-            )
-        }
-        // The probe keeps its finding runnable, in debug only. It measured
-        // something the documentation does not state and the answer was not
-        // the one assumed, so it earns the right to be re-run on the next
-        // phone rather than being deleted into a commit message.
-        if (BuildConfig.DEBUG) {
-            UsageProbeScreen()
-        }
-        LabCatalogue.forEach { layer ->
-            LabLayerCard(
-                layer = layer,
-                expanded = open == layer.number,
-                onToggle = { open = if (open == layer.number) -1 else layer.number },
-                // Of the twenty-eight tools marked available, exactly one is
-                // written. The rest stay unpressable until they are, because
-                // a tap that does nothing teaches people not to tap.
-                runnable = { it.name == "APK Analyzer" },
-                onTool = {
-                    pick.launch(
-                        arrayOf(
-                            "application/vnd.android.package-archive",
-                            "application/octet-stream",
-                            "*/*",
-                        ),
-                    )
-                },
-            )
-        }
-    }
+    LabHome(modifier)
 }
 
 /**

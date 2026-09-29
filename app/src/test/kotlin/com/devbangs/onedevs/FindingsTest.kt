@@ -64,6 +64,7 @@ class FindingsTest {
             is Msg.Str -> id
             is Msg.Plural -> id
             is Msg.Raw -> error("a rule wrote text instead of naming a resource: $text")
+            is Msg.Num, is Msg.Date -> error("a rule used a value where a sentence belongs: $this")
         }
 
     private val Finding.raw: List<String>
