@@ -17,6 +17,8 @@ import org.junit.Test
  */
 class MissionRulesTest {
 
+    private val lenient = Json { ignoreUnknownKeys = true }
+
     private fun seats(n: Int) = (1..n).map { MissionSeat(seat = it, listing = "l$it", title = "App $it") }
 
     @Test
@@ -57,7 +59,7 @@ class MissionRulesTest {
              "seats":[{"seat":1,"listing":"a","title":"Beampad","icon_url":null,"mine":true},
                       {"seat":2,"listing":"b","title":"Morpho","icon_url":"https://x/icon.png","mine":false}]}
         """.trimIndent()
-        val mission = Json { ignoreUnknownKeys = true }.decodeFromString(Mission.serializer(), body)
+        val mission = lenient.decodeFromString(Mission.serializer(), body)
         assertEquals(2, mission.joined)
         assertEquals(14, mission.open)
         assertEquals(100, mission.entryFee)
