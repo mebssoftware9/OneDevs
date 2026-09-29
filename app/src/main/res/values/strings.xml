@@ -292,6 +292,49 @@
     <string name="account_no_google">Google could not offer an account just now. Check you are signed in to Google on this device, then try again.</string>
     <string name="details_stats_title">Testing so far</string>
     <string name="details_stats_testers">Testers</string>
-    <string name="details_stats_spent">DevCoins spent</string>
-    <string name="details_stats_left">Tests you can still fund</string>
+    <string name="details_stats_spent">Spent</string>
+    <string name="details_stats_left">Tests left</string>
+    <string name="ev_readable">readable: %1$d/%2$d</string>
+    <string name="ev_per_method">%1$s per method</string>
+    <string name="f_packed_none_what">No readable DEX in %1$d .dex entries.</string>
+    <string name="f_packed_none_why">Not one of them starts with a DEX header, so there is no code in this artifact that Android could run. Whatever executes is produced at runtime. This is what a packer looks like, and every other finding here describes the loader rather than the app.</string>
+    <string name="f_packed_mixed_what">%1$d of %2$d .dex entries are not DEX files.</string>
+    <string name="f_packed_mixed_why">Android will not load those directly, so they are payloads decrypted at runtime by the ones that it will. The code that runs is not in this file. This is what a packer looks like, and every other finding here describes the loader rather than the app.</string>
+    <string name="f_packed_huge_why">The header is real and nearly empty. A build this size normally declares hundreds of thousands of methods, so the bulk of the file is data sitting behind a valid header, unpacked at runtime. This is what a packer looks like, and every other finding here describes the loader rather than the app.</string>
+    <string name="f_packed_action">If this is your build, check what your shrinker or protection tool is producing. If it is not, treat every other finding here as describing a stub.</string>
+    <string name="f_debug_what">This is a debug build.</string>
+    <string name="f_debug_why">Debug builds are signed with a debug key, ship unminified, and are rejected by Play. Findings below describe this file, not the one you would upload.</string>
+    <string name="f_debug_action">Analyse the release artifact instead: app/build/outputs/bundle/release, or the AAB from your CI.</string>
+    <string name="f_target_what">Targets API %1$d; Play requires %2$d.</string>
+    <string name="f_target_why">Play refuses new apps and updates below the floor, which rises every August. This build cannot be uploaded.</string>
+    <string name="f_target_action">Raise targetSdk to %1$d in build.gradle.kts, then retest: each level brings behaviour changes that only appear at runtime.</string>
+    <string name="f_unsigned_what">No signature Android could read.</string>
+    <string name="f_unsigned_why">An unsigned package cannot be installed or uploaded.</string>
+    <string name="f_unsigned_action">Build a signed artifact, or check the signing config actually applied to this variant.</string>
+    <string name="f_abi_what">Ships %1$s native libraries.</string>
+    <string name="f_abi_why">Play has never served an x86 build to a phone. These are bytes in every install that no user runs.</string>
+    <string name="f_abi_why_size">Play has never served an x86 build to a phone. These are bytes in every install that no user runs, roughly %1$s here.</string>
+    <string name="f_abi_action">An App Bundle splits by ABI automatically and the problem disappears. For an APK, add an abiFilters block for arm64-v8a and armeabi-v7a.</string>
+    <string name="f_cleartext_what">Allows cleartext HTTP.</string>
+    <string name="f_cleartext_why">Any request this app makes over http:// can be read and altered on the network the user is on.</string>
+    <string name="f_cleartext_action">Set android:usesCleartextTraffic to false, or add a network security config that permits only the hosts that genuinely need it.</string>
+    <string name="f_perms_why">Each one is a dialog the user can refuse, and each needs a Data Safety entry in the Play listing.</string>
+    <string name="f_perms_action">Check every one is still used. A permission left behind by a removed feature costs installs and answers in the Data Safety form.</string>
+    <string name="f_exported_why">Any app on the device can start an exported component. One of these is the launcher activity and has to be; the others are entry points into this app that you may not have meant to open.</string>
+    <string name="f_exported_action">For each, confirm android:exported is deliberate and the component validates what it receives.</string>
+    <string name="f_backup_what">Backup is allowed.</string>
+    <string name="f_backup_why">App data is copied to the user\'s cloud backup and restored onto new devices, including anything cached that should not travel.</string>
+    <string name="f_backup_action">Check the backup rules exclude tokens, keys and caches, or set android:allowBackup to false.</string>
+    <plurals name="f_perms_what">
+        <item quantity="one">Asks for %1$d runtime permission.</item>
+        <item quantity="other">Asks for %1$d runtime permissions.</item>
+    </plurals>
+    <plurals name="f_exported_what">
+        <item quantity="one">%1$d component is exported.</item>
+        <item quantity="other">%1$d components are exported.</item>
+    </plurals>
+    <plurals name="f_packed_huge_what">
+        <item quantity="one">%1$s of DEX declaring %2$d method.</item>
+        <item quantity="other">%1$s of DEX declaring %2$d methods.</item>
+    </plurals>
 </resources>

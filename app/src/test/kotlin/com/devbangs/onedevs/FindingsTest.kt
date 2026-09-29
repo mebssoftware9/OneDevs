@@ -3,18 +3,24 @@ package com.devbangs.onedevs
 import com.devbangs.onedevs.lab.ApkReport
 import com.devbangs.onedevs.lab.Components
 import com.devbangs.onedevs.lab.DexCounts
+import com.devbangs.onedevs.lab.Finding
 import com.devbangs.onedevs.lab.Findings
+import com.devbangs.onedevs.lab.Msg
 import com.devbangs.onedevs.lab.Severity
 import com.devbangs.onedevs.lab.SizeSlice
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
  * What the tool decides to say, which is the part that makes it a tool rather
- * than a file viewer. Every rule is a pure function of the report, so every
- * rule can be argued with here.
+ * than a file viewer.
+ *
+ * These assert which sentence was chosen, not what it says. The rules name
+ * resources now, so a test matching on English would break every time the
+ * wording improved, and would pass while three languages said nothing at all.
  */
 class FindingsTest {
 
@@ -49,6 +55,20 @@ class FindingsTest {
         signatureSha256 = signature, signatureScheme = "v2 or later",
     )
 
+    /**
+     * Named resourceId rather than id so it cannot be confused with the
+     * member it reads inside each branch.
+     */
+    private val Msg.resourceId: Int
+        get() = when (this) {
+            is Msg.Str -> id
+            is Msg.Plural -> id
+            is Msg.Raw -> error("a rule wrote text instead of naming a resource: $text")
+        }
+
+    private val Finding.raw: List<String>
+        get() = evidence.filterIsInstance<Msg.Raw>().map { it.text }
+
     @Test
     fun `a clean release build says nothing`() {
         assertTrue(Findings.of(report()).isEmpty())
@@ -68,15 +88,15 @@ class FindingsTest {
     fun `a debug build is a note about the file, not a verdict on the app`() {
         val finding = Findings.of(report(debuggable = true)).single()
         assertEquals(Severity.Note, finding.severity)
-        assertTrue(finding.action.contains("release"))
+        assertEquals(R.string.f_debug_what, finding.what.resourceId)
     }
 
     @Test
     fun `x86 is flagged only when it is riding along with real ABIs`() {
         val mixed = Findings.of(report(abis = listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")))
-        val finding = mixed.single { it.what.contains("x86") }
+        val finding = mixed.single { it.what.resourceId == R.string.f_abi_what }
         assertEquals(Severity.Worth, finding.severity)
-        assertTrue(finding.action.contains("abiFilters"))
+        assertEquals(listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64"), finding.raw)
         // An x86-only build is deliberate -- someone targeting emulators or
         // Chromebooks -- and telling them to remove their only ABI is wrong.
         assertTrue(Findings.of(report(abis = listOf("x86", "x86_64"))).isEmpty())
@@ -88,7 +108,8 @@ class FindingsTest {
         val finding = Findings.of(
             report(dangerous = listOf("android.permission.READ_MEDIA_IMAGES")),
         ).single()
-        assertTrue(finding.evidence.contains("READ_MEDIA_IMAGES"))
+        assertEquals(R.plurals.f_perms_what, finding.what.resourceId)
+        assertTrue(finding.raw.contains("READ_MEDIA_IMAGES"))
     }
 
     @Test
@@ -98,52 +119,21 @@ class FindingsTest {
             report(exported = listOf("com.x.MainActivity", "com.x.DeepLinkReceiver")),
         ).single()
         assertEquals(Severity.Worth, finding.severity)
-        assertTrue(finding.evidence.contains("DeepLinkReceiver"))
+        assertTrue(finding.raw.contains("DeepLinkReceiver"))
     }
 
     @Test
     fun `entries named dex that are not dex files are a packer`() {
-        // MovieBox: a 61 MB DEX slice reporting 106 methods. One entry parses,
-        // the rest are encrypted payloads under .dex names.
         val finding = Findings.of(report(dexFiles = 1, dexEntries = 12)).single()
         assertEquals(Severity.Worth, finding.severity)
-        assertTrue(finding.what.contains("11 of 12"))
-        assertTrue(finding.why.contains("packer"))
-        assertTrue(finding.evidence.contains("1 readable of 12"))
+        assertEquals(R.string.f_packed_mixed_what, finding.what.resourceId)
+        assertEquals(listOf(11, 12), (finding.what as Msg.Str).args)
     }
 
     @Test
     fun `nothing readable at all says so differently`() {
         val finding = Findings.of(report(dexFiles = 0, dexEntries = 3)).single()
-        assertTrue(finding.what.startsWith("No readable DEX"))
-        assertTrue(finding.why.contains("Not one of them"))
-    }
-
-    @Test
-    fun `each shape explains itself`() {
-        // One conclusion, three reasons. A card reading "the DEX is 590 KB per
-        // method" once went on to say "Android will not load these directly",
-        // where "these" referred to nothing: the explanation belonged to a
-        // different shape. Each reason has to fit the observation above it.
-        val many = Findings.of(report(dexFiles = 1, dexEntries = 12)).single()
-        val huge = Findings.of(
-            report(dexFiles = 1, dexEntries = 1, dexBytes = 64_072_581, methods = 106),
-        ).single()
-        val none = Findings.of(report(dexFiles = 0, dexEntries = 3)).single()
-        assertTrue(many.why.contains("will not load those directly"))
-        assertTrue(huge.why.contains("header is real and nearly empty"))
-        assertTrue(none.why.contains("no code in this artifact"))
-        // All three land on the same conclusion.
-        listOf(many, huge, none).forEach {
-            assertTrue(it.why.contains("packer"))
-            assertTrue(it.why.contains("describes the loader"))
-        }
-    }
-
-    @Test
-    fun `an ordinary multidex app is not a packer`() {
-        // Ten entries, ten parsed. The count matching is the whole test.
-        assertTrue(Findings.of(report(dexFiles = 10, dexEntries = 10)).isEmpty())
+        assertEquals(R.string.f_packed_none_what, finding.what.resourceId)
     }
 
     @Test
@@ -152,15 +142,29 @@ class FindingsTest {
         // The entry count matches, so only the ratio catches this shape.
         val movieBox = report(dexFiles = 1, dexEntries = 1, dexBytes = 64_072_581, methods = 106)
         val finding = Findings.of(movieBox).single()
-        assertEquals(Severity.Worth, finding.severity)
-        // The headline is the two numbers that do not fit together, not the
-        // arithmetic between them. The ratio is evidence, underneath.
-        assertTrue(finding.what.contains("106 methods"))
-        assertTrue(finding.evidence.any { it.contains("per method") })
-        // Nothing was unreadable here, so saying "1 readable of 1" would be
-        // true and pointless.
-        assertTrue(finding.evidence.none { it.contains("readable") })
+        assertEquals(R.plurals.f_packed_huge_what, finding.what.resourceId)
+        // The headline is the two numbers that do not fit together; the ratio
+        // is evidence underneath, and "1 readable of 1" is not said at all.
+        assertEquals(106, (finding.what as Msg.Plural).args[1])
+        assertEquals(listOf(R.string.ev_per_method), finding.evidence.map { it.resourceId })
         assertFalse(Findings.methodCountIsMeaningful(movieBox))
+    }
+
+    @Test
+    fun `each shape explains itself`() {
+        // One conclusion, three reasons. A card reading "the DEX is 590 KB per
+        // method" once explained itself with "Android will not load these
+        // directly", where "these" referred to nothing: the reason belonged to
+        // a different shape. Three distinct resources is what prevents that.
+        val many = Findings.of(report(dexFiles = 1, dexEntries = 12)).single().why.resourceId
+        val huge = Findings.of(
+            report(dexFiles = 1, dexEntries = 1, dexBytes = 64_072_581, methods = 106),
+        ).single().why.resourceId
+        val none = Findings.of(report(dexFiles = 0, dexEntries = 3)).single().why.resourceId
+        assertEquals(3, setOf(many, huge, none).size)
+        assertEquals(R.string.f_packed_mixed_why, many)
+        assertEquals(R.string.f_packed_huge_why, huge)
+        assertEquals(R.string.f_packed_none_why, none)
     }
 
     @Test
@@ -175,8 +179,6 @@ class FindingsTest {
 
     @Test
     fun `a tiny app is not flagged for having few methods`() {
-        // Small apps have a worse ratio by nature; the rule must not punish
-        // them for it.
         assertTrue(
             Findings.of(report(dexFiles = 1, dexEntries = 1, dexBytes = 400_000, methods = 900)).isEmpty(),
         )
@@ -195,21 +197,27 @@ class FindingsTest {
     }
 
     @Test
-    fun `every finding says what to do about it`() {
+    fun `no rule writes its own English`() {
+        // The whole point of the change. A rule that builds a sentence itself
+        // is a rule three quarters of this app's users cannot read, and the
+        // resourceId accessor throws on Msg.Raw for exactly that reason.
         val all = Findings.of(
             report(
                 targetSdk = 30, debuggable = true, cleartext = true, backup = true,
                 dangerous = listOf("android.permission.CAMERA"),
                 exported = listOf("a.B", "a.C"),
                 abis = listOf("arm64-v8a", "x86"),
+                dexFiles = 1, dexEntries = 4,
                 signature = null,
             ),
         )
-        assertTrue(all.size >= 7)
+        assertTrue(all.size >= 8)
         all.forEach {
-            assertTrue("${it.what} has no why", it.why.isNotBlank())
-            assertTrue("${it.what} has no action", it.action.isNotBlank())
-            assertTrue("${it.what} does not end cleanly", it.what.endsWith("."))
+            assertNotEquals(0, it.what.resourceId)
+            assertNotEquals(0, it.why.resourceId)
+            assertNotEquals(0, it.action.resourceId)
+            // An observation and its reason are never the same sentence.
+            assertNotEquals(it.what.resourceId, it.why.resourceId)
         }
     }
 }

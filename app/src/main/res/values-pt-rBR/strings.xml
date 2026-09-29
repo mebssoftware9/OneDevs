@@ -296,6 +296,52 @@
     <string name="account_no_google">O Google não conseguiu oferecer uma conta agora. Verifique se você entrou no Google neste aparelho e tente de novo.</string>
     <string name="details_stats_title">Testes até agora</string>
     <string name="details_stats_testers">Testadores</string>
-    <string name="details_stats_spent">DevCoins gastos</string>
-    <string name="details_stats_left">Testes que ainda pode pagar</string>
+    <string name="details_stats_spent">Gasto</string>
+    <string name="details_stats_left">Testes</string>
+    <string name="ev_readable">legíveis: %1$d/%2$d</string>
+    <string name="ev_per_method">%1$s por método</string>
+    <string name="f_packed_none_what">Nenhum dos %1$d arquivos .dex é legível.</string>
+    <string name="f_packed_none_why">Nenhum começa com um cabeçalho DEX, então não há neste artefato código que o Android possa executar. O que roda é produzido em tempo de execução. Isto é um empacotador, e todos os outros achados descrevem o carregador, não o app.</string>
+    <string name="f_packed_mixed_what">%1$d de %2$d arquivos .dex não são arquivos DEX.</string>
+    <string name="f_packed_mixed_why">O Android não carrega esses diretamente: são cargas descriptografadas em tempo de execução pelos legíveis. O código que roda não está neste arquivo. Isto é um empacotador, e todos os outros achados descrevem o carregador, não o app.</string>
+    <string name="f_packed_huge_why">O cabeçalho é real e está quase vazio. Um build deste tamanho normalmente declara centenas de milhares de métodos, então a maior parte do arquivo são dados atrás de um cabeçalho válido, desempacotados em tempo de execução. Isto é um empacotador, e todos os outros achados descrevem o carregador, não o app.</string>
+    <string name="f_packed_action">Se for o seu build, verifique o que o seu minificador ou ferramenta de proteção está gerando. Se não for, trate todos os outros achados como descrição de um stub.</string>
+    <string name="f_debug_what">Este é um build de depuração.</string>
+    <string name="f_debug_why">Builds de depuração são assinados com chave de depuração, saem sem minificação e o Play os recusa. Os achados abaixo descrevem este arquivo, não o que você enviaria.</string>
+    <string name="f_debug_action">Analise o artefato de publicação: app/build/outputs/bundle/release, ou o AAB do seu CI.</string>
+    <string name="f_target_what">Tem como alvo a API %1$d; o Play exige %2$d.</string>
+    <string name="f_target_why">O Play recusa apps novos e atualizações abaixo do mínimo, que sobe todo agosto. Este build não pode ser enviado.</string>
+    <string name="f_target_action">Suba o targetSdk para %1$d no build.gradle.kts e teste de novo: cada nível traz mudanças de comportamento que só aparecem em execução.</string>
+    <string name="f_unsigned_what">Sem assinatura que o Android consiga ler.</string>
+    <string name="f_unsigned_why">Um pacote sem assinatura não pode ser instalado nem enviado.</string>
+    <string name="f_unsigned_action">Gere um artefato assinado, ou verifique qual configuração de assinatura foi aplicada a esta variante.</string>
+    <string name="f_abi_what">Inclui bibliotecas nativas %1$s.</string>
+    <string name="f_abi_why">O Play nunca serviu um build x86 a um telefone. São bytes em toda instalação que ninguém executa.</string>
+    <string name="f_abi_why_size">O Play nunca serviu um build x86 a um telefone. São bytes em toda instalação que ninguém executa, cerca de %1$s aqui.</string>
+    <string name="f_abi_action">Um App Bundle divide por ABI automaticamente e o problema some. Para um APK, adicione um bloco abiFilters com arm64-v8a e armeabi-v7a.</string>
+    <string name="f_cleartext_what">Permite tráfego HTTP sem criptografia.</string>
+    <string name="f_cleartext_why">Qualquer requisição feita por http:// pode ser lida e alterada na rede em que o usuário está.</string>
+    <string name="f_cleartext_action">Defina android:usesCleartextTraffic como false, ou adicione uma configuração de segurança de rede que permita só os hosts que realmente precisam.</string>
+    <string name="f_perms_why">Cada uma é uma caixa de diálogo que o usuário pode recusar, e cada uma precisa de uma entrada na Segurança dos dados do Play.</string>
+    <string name="f_perms_action">Confira se todas ainda são usadas. Uma permissão deixada por um recurso removido custa instalações e respostas no formulário de Segurança dos dados.</string>
+    <string name="f_exported_why">Qualquer app do aparelho pode iniciar um componente exportado. Um deles é a activity de inicialização e precisa ser; os outros são portas de entrada neste app que você talvez não quisesse abrir.</string>
+    <string name="f_exported_action">Em cada um, confirme que android:exported é intencional e que o componente valida o que recebe.</string>
+    <string name="f_backup_what">O backup está permitido.</string>
+    <string name="f_backup_why">Os dados do app são copiados para o backup em nuvem do usuário e restaurados em aparelhos novos, incluindo o que estiver em cache e não deveria viajar.</string>
+    <string name="f_backup_action">Verifique se as regras de backup excluem tokens, chaves e caches, ou defina android:allowBackup como false.</string>
+    <plurals name="f_perms_what">
+        <item quantity="one">Pede %1$d permissão em tempo de execução.</item>
+        <item quantity="many">Pede %1$d de permissões em tempo de execução.</item>
+        <item quantity="other">Pede %1$d permissões em tempo de execução.</item>
+    </plurals>
+    <plurals name="f_exported_what">
+        <item quantity="one">%1$d componente está exportado.</item>
+        <item quantity="many">%1$d de componentes estão exportados.</item>
+        <item quantity="other">%1$d componentes estão exportados.</item>
+    </plurals>
+    <plurals name="f_packed_huge_what">
+        <item quantity="one">%1$s de DEX declarando %2$d método.</item>
+        <item quantity="many">%1$s de DEX declarando %2$d de métodos.</item>
+        <item quantity="other">%1$s de DEX declarando %2$d métodos.</item>
+    </plurals>
 </resources>

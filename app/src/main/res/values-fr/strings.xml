@@ -298,6 +298,52 @@
     <string name="account_no_google">Google n\'a pas pu proposer de compte à cet instant. Vérifiez que vous êtes connecté à Google sur cet appareil, puis réessayez.</string>
     <string name="details_stats_title">Tests jusqu\'ici</string>
     <string name="details_stats_testers">Testeurs</string>
-    <string name="details_stats_spent">DevCoins dépensés</string>
-    <string name="details_stats_left">Tests que vous pouvez encore financer</string>
+    <string name="details_stats_spent">Dépensé</string>
+    <string name="details_stats_left">Tests</string>
+    <string name="ev_readable">lisibles : %1$d/%2$d</string>
+    <string name="ev_per_method">%1$s par méthode</string>
+    <string name="f_packed_none_what">Aucun des %1$d fichiers .dex n\'est lisible.</string>
+    <string name="f_packed_none_why">Aucun ne commence par un en-tête DEX : cet artefact ne contient aucun code exécutable par Android. Ce qui s\'exécute est produit à l\'exécution. C\'est la signature d\'un packer, et tous les autres constats décrivent le chargeur plutôt que l\'application.</string>
+    <string name="f_packed_mixed_what">%1$d des %2$d fichiers .dex ne sont pas des fichiers DEX.</string>
+    <string name="f_packed_mixed_why">Android ne les charge pas directement : ce sont des charges utiles déchiffrées à l\'exécution par ceux qui sont lisibles. Le code exécuté n\'est pas dans ce fichier. C\'est la signature d\'un packer, et tous les autres constats décrivent le chargeur plutôt que l\'application.</string>
+    <string name="f_packed_huge_why">L\'en-tête est réel et presque vide. Un build de cette taille déclare normalement des centaines de milliers de méthodes : l\'essentiel du fichier est donc des données derrière un en-tête valide, décompressées à l\'exécution. C\'est la signature d\'un packer, et tous les autres constats décrivent le chargeur plutôt que l\'application.</string>
+    <string name="f_packed_action">Si c\'est votre build, vérifiez ce que produit votre minificateur ou votre outil de protection. Sinon, considérez tous les autres constats comme décrivant un stub.</string>
+    <string name="f_debug_what">C\'est un build de débogage.</string>
+    <string name="f_debug_why">Les builds de débogage sont signés avec une clé de débogage, ne sont pas minifiés, et Play les refuse. Les constats ci-dessous décrivent ce fichier, pas celui que vous téléverseriez.</string>
+    <string name="f_debug_action">Analysez plutôt l\'artefact de publication : app/build/outputs/bundle/release, ou l\'AAB de votre CI.</string>
+    <string name="f_target_what">Cible l\'API %1$d ; Play exige %2$d.</string>
+    <string name="f_target_why">Play refuse les nouvelles applis et les mises à jour sous le seuil, qui monte chaque août. Ce build ne peut pas être téléversé.</string>
+    <string name="f_target_action">Passez targetSdk à %1$d dans build.gradle.kts, puis retestez : chaque niveau apporte des changements de comportement qui n\'apparaissent qu\'à l\'exécution.</string>
+    <string name="f_unsigned_what">Aucune signature lisible par Android.</string>
+    <string name="f_unsigned_why">Un paquet non signé ne peut être ni installé ni téléversé.</string>
+    <string name="f_unsigned_action">Produisez un artefact signé, ou vérifiez quelle configuration de signature s\'applique à cette variante.</string>
+    <string name="f_abi_what">Embarque des bibliothèques natives %1$s.</string>
+    <string name="f_abi_why">Play n\'a jamais servi de build x86 à un téléphone. Ce sont des octets dans chaque installation que personne n\'exécute.</string>
+    <string name="f_abi_why_size">Play n\'a jamais servi de build x86 à un téléphone. Ce sont des octets dans chaque installation que personne n\'exécute, environ %1$s ici.</string>
+    <string name="f_abi_action">Un App Bundle découpe par ABI automatiquement et le problème disparaît. Pour un APK, ajoutez un bloc abiFilters avec arm64-v8a et armeabi-v7a.</string>
+    <string name="f_cleartext_what">Autorise le trafic HTTP en clair.</string>
+    <string name="f_cleartext_why">Toute requête faite en http:// peut être lue et modifiée sur le réseau où se trouve l\'utilisateur.</string>
+    <string name="f_cleartext_action">Mettez android:usesCleartextTraffic à false, ou ajoutez une configuration de sécurité réseau n\'autorisant que les hôtes qui en ont réellement besoin.</string>
+    <string name="f_perms_why">Chacune est une boîte de dialogue que l\'utilisateur peut refuser, et chacune demande une entrée dans la section Sécurité des données de Play.</string>
+    <string name="f_perms_action">Vérifiez que chacune sert encore. Une autorisation laissée par une fonctionnalité supprimée coûte des installations et des réponses dans le formulaire Sécurité des données.</string>
+    <string name="f_exported_why">N\'importe quelle appli de l\'appareil peut démarrer un composant exporté. L\'un d\'eux est l\'activité de lancement et doit l\'être ; les autres sont des points d\'entrée que vous n\'aviez peut-être pas l\'intention d\'ouvrir.</string>
+    <string name="f_exported_action">Pour chacun, confirmez que android:exported est délibéré et que le composant valide ce qu\'il reçoit.</string>
+    <string name="f_backup_what">La sauvegarde est autorisée.</string>
+    <string name="f_backup_why">Les données de l\'appli sont copiées dans la sauvegarde cloud de l\'utilisateur et restaurées sur les nouveaux appareils, y compris ce qui est en cache et ne devrait pas voyager.</string>
+    <string name="f_backup_action">Vérifiez que les règles de sauvegarde excluent jetons, clés et caches, ou mettez android:allowBackup à false.</string>
+    <plurals name="f_perms_what">
+        <item quantity="one">Demande %1$d autorisation à l\'exécution.</item>
+        <item quantity="many">Demande %1$d d\'autorisations à l\'exécution.</item>
+        <item quantity="other">Demande %1$d autorisations à l\'exécution.</item>
+    </plurals>
+    <plurals name="f_exported_what">
+        <item quantity="one">%1$d composant est exporté.</item>
+        <item quantity="many">%1$d de composants sont exportés.</item>
+        <item quantity="other">%1$d composants sont exportés.</item>
+    </plurals>
+    <plurals name="f_packed_huge_what">
+        <item quantity="one">%1$s de DEX déclarant %2$d méthode.</item>
+        <item quantity="many">%1$s de DEX déclarant %2$d de méthodes.</item>
+        <item quantity="other">%1$s de DEX déclarant %2$d méthodes.</item>
+    </plurals>
 </resources>

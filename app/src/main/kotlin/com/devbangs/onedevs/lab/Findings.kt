@@ -1,5 +1,7 @@
 package com.devbangs.onedevs.lab
 
+import com.devbangs.onedevs.R
+
 /**
  * How much a finding matters.
  *
@@ -13,21 +15,19 @@ enum class Severity { Blocking, Worth, Note }
 /**
  * One thing worth saying about an APK.
  *
- * Every field here exists because a report of bare facts is a file viewer.
- * [what] is the observation, [why] is what it costs, and [action] is the next
- * thing to do about it -- and a finding without all three does not get made.
- * "120,710 methods" is a fact; "past the single-DEX ceiling" is a fact with a
- * scary noun attached; neither is worth a line unless something follows.
+ * Every field exists because a report of bare facts is a file viewer. [what]
+ * is the observation, [why] is what it costs, and [action] is the next thing
+ * to do -- and a finding without all three does not get made.
  *
- * [evidence] is the specific thing observed, so nobody has to take the
- * finding's word for it: the permission's own name, the ABIs, the bytes.
+ * All three are [Msg] rather than String: the rules choose a sentence, the
+ * screen renders it in the reader's language.
  */
 data class Finding(
     val severity: Severity,
-    val what: String,
-    val why: String,
-    val action: String,
-    val evidence: List<String> = emptyList(),
+    val what: Msg,
+    val why: Msg,
+    val action: Msg,
+    val evidence: List<Msg> = emptyList(),
 )
 
 /**
@@ -35,8 +35,8 @@ data class Finding(
  *
  * Deliberately not a method on ApkReport: the report is what the file says and
  * this is what OneDevs thinks about it, and the two want to be argued with
- * separately. Every rule here is a pure function of the report, so every rule
- * here is testable without an APK.
+ * separately. Every rule is a pure function of the report, so every rule is
+ * testable without an APK or a device.
  */
 object Findings {
 
@@ -56,10 +56,10 @@ object Findings {
      *
      * Measured rather than guessed. A normal build sits near 250 bytes per
      * method -- OneDevs itself is 29.1 MB across 120,636, which is 253. The
-     * file that prompted this was 61.1 MB across 106, which is 604,415, or
-     * about two thousand times heavier. Twenty thousand is eighty times a
-     * normal build and thirty times below the case it catches, which is as
-     * much room as a threshold like this can ask for.
+     * file that prompted this was 61.1 MB across 106, which is 604,415, about
+     * two thousand times heavier. Twenty thousand is eighty times a normal
+     * build and thirty times below the case it catches, which is as much room
+     * as a threshold like this can ask for.
      */
     private const val DEX_BYTES_PER_METHOD_CEILING = 20_000L
 
@@ -76,6 +76,51 @@ object Findings {
     }.sortedBy { it.severity.ordinal }
 
     /**
+     * Entries or bytes that are not the code they claim to be.
+     *
+     * Three shapes, one conclusion: nothing parses, some entries are not DEX,
+     * or one enormous DEX declares almost nothing. Each gets its own reason,
+     * because a card reading "590 KB per method" once explained itself with
+     * "Android will not load these directly", where "these" referred to
+     * nothing.
+     *
+     * Not a verdict on the app. Packers are used by legitimate apps against
+     * cloning and by malware against analysis. What it means is that the
+     * artifact does not contain the code that will run.
+     */
+    private fun packed(r: ApkReport): Finding? {
+        val unreadable = r.dexEntries - r.dex.files
+        val perMethod = bytesPerMethod(r)
+        if (unreadable <= 0 && perMethod <= DEX_BYTES_PER_METHOD_CEILING) return null
+        val dexBytes = r.sizes.firstOrNull { it.label == "DEX" }?.bytes ?: 0L
+        val (what, why) = when {
+            r.dex.files == 0 && r.dexEntries > 0 ->
+                str(R.string.f_packed_none_what, r.dexEntries) to
+                    str(R.string.f_packed_none_why)
+            unreadable > 0 ->
+                str(R.string.f_packed_mixed_what, unreadable, r.dexEntries) to
+                    str(R.string.f_packed_mixed_why)
+            else ->
+                plural(
+                    R.plurals.f_packed_huge_what, r.dex.methods,
+                    dexBytes.readableBytes(), r.dex.methods,
+                ) to
+                    str(R.string.f_packed_huge_why)
+        }
+        return Finding(
+            severity = Severity.Worth,
+            what = what,
+            why = why,
+            action = str(R.string.f_packed_action),
+            evidence = buildList {
+                // Only worth saying when the counts actually disagree.
+                if (unreadable > 0) add(str(R.string.ev_readable, r.dex.files, r.dexEntries))
+                if (perMethod > 0) add(str(R.string.ev_per_method, perMethod.readableBytes()))
+            },
+        )
+    }
+
+    /**
      * A debug build is not a finding about the app, it is a finding about
      * which file was picked. Saying "Play rejects this" about an artifact
      * nobody was going to upload is noise; saying "you analysed the wrong
@@ -86,75 +131,106 @@ object Findings {
     } else {
         Finding(
             severity = Severity.Note,
-            what = "This is a debug build.",
-            why = "Debug builds are signed with a debug key, ship unminified, " +
-                "and are rejected by Play. Findings below describe this file, " +
-                "not the one you would upload.",
-            action = "Analyse the release artifact instead: " +
-                "app/build/outputs/bundle/release or the AAB from your CI.",
+            what = str(R.string.f_debug_what),
+            why = str(R.string.f_debug_why),
+            action = str(R.string.f_debug_action),
+        )
+    }
+
+    private fun targetSdk(r: ApkReport) = if (r.meetsPlayTargetFloor) {
+        null
+    } else {
+        Finding(
+            severity = Severity.Blocking,
+            what = str(R.string.f_target_what, r.targetSdk, ApkReport.PLAY_TARGET_SDK_FLOOR),
+            why = str(R.string.f_target_why),
+            action = str(R.string.f_target_action, ApkReport.PLAY_TARGET_SDK_FLOOR),
+        )
+    }
+
+    private fun unsigned(r: ApkReport) = if (r.signatureSha256 != null) {
+        null
+    } else {
+        Finding(
+            severity = Severity.Blocking,
+            what = str(R.string.f_unsigned_what),
+            why = str(R.string.f_unsigned_why),
+            action = str(R.string.f_unsigned_action),
         )
     }
 
     /**
-     * Entries named .dex that are not DEX files.
-     *
-     * The signature of a packer: a small real classes.dex that loads
-     * everything else at runtime from encrypted blobs stored under .dex names.
-     * It showed up as a 61 MB DEX slice reporting 106 methods -- two numbers
-     * from two code paths, one counting entries and one counting headers, and
-     * their disagreement is the finding.
-     *
-     * Not a verdict on the app. Packers are used by legitimate apps against
-     * cloning, and by malware against analysis. What it does mean is that the
-     * artifact does not contain the code that will run, so nothing else in
-     * this report describes the real application.
+     * The one in the screenshot that nobody says out loud. Two of four ABIs
+     * in a typical release exist only for emulators.
      */
-    private fun packed(r: ApkReport): Finding? {
-        val unreadable = r.dexEntries - r.dex.files
-        val perMethod = bytesPerMethod(r)
-        val bloated = perMethod > DEX_BYTES_PER_METHOD_CEILING
-        if (unreadable <= 0 && !bloated) return null
-
-        // One conclusion, three reasons. Merging the shapes into a single
-        // finding was right; leaving them one explanation was not, and it
-        // showed: a card reading "the DEX is 590 KB per method" went on to say
-        // "Android will not load these directly", where "these" referred to
-        // nothing. The reason has to match the shape that produced it.
-        val dexBytes = r.sizes.firstOrNull { it.label == "DEX" }?.bytes ?: 0L
-        val (what, why) = when {
-            r.dex.files == 0 && r.dexEntries > 0 -> Pair(
-                "No readable DEX in ${r.dexEntries} .dex entries.",
-                "Not one of them starts with a DEX header, so there is no code " +
-                    "in this artifact that Android could run. Whatever executes " +
-                    "is produced at runtime.",
-            )
-            unreadable > 0 -> Pair(
-                "$unreadable of ${r.dexEntries} .dex entries are not DEX files.",
-                "Android will not load those directly, so they are payloads " +
-                    "decrypted at runtime by the ${r.dex.files} that it will. " +
-                    "The code that runs is not in this file.",
-            )
-            else -> Pair(
-                "${dexBytes.readableBytes()} of DEX declaring ${r.dex.methods} methods.",
-                "The header is real and nearly empty. A build this size " +
-                    "normally declares hundreds of thousands of methods, so the " +
-                    "bulk of the file is data sitting behind a valid header, " +
-                    "unpacked at runtime.",
-            )
-        }
+    private fun emulatorAbis(r: ApkReport): Finding? {
+        val emulator = r.abis.filter { it in EMULATOR_ABIS }
+        if (emulator.isEmpty() || r.abis.size == emulator.size) return null
+        val bytes = r.sizes.firstOrNull { it.label == "Native libraries" }?.bytes ?: 0L
+        val share = if (r.abis.isEmpty()) 0L else bytes * emulator.size / r.abis.size
         return Finding(
             severity = Severity.Worth,
-            what = what,
-            why = why + " This is what a packer looks like, and it means every " +
-                "other finding here describes the loader rather than the app.",
-            action = "If this is your build, check what your shrinker or " +
-                "protection tool is producing. If it is not, treat every other " +
-                "finding here as describing a stub.",
-            evidence = buildList {
-                // Only worth saying when the counts actually disagree.
-                if (unreadable > 0) add("${r.dex.files} readable of ${r.dexEntries}")
-                if (perMethod > 0) add("${perMethod.readableBytes()} per method")
+            what = str(R.string.f_abi_what, emulator.joinToString(", ")),
+            why = if (share > 0) {
+                str(R.string.f_abi_why_size, share.readableBytes())
+            } else {
+                str(R.string.f_abi_why)
             },
+            action = str(R.string.f_abi_action),
+            evidence = r.abis.map { Msg.Raw(it) },
+        )
+    }
+
+    private fun cleartext(r: ApkReport) = if (!r.allowsCleartext) {
+        null
+    } else {
+        Finding(
+            severity = Severity.Worth,
+            what = str(R.string.f_cleartext_what),
+            why = str(R.string.f_cleartext_why),
+            action = str(R.string.f_cleartext_action),
+        )
+    }
+
+    /** Two dangerous permissions is not a finding. Which two is. */
+    private fun dangerousPermissions(r: ApkReport) = if (r.dangerousPermissions.isEmpty()) {
+        null
+    } else {
+        Finding(
+            severity = Severity.Note,
+            what = plural(
+                R.plurals.f_perms_what, r.dangerousPermissions.size, r.dangerousPermissions.size,
+            ),
+            why = str(R.string.f_perms_why),
+            action = str(R.string.f_perms_action),
+            evidence = r.dangerousPermissions.map { Msg.Raw(it.substringAfterLast('.')) },
+        )
+    }
+
+    /**
+     * An exported component is an entry point any other app on the device can
+     * invoke. The launcher activity has to be one. The rest are worth a look.
+     */
+    private fun exportedComponents(r: ApkReport): Finding? {
+        val exported = r.components.exported
+        if (exported.size <= 1) return null
+        return Finding(
+            severity = Severity.Worth,
+            what = plural(R.plurals.f_exported_what, exported.size, exported.size),
+            why = str(R.string.f_exported_why),
+            action = str(R.string.f_exported_action),
+            evidence = exported.map { Msg.Raw(it.substringAfterLast('.')) },
+        )
+    }
+
+    private fun backup(r: ApkReport) = if (!r.allowsBackup) {
+        null
+    } else {
+        Finding(
+            severity = Severity.Note,
+            what = str(R.string.f_backup_what),
+            why = str(R.string.f_backup_why),
+            action = str(R.string.f_backup_action),
         )
     }
 
@@ -177,119 +253,6 @@ object Findings {
      */
     fun methodCountIsMeaningful(r: ApkReport): Boolean =
         r.dexEntries == r.dex.files && bytesPerMethod(r) <= DEX_BYTES_PER_METHOD_CEILING
-
-    private fun targetSdk(r: ApkReport) = if (r.meetsPlayTargetFloor) {
-        null
-    } else {
-        Finding(
-            severity = Severity.Blocking,
-            what = "Targets API ${r.targetSdk}; Play requires ${ApkReport.PLAY_TARGET_SDK_FLOOR}.",
-            why = "Play refuses new apps and updates below the floor, which " +
-                "rises every August. This build cannot be uploaded.",
-            action = "Raise targetSdk to ${ApkReport.PLAY_TARGET_SDK_FLOOR} in " +
-                "build.gradle.kts, then retest: each level brings behaviour " +
-                "changes that only appear at runtime.",
-        )
-    }
-
-    private fun unsigned(r: ApkReport) = if (r.signatureSha256 != null) {
-        null
-    } else {
-        Finding(
-            severity = Severity.Blocking,
-            what = "No signature Android could read.",
-            why = "An unsigned package cannot be installed or uploaded.",
-            action = "Build a signed artifact, or check the signing config " +
-                "actually applied to this variant.",
-        )
-    }
-
-    /**
-     * The one in the screenshot that nobody says out loud. Two of four ABIs
-     * in a typical release exist only for emulators.
-     */
-    private fun emulatorAbis(r: ApkReport): Finding? {
-        val emulator = r.abis.filter { it in EMULATOR_ABIS }
-        if (emulator.isEmpty() || r.abis.size == emulator.size) return null
-        val bytes = r.sizes.firstOrNull { it.label == "Native libraries" }?.bytes ?: 0L
-        val share = if (r.abis.isEmpty()) 0L else bytes * emulator.size / r.abis.size
-        return Finding(
-            severity = Severity.Worth,
-            what = "Ships ${emulator.joinToString(" and ")} native libraries.",
-            why = "Play has never served an x86 build to a phone. These are " +
-                "bytes in every install that no user runs" +
-                if (share > 0) ", roughly ${share.readableBytes()} here." else ".",
-            action = "An App Bundle splits by ABI automatically and the problem " +
-                "disappears. For an APK, add an abiFilters block for " +
-                "arm64-v8a and armeabi-v7a.",
-            evidence = r.abis,
-        )
-    }
-
-    private fun cleartext(r: ApkReport) = if (!r.allowsCleartext) {
-        null
-    } else {
-        Finding(
-            severity = Severity.Worth,
-            what = "Allows cleartext HTTP.",
-            why = "Any request this app makes over http:// can be read and " +
-                "altered on the network the user is on.",
-            action = "Set android:usesCleartextTraffic=\"false\", or add a " +
-                "network security config that permits only the hosts that " +
-                "genuinely need it.",
-        )
-    }
-
-    /** Two dangerous permissions is not a finding. Which two is. */
-    private fun dangerousPermissions(r: ApkReport) = if (r.dangerousPermissions.isEmpty()) {
-        null
-    } else {
-        Finding(
-            severity = Severity.Note,
-            what = "Asks for ${r.dangerousPermissions.size} runtime " +
-                if (r.dangerousPermissions.size == 1) "permission." else "permissions.",
-            why = "Each one is a dialog the user can refuse, and each needs a " +
-                "Data Safety entry in the Play listing.",
-            action = "Check every one is still used. A permission left behind " +
-                "by a removed feature costs installs and answers in the " +
-                "Data Safety form.",
-            evidence = r.dangerousPermissions.map { it.substringAfterLast('.') },
-        )
-    }
-
-    /**
-     * An exported component is an entry point any other app on the device can
-     * invoke. The launcher activity has to be one. The rest are worth a look.
-     */
-    private fun exportedComponents(r: ApkReport): Finding? {
-        val exported = r.components.exported
-        if (exported.size <= 1) return null
-        return Finding(
-            severity = Severity.Worth,
-            what = "${exported.size} components are exported.",
-            why = "Any app on the device can start an exported component. One " +
-                "of these is the launcher activity and has to be; the others " +
-                "are entry points into this app that you may not have meant " +
-                "to open.",
-            action = "For each, confirm android:exported=\"true\" is deliberate " +
-                "and the component validates what it receives.",
-            evidence = exported.map { it.substringAfterLast('.') },
-        )
-    }
-
-    private fun backup(r: ApkReport) = if (!r.allowsBackup) {
-        null
-    } else {
-        Finding(
-            severity = Severity.Note,
-            what = "Backup is allowed.",
-            why = "App data is copied to the user's cloud backup and restored " +
-                "onto new devices, including anything cached that should not " +
-                "travel.",
-            action = "Check the backup rules exclude tokens, keys and caches, " +
-                "or set android:allowBackup=\"false\".",
-        )
-    }
 
     /**
      * Whether multidex is worth mentioning at all.

@@ -298,6 +298,52 @@
     <string name="account_no_google">Google no pudo ofrecer una cuenta ahora mismo. Comprueba que has iniciado sesión en Google en este dispositivo e inténtalo de nuevo.</string>
     <string name="details_stats_title">Pruebas hasta ahora</string>
     <string name="details_stats_testers">Probadores</string>
-    <string name="details_stats_spent">DevCoins gastados</string>
-    <string name="details_stats_left">Pruebas que aún puedes pagar</string>
+    <string name="details_stats_spent">Gastado</string>
+    <string name="details_stats_left">Pruebas</string>
+    <string name="ev_readable">legibles: %1$d/%2$d</string>
+    <string name="ev_per_method">%1$s por método</string>
+    <string name="f_packed_none_what">Ninguno de los %1$d archivos .dex es legible.</string>
+    <string name="f_packed_none_why">Ninguno empieza con una cabecera DEX, así que en este artefacto no hay código que Android pueda ejecutar. Lo que se ejecuta se genera en tiempo de ejecución. Esto es un empaquetador, y cualquier otro hallazgo aquí describe el cargador y no la app.</string>
+    <string name="f_packed_mixed_what">%1$d de %2$d archivos .dex no son archivos DEX.</string>
+    <string name="f_packed_mixed_why">Android no los carga directamente: son cargas útiles que los legibles descifran en tiempo de ejecución. El código que se ejecuta no está en este archivo. Esto es un empaquetador, y cualquier otro hallazgo aquí describe el cargador y no la app.</string>
+    <string name="f_packed_huge_why">La cabecera es real y está casi vacía. Una compilación de este tamaño suele declarar cientos de miles de métodos, así que el grueso del archivo son datos detrás de una cabecera válida, desempaquetados en tiempo de ejecución. Esto es un empaquetador, y cualquier otro hallazgo aquí describe el cargador y no la app.</string>
+    <string name="f_packed_action">Si es tu compilación, revisa qué produce tu minificador o tu herramienta de protección. Si no lo es, trata cualquier otro hallazgo como una descripción de un stub.</string>
+    <string name="f_debug_what">Es una compilación de depuración.</string>
+    <string name="f_debug_why">Las compilaciones de depuración se firman con una clave de depuración, no se minifican y Play las rechaza. Los hallazgos de abajo describen este archivo, no el que subirías.</string>
+    <string name="f_debug_action">Analiza el artefacto de publicación: app/build/outputs/bundle/release, o el AAB de tu CI.</string>
+    <string name="f_target_what">Apunta a la API %1$d; Play exige %2$d.</string>
+    <string name="f_target_why">Play rechaza apps nuevas y actualizaciones por debajo del mínimo, que sube cada agosto. Esta compilación no se puede subir.</string>
+    <string name="f_target_action">Sube targetSdk a %1$d en build.gradle.kts y vuelve a probar: cada nivel trae cambios de comportamiento que solo aparecen en ejecución.</string>
+    <string name="f_unsigned_what">Sin una firma que Android pueda leer.</string>
+    <string name="f_unsigned_why">Un paquete sin firmar no se puede instalar ni subir.</string>
+    <string name="f_unsigned_action">Genera un artefacto firmado, o revisa qué configuración de firma se aplicó a esta variante.</string>
+    <string name="f_abi_what">Incluye bibliotecas nativas %1$s.</string>
+    <string name="f_abi_why">Play nunca ha servido una compilación x86 a un teléfono. Son bytes en cada instalación que nadie ejecuta.</string>
+    <string name="f_abi_why_size">Play nunca ha servido una compilación x86 a un teléfono. Son bytes en cada instalación que nadie ejecuta, unos %1$s aquí.</string>
+    <string name="f_abi_action">Un App Bundle divide por ABI automáticamente y el problema desaparece. Para un APK, añade un bloque abiFilters con arm64-v8a y armeabi-v7a.</string>
+    <string name="f_cleartext_what">Permite tráfico HTTP sin cifrar.</string>
+    <string name="f_cleartext_why">Cualquier petición que la app haga por http:// se puede leer y alterar en la red donde esté el usuario.</string>
+    <string name="f_cleartext_action">Pon android:usesCleartextTraffic en false, o añade una configuración de seguridad de red que permita solo los servidores que de verdad lo necesiten.</string>
+    <string name="f_perms_why">Cada uno es un diálogo que el usuario puede rechazar, y cada uno necesita una entrada en la sección de Seguridad de los datos de Play.</string>
+    <string name="f_perms_action">Comprueba que todos se sigan usando. Un permiso que quedó de una función eliminada cuesta instalaciones y respuestas en el formulario de Seguridad de los datos.</string>
+    <string name="f_exported_why">Cualquier app del dispositivo puede iniciar un componente exportado. Uno de ellos es la actividad de inicio y tiene que serlo; los demás son puertas de entrada a esta app que quizá no querías abrir.</string>
+    <string name="f_exported_action">En cada uno, confirma que android:exported es intencionado y que el componente valida lo que recibe.</string>
+    <string name="f_backup_what">La copia de seguridad está permitida.</string>
+    <string name="f_backup_why">Los datos de la app se copian a la nube del usuario y se restauran en dispositivos nuevos, incluido lo que esté en caché y no debería viajar.</string>
+    <string name="f_backup_action">Revisa que las reglas de copia excluyan tokens, claves y cachés, o pon android:allowBackup en false.</string>
+    <plurals name="f_perms_what">
+        <item quantity="one">Pide %1$d permiso en tiempo de ejecución.</item>
+        <item quantity="many">Pide %1$d de permisos en tiempo de ejecución.</item>
+        <item quantity="other">Pide %1$d permisos en tiempo de ejecución.</item>
+    </plurals>
+    <plurals name="f_exported_what">
+        <item quantity="one">%1$d componente está exportado.</item>
+        <item quantity="many">%1$d de componentes están exportados.</item>
+        <item quantity="other">%1$d componentes están exportados.</item>
+    </plurals>
+    <plurals name="f_packed_huge_what">
+        <item quantity="one">%1$s de DEX declarando %2$d método.</item>
+        <item quantity="many">%1$s de DEX declarando %2$d de métodos.</item>
+        <item quantity="other">%1$s de DEX declarando %2$d métodos.</item>
+    </plurals>
 </resources>
