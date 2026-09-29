@@ -120,6 +120,24 @@ internal fun ToolFrame(
     }
 }
 
+/** The frame for tools that read no APK: a title and a way out. */
+@Composable
+internal fun PlainFrame(title: String, onClose: () -> Unit, content: @Composable () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+            Pill(stringResource(R.string.lab_close), onClose)
+        }
+        content()
+    }
+}
+
 @Composable
 internal fun Pill(text: String, onClick: () -> Unit) {
     Text(

@@ -45,11 +45,15 @@ import kotlinx.coroutines.withContext
  * the two together, so a tool marked available that nobody wired up fails the
  * build instead of sitting in the list as a row that does nothing.
  */
-internal enum class ToolKind(val toolName: String) {
+/** What a tool reads: an APK, images from the phone, or the listing's text. */
+internal enum class ToolInput { Apk, Images, Text }
+
+internal enum class ToolKind(val toolName: String, val input: ToolInput = ToolInput.Apk) {
     Analyzer("APK Analyzer"),
     Manifest("Manifest Inspector"),
     Permissions("Permissions Inspector"),
     Sdk("SDK Compatibility"),
+    Dependencies("Dependencies Inspector"),
     Components("App Components"),
     Resources("Resource Inspector"),
     Natives("Native Libraries Inspector"),
@@ -61,6 +65,11 @@ internal enum class ToolKind(val toolName: String) {
     Versions("Android Version Testing"),
     Screens("Screen & Resolution Testing"),
     PermissionTesting("Permission Testing"),
+    DarkMode("Dark Mode Testing"),
+    Accessibility("Accessibility Testing"),
+    Orientation("Orientation Testing"),
+    FontScaling("Font & Display Scaling"),
+    Background("Background/Foreground Testing"),
     Install("Installation & Update Testing"),
     Readiness("Release Readiness"),
     Version("Version & Build Checker"),
@@ -72,8 +81,22 @@ internal enum class ToolKind(val toolName: String) {
     Proguard("ProGuard/R8 Check"),
     Backup("Backup Configuration Check"),
     Privacy("Privacy Configuration Check"),
+    Integrity("Play Integrity Readiness"),
     Prelaunch("Pre-launch Risk Scan"),
+    Screenshots("Screenshot Preview", ToolInput.Images),
     Icon("Icon Preview"),
+    ListingQuality("Listing Quality Check", ToolInput.Text),
+    ListingChecklist("Store Listing Checklist", ToolInput.Text),
+    DataSafety("Data Safety Check"),
+    StoreAssets("Store Asset Validation", ToolInput.Images),
+    FeatureGraphic("Feature Graphic Check", ToolInput.Images),
+    KeywordCoverage("Keyword Coverage", ToolInput.Text),
+    Title("Title Analyzer", ToolInput.Text),
+    ShortDescription("Short Description Analyzer", ToolInput.Text),
+    LongDescription("Long Description Analyzer", ToolInput.Text),
+    KeywordPlacement("Keyword Placement", ToolInput.Text),
+    Metadata("Metadata Optimization", ToolInput.Text),
+    AsoScore("ASO Score", ToolInput.Text),
     ;
 
     companion object {
@@ -132,6 +155,11 @@ fun LabHome(modifier: Modifier = Modifier) {
     val configuration = LocalConfiguration.current
     val device = remember(configuration) { DeviceProfile.current(context) }
     val scope = rememberCoroutineScope()
+    // Graphics picked per tool, and the listing every text tool shares. The
+    // listing is kept on the phone so it is there the next time too.
+    var images by remember { mutableStateOf<Map<ToolKind, List<PickedImage>>>(emptyMap()) }
+    var listing by remember { mutableStateOf(ListingDraft.load(context)) }
+    var keywords by remember { mutableStateOf(ListingDraft.keywordText(context)) }
 
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri == null) {
@@ -185,6 +213,28 @@ fun LabHome(modifier: Modifier = Modifier) {
     ) {
         val current = analysis
         val kind = tool
+        if (kind != null && kind.input != ToolInput.Apk) {
+            // Images and text are chosen inside the tool, so there is no APK
+            // to wait for and no "Another APK" to offer.
+            PlainFrame(title = kind.toolName, onClose = { tool = null }) {
+                if (kind.input == ToolInput.Images) {
+                    val onImages: (List<PickedImage>) -> Unit = { images = images + (kind to it) }
+                    when (kind) {
+                        ToolKind.FeatureGraphic -> FeatureGraphicTool(images[kind].orEmpty(), onImages)
+                        ToolKind.Screenshots -> ScreenshotsTool(images[kind].orEmpty(), onImages)
+                        else -> StoreAssetsTool(images[kind].orEmpty(), onImages)
+                    }
+                } else {
+                    ListingInput(listing, keywords) { changed, text ->
+                        listing = changed
+                        keywords = text
+                        ListingDraft.save(context, changed, text)
+                    }
+                    ListingTool(kind, listing)
+                }
+            }
+            return@Column
+        }
         if (kind != null && current != null && !working) {
             if (kind == ToolKind.Analyzer) {
                 Pill(stringResource(R.string.lt_another)) { pick.launch(APK_TYPES) }
@@ -247,8 +297,9 @@ fun LabHome(modifier: Modifier = Modifier) {
                     onToggle = { open = if (open == layer.number) -1 else layer.number },
                     runnable = { ToolKind.of(it.name) != null },
                     onTool = { chosen ->
-                        tool = ToolKind.of(chosen.name)
-                        if (analysis == null) pick.launch(APK_TYPES)
+                        val next = ToolKind.of(chosen.name)
+                        tool = next
+                        if (next?.input == ToolInput.Apk && analysis == null) pick.launch(APK_TYPES)
                     },
                 )
             }
@@ -295,5 +346,15 @@ private fun ToolView(
         ToolKind.Privacy -> PrivacyTool(r)
         ToolKind.Prelaunch -> PrelaunchTool(r)
         ToolKind.Icon -> IconTool(analysis.icon)
+        ToolKind.Dependencies -> DependenciesTool(r)
+        ToolKind.DarkMode -> DarkModeTool(r)
+        ToolKind.Accessibility -> AccessibilityTool(r)
+        ToolKind.Orientation -> OrientationTool(r)
+        ToolKind.FontScaling -> FontScalingTool(r)
+        ToolKind.Background -> BackgroundTool(r)
+        ToolKind.Integrity -> IntegrityTool(r)
+        ToolKind.DataSafety -> DataSafetyTool(r)
+        // Opened by LabHome in a plain frame: they read no APK.
+        else -> Unit
     }
 }

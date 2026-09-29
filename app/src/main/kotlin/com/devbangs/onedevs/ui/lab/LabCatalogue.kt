@@ -45,15 +45,17 @@ private fun on(name: String) = LabTool(name, LabStatus.Available)
  * it build, does it run, does it run everywhere, can it ship, is the listing
  * ready, can anyone find it.
  *
- * Twenty-eight of these run today and the rest are marked. What separates them
+ * Forty-eight of these run today and the rest are marked. What separates them
  * is not effort but access. Everything in layer two reads an APK, which is a
  * ZIP with a manifest Android will parse for us -- so signing, permissions,
  * components, native libraries, DEX counts and size breakdowns are all a file
- * away. Layer one needs the repository. Layers six and seven need Play listing
- * data, and the only way to get that is to scrape the store, which is the one
- * thing a Play-testing platform cannot be caught doing. Layer three is the sad
- * one: Android closed off watching another app's memory, CPU and crashes in
- * Oreo, and no permission reopens it.
+ * away. The listing tools in layers six and seven read the developer's own
+ * graphics and text against Play Console's rules. Layer one needs the
+ * repository. Search volume, rankings and competitors need Play's data, and
+ * the only way to get that is to scrape the store, which is the one thing a
+ * Play-testing platform cannot be caught doing. Layer three is the sad one:
+ * Android closed off watching another app's memory, CPU and crashes in Oreo,
+ * and no permission reopens it.
  */
 internal val LabCatalogue = listOf(
     LabLayer(
@@ -79,7 +81,7 @@ internal val LabCatalogue = listOf(
         accent = { it.mission },
         tools = listOf(
             on("APK Analyzer"), LabTool("AAB Analyzer"), on("Manifest Inspector"),
-            on("Permissions Inspector"), on("SDK Compatibility"), LabTool("Dependencies Inspector"),
+            on("Permissions Inspector"), on("SDK Compatibility"), on("Dependencies Inspector"),
             on("App Components"), on("Resource Inspector"), on("Native Libraries Inspector"),
             on("Certificate & Signing Inspector"), on("Build Configuration Inspector"),
             on("App Size Breakdown"), on("DEX Analysis"),
@@ -108,10 +110,10 @@ internal val LabCatalogue = listOf(
         tools = listOf(
             on("Device Compatibility"), on("Android Version Testing"),
             on("Screen & Resolution Testing"), LabTool("Network Testing"),
-            LabTool("Offline Testing"), on("Permission Testing"), LabTool("Dark Mode Testing"),
-            LabTool("Accessibility Testing"), LabTool("Orientation Testing"),
-            LabTool("Font & Display Scaling"), LabTool("Low-Memory Testing"),
-            LabTool("Background/Foreground Testing"), on("Installation & Update Testing"),
+            LabTool("Offline Testing"), on("Permission Testing"), on("Dark Mode Testing"),
+            on("Accessibility Testing"), on("Orientation Testing"),
+            on("Font & Display Scaling"), LabTool("Low-Memory Testing"),
+            on("Background/Foreground Testing"), on("Installation & Update Testing"),
         ),
     ),
     LabLayer(
@@ -126,7 +128,7 @@ internal val LabCatalogue = listOf(
             LabTool("Pre-release Test"), on("Debug Build Detection"),
             on("Release Configuration Check"), on("ProGuard/R8 Check"),
             on("Backup Configuration Check"), on("Privacy Configuration Check"),
-            LabTool("Play Integrity Readiness"), on("Pre-launch Risk Scan"),
+            on("Play Integrity Readiness"), on("Pre-launch Risk Scan"),
         ),
     ),
     LabLayer(
@@ -136,11 +138,11 @@ internal val LabCatalogue = listOf(
         question = R.string.lab_l6_q,
         accent = { it.community },
         tools = listOf(
-            LabTool("Play Store Preview"), LabTool("Screenshot Preview"), on("Icon Preview"),
-            LabTool("Listing Quality Check"), LabTool("Store Listing Checklist"),
+            LabTool("Play Store Preview"), on("Screenshot Preview"), on("Icon Preview"),
+            on("Listing Quality Check"), on("Store Listing Checklist"),
             LabTool("Privacy Policy Check"), LabTool("App Content Check"),
-            LabTool("Data Safety Check"), LabTool("Content Rating Check"),
-            LabTool("Store Asset Validation"), LabTool("Feature Graphic Check"),
+            on("Data Safety Check"), LabTool("Content Rating Check"),
+            on("Store Asset Validation"), on("Feature Graphic Check"),
             LabTool("Listing Consistency Check"),
         ),
     ),
@@ -152,13 +154,13 @@ internal val LabCatalogue = listOf(
         accent = { it.feedback },
         tools = listOf(
             LabTool("Keyword Research"), LabTool("Search Volume"), LabTool("Keyword Difficulty"),
-            LabTool("Keyword Intent"), LabTool("Keyword Coverage"), LabTool("Keyword Ranking Tracker"),
+            LabTool("Keyword Intent"), on("Keyword Coverage"), LabTool("Keyword Ranking Tracker"),
             LabTool("Competitor Keyword Analysis"), LabTool("Competitor Listing Analysis"),
-            LabTool("Title Analyzer"), LabTool("Short Description Analyzer"),
-            LabTool("Long Description Analyzer"), LabTool("Keyword Placement"),
-            LabTool("Metadata Optimization"), LabTool("Screenshot Conversion Analysis"),
+            on("Title Analyzer"), on("Short Description Analyzer"),
+            on("Long Description Analyzer"), on("Keyword Placement"),
+            on("Metadata Optimization"), LabTool("Screenshot Conversion Analysis"),
             LabTool("Icon Conversion Analysis"), LabTool("Store Listing Comparison"),
-            LabTool("ASO Score"), LabTool("Ranking History"), LabTool("ASO Experiment Tracker"),
+            on("ASO Score"), LabTool("Ranking History"), LabTool("ASO Experiment Tracker"),
         ),
     ),
 )
