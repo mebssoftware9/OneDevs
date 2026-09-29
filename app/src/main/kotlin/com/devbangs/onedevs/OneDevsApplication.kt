@@ -12,6 +12,7 @@ import com.devbangs.onedevs.data.claims.ClaimWorker
 import com.devbangs.onedevs.data.listings.RemoteListingRepository
 import com.devbangs.onedevs.data.missions.MissionRepository
 import com.devbangs.onedevs.data.tests.TestRepository
+import com.devbangs.onedevs.data.wallet.WalletRepository
 import com.devbangs.onedevs.data.net.Connectivity
 import com.devbangs.onedevs.notifications.DevBot
 import com.devbangs.onedevs.settings.ThemeStore
@@ -122,4 +123,6 @@ class OneDevsApplication : Application() {
 
     /** Starting, checking and finishing tests: the questions that move DevCoins. */
     val tests: TestRepository by lazy { TestRepository(backend) }
+
+    val wallet: WalletRepository by lazy { WalletRepository(backend) }
 }

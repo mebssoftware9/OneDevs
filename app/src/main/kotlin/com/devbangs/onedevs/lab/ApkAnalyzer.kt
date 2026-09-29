@@ -72,6 +72,13 @@ object ApkAnalyzer {
 
     private const val METADATA = "META-INF/com/android/build/gradle/app-metadata.properties"
 
+    /** A version file is a line of text; anything bigger is not one. */
+    private const val MAX_VERSION_FILE = 256L
+
+    /** Layouts are kilobytes; the caps keep a pathological APK from taking minutes. */
+    private const val MAX_LAYOUT = 512L * 1024
+    private const val MAX_LAYOUT_FILES = 4000
+
     suspend fun analyze(context: Context, uri: Uri): Result<Analysis> = runCatching {
         val name = displayName(context, uri)
         val copy = File.createTempFile("inspect", ".apk", context.cacheDir)
@@ -197,6 +204,12 @@ object ApkAnalyzer {
             manifest = facts,
             manifestXml = xml?.let { BinaryXml.render(it, BinaryXml.prefixes(manifestBytes), resolver) },
             buildMetadata = scan.metadata,
+            libraries = scan.libraries,
+            codeMarkers = shape.markers,
+            layouts = scan.layouts,
+            nightResources = scan.entries.count { (name, _) ->
+                name.startsWith("res/") && name.substringAfter("res/").substringBefore('/').split('-').contains("night")
+            },
         )
         return Analysis(report, icon(pm, app))
     }
@@ -229,6 +242,8 @@ object ApkAnalyzer {
         val abis: List<String>,
         val manifest: ByteArray?,
         val metadata: Map<String, String>,
+        val libraries: Map<String, String>,
+        val layouts: LayoutStats?,
     )
 
     private fun scanZip(z: ZipFile): Scan {
@@ -239,8 +254,29 @@ object ApkAnalyzer {
         val natives = mutableListOf<NativeLib>()
         var manifest: ByteArray? = null
         var metadata: Map<String, String> = emptyMap()
+        val libraries = sortedMapOf<String, String>()
+        val documents = mutableListOf<Pair<String, XmlElement>>()
         all.forEach { e ->
             when {
+                // META-INF/androidx.core_core.version holds "1.13.1".
+                e.name.startsWith("META-INF/") && e.name.endsWith(".version") &&
+                    e.name.count { it == '/' } == 1 && e.size in 0..MAX_VERSION_FILE ->
+                    z.getInputStream(e).use { stream ->
+                        val artifact = e.name.removePrefix("META-INF/").removeSuffix(".version")
+                        val version = stream.readBytes().toString(Charsets.UTF_8).trim()
+                        if (version.isNotEmpty() && '\n' !in version) {
+                            libraries[artifact.replaceFirst('_', ':')] = version
+                        }
+                    }
+                e.name.startsWith("res/") && e.name.endsWith(".xml") &&
+                    e.size in 0..MAX_LAYOUT && documents.size < MAX_LAYOUT_FILES ->
+                    z.getInputStream(e).use { stream ->
+                        // Only layouts are kept: drawables and menus are most of
+                        // res/ and say nothing the tools ask about.
+                        BinaryXml.parse(stream.readBytes())
+                            ?.takeIf { Layouts.isLayout(it) }
+                            ?.let { documents += e.name to it }
+                    }
                 e.name.endsWith(".dex") -> z.getInputStream(e).use { stream ->
                     // Small enough to hold whole: counts from the header and
                     // names from the rest. Otherwise the header alone.
@@ -285,6 +321,8 @@ object ApkAnalyzer {
             abis = abis,
             manifest = manifest,
             metadata = metadata,
+            libraries = libraries,
+            layouts = Layouts.scan(documents).takeIf { it.files > 0 },
         )
     }
 
@@ -299,6 +337,7 @@ object ApkAnalyzer {
                 Component(
                     ComponentKind.Activity, it.name, it.exported, it.permission,
                     orientationLocked = it.screenOrientation in LOCKED_ORIENTATIONS,
+                    configChanges = it.configChanges,
                 ),
             )
         }

@@ -30,6 +30,8 @@ data class CodeShape(
     val packages: List<Pair<String, Int>> = emptyList(),
     /** [KnownSdk.id]s whose classes appear. */
     val sdks: Set<String> = emptySet(),
+    /** [CodeMarkers] ids whose classes appear. */
+    val markers: Set<String> = emptySet(),
 ) {
     /** 0..100, or null with nothing to divide. */
     val obfuscatedPercent: Int? get() = if (classes == 0) null else obfuscated * 100 / classes
@@ -57,6 +59,7 @@ internal object DexCode {
         val obfuscated: Int,
         val packages: Map<String, Int>,
         val sdks: Set<String>,
+        val markers: Set<String> = emptySet(),
     )
 
     fun read(dex: ByteArray): One? {
@@ -80,6 +83,7 @@ internal object DexCode {
         var classes = 0
         val packages = HashMap<String, Int>()
         val sdks = HashSet<String>()
+        val markers = HashSet<String>()
         for (i in 0 until classDefsSize.toInt()) {
             val typeIndex = u32(dex, (classDefsOff + i * 32L).toInt())
             if (typeIndex >= typeIdsSize) continue
@@ -96,8 +100,9 @@ internal object DexCode {
             if (pkg.isNotEmpty()) packages[pkg] = (packages[pkg] ?: 0) + 1
             KnownSdks.all.firstOrNull { sdk -> sdk.prefixes.any { path.startsWith(it) } }
                 ?.let { sdks += it.id }
+            CodeMarkers.all.forEach { (id, prefixes) -> if (prefixes.any { path.startsWith(it) }) markers += id }
         }
-        return One(marker(dex), classes, obfuscated, packages, sdks)
+        return One(marker(dex), classes, obfuscated, packages, sdks, markers)
     }
 
     fun merge(all: List<One>): Pair<CompilerMarker?, CodeShape> {
@@ -114,6 +119,7 @@ internal object DexCode {
             packages = packages.entries.sortedByDescending { it.value }.take(TOP_PACKAGES)
                 .map { it.key to it.value },
             sdks = all.flatMapTo(HashSet()) { it.sdks },
+            markers = all.flatMapTo(HashSet()) { it.markers },
         )
     }
 

@@ -15,6 +15,18 @@ data class XmlAttr(
     val int: Int? get() = if (type == BinaryXml.TYPE_INT_DEC || type == BinaryXml.TYPE_INT_HEX) data else null
     val isReference: Boolean get() = type == BinaryXml.TYPE_REFERENCE
     val text: String? get() = if (type == BinaryXml.TYPE_STRING) string else null
+
+    /**
+     * A dimension as (value, unit): unit 0 is px, 1 dp, 2 sp. Null for
+     * anything that is not a literal dimension -- a reference to a dimen
+     * resource cannot be read without the resource table.
+     */
+    val dimension: Pair<Float, Int>? get() {
+        if (type != BinaryXml.TYPE_DIMENSION) return null
+        val radix = floatArrayOf(1f / (1 shl 8), 1f / (1 shl 15), 1f / (1 shl 23), 1f / (1L shl 31).toFloat())
+        val value = (data and 0xFFFFFF00.toInt()) * radix[(data shr 4) and 3]
+        return value to (data and 0xF)
+    }
 }
 
 /** An element of a compiled XML document, with its children. */

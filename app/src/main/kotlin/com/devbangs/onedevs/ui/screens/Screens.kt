@@ -4,7 +4,6 @@ package com.devbangs.onedevs.ui.screens
 // state. Nothing here fabricates data — screens show what is actually known,
 // which before the data layer exists is nothing.
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -39,7 +37,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -387,33 +384,5 @@ fun BadgeScreen(modifier: Modifier = Modifier) {
             fontWeight = FontWeight.SemiBold,
         )
         BadgeCatalogue.forEach { group -> BadgeGroupCard(group, earned) }
-    }
-}
-
-@Composable
-fun WalletScreen(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Image(
-                painter = painterResource(R.drawable.ic_devcoin_hero),
-                contentDescription = null,
-                modifier = Modifier.size(96.dp),
-            )
-            Text(
-                text = stringResource(R.string.wallet_empty_title),
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center,
-            )
-            Text(
-                text = stringResource(R.string.wallet_empty_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.widthIn(max = 320.dp),
-            )
-        }
     }
 }

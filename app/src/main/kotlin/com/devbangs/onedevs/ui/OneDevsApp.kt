@@ -72,7 +72,7 @@ import com.devbangs.onedevs.ui.screens.BoardScreen
 import com.devbangs.onedevs.ui.screens.LabScreen
 import com.devbangs.onedevs.ui.screens.LaunchesScreen
 import com.devbangs.onedevs.ui.screens.ProfileScreen
-import com.devbangs.onedevs.ui.screens.WalletScreen
+import com.devbangs.onedevs.ui.wallet.WalletScreen
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3AdaptiveNavigationSuiteApi::class, ExperimentalMaterial3Api::class)

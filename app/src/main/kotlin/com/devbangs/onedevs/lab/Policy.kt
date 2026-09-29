@@ -132,3 +132,25 @@ internal object ForegroundTypes {
     fun required(flags: Int): List<String> =
         permissions.filterKeys { flags and it != 0 }.values.map { "android.permission.FOREGROUND_SERVICE_" + it.second }
 }
+
+/**
+ * Libraries recognisable from their classes that decide something about
+ * release: integrity checks, in-app updates, reviews, billing. Unlike
+ * [KnownSdks] these send nothing of their own, so they are not a Data Safety
+ * question -- they are a readiness one.
+ */
+internal object CodeMarkers {
+    const val INTEGRITY = "integrity"
+    const val SAFETYNET = "safetynet"
+    const val BILLING = "billing"
+    const val REVIEW = "review"
+    const val UPDATE = "update"
+
+    val all: Map<String, List<String>> = mapOf(
+        INTEGRITY to listOf("com/google/android/play/core/integrity/", "com/google/android/play/integrity/"),
+        SAFETYNET to listOf("com/google/android/gms/safetynet/"),
+        BILLING to listOf("com/android/billingclient/"),
+        REVIEW to listOf("com/google/android/play/core/review/"),
+        UPDATE to listOf("com/google/android/play/core/appupdate/"),
+    )
+}

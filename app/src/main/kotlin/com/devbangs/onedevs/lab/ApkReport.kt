@@ -85,6 +85,17 @@ data class ApkReport(
     val manifestXml: String? = null,
     /** META-INF/com/android/build/gradle/app-metadata.properties, when AGP wrote one. */
     val buildMetadata: Map<String, String> = emptyMap(),
+    /**
+     * Libraries that declare themselves: every AndroidX and Jetpack artifact
+     * leaves META-INF/group_artifact.version with its version inside.
+     */
+    val libraries: Map<String, String> = emptyMap(),
+    /** [CodeMarkers] ids whose classes are in the DEX. */
+    val codeMarkers: Set<String> = emptySet(),
+    /** What the compiled layouts say, or null when none were read. */
+    val layouts: LayoutStats? = null,
+    /** Resource files under a -night qualifier. */
+    val nightResources: Int = 0,
 ) {
     companion object {
         /**
@@ -125,6 +136,28 @@ data class Component(
     val authority: String? = null,
     /** Activities only: portrait or landscape, fixed. */
     val orientationLocked: Boolean = false,
+    /** Activities only: android:configChanges, the changes it handles itself. */
+    val configChanges: Int = 0,
+)
+
+/**
+ * What the compiled XML layouts in an APK say about accessibility and text.
+ *
+ * Only View-based screens are here. Compose draws without layout files, so an
+ * app built with it reports few or none, and the tools say so rather than
+ * reading an empty count as a clean bill.
+ */
+data class LayoutStats(
+    val files: Int = 0,
+    val images: Int = 0,
+    /** Images with no contentDescription that are not marked unimportant. */
+    val unlabelledImages: Int = 0,
+    val textSizesSp: Int = 0,
+    /** Text sized in dp or px, which ignores the user's font size. */
+    val textSizesFixed: Int = 0,
+    /** Tappable views sized under 48dp in either dimension. */
+    val smallTargets: Int = 0,
+    val examples: List<String> = emptyList(),
 )
 
 /**
