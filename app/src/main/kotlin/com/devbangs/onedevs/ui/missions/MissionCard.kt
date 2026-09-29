@@ -33,11 +33,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -85,13 +94,13 @@ fun MissionCard(
     showAction: Boolean = true,
 ) {
     val joinable = !mission.member && mission.stage == MissionStage.Recruiting
-    val light = rememberSheen()
+    val light = rememberRim()
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(22.dp))
             .clickable(onClick = onClick)
-            .sheen { light.value },
+            .rim { light.value },
     ) {
         Image(
             painter = painterResource(R.drawable.mission_card),
@@ -181,38 +190,75 @@ fun MissionCard(
 }
 
 /**
- * A thin band of light that crosses the card now and then.
+ * The angle of the rim light, turning once every few seconds.
  *
- * It spends most of its cycle off the card: a light that never stops moving
- * is noise, one that passes every few seconds is a card that looks alive.
+ * Continuous and linear on purpose. The first version was a band that
+ * appeared, crossed and vanished, and the appearing is what read as a flash;
+ * a light that never starts or stops has nothing to jar.
  */
 @Composable
-private fun rememberSheen(): State<Float> =
-    rememberInfiniteTransition(label = "sheen").animateFloat(
+private fun rememberRim(): State<Float> =
+    rememberInfiniteTransition(label = "rim").animateFloat(
         initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(durationMillis = 5200, easing = LinearEasing), RepeatMode.Restart),
-        label = "sheen",
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(tween(durationMillis = 7000, easing = LinearEasing), RepeatMode.Restart),
+        label = "rim",
     )
 
+/** Cool white with a hint of the artwork's lilac, so the light belongs to the card. */
+private val RimLight = Color(0xFFE4E8FF)
+
 /**
- * Draws the band at [cycle], read in the draw phase so the card redraws each
- * frame without recomposing.
+ * A crisp edge of light travelling round the card, with a soft glow inside it.
+ *
+ * Drawn only on the border -- a gradient spun behind a ring-shaped clip -- so
+ * it lights the card's edge rather than washing over the artwork and text.
+ * [angle] is read in the draw phase: the card redraws every frame without
+ * recomposing.
  */
-private fun Modifier.sheen(cycle: () -> Float): Modifier = drawWithContent {
-    drawContent()
-    // The pass takes the first 40% of the cycle; the rest is a pause.
-    val pass = cycle() / 0.4f
-    if (pass <= 1f) {
-        val band = size.width * 0.28f
-        val x = -band * 2 + (size.width + band * 3) * pass
-        drawRect(
-            brush = Brush.linearGradient(
-                colors = listOf(Color.Transparent, Color.White.copy(alpha = 0.13f), Color.Transparent),
-                start = Offset(x, 0f),
-                end = Offset(x + band, size.height),
+private fun Modifier.rim(angle: () -> Float): Modifier = drawWithCache {
+    val corner = 22.dp.toPx()
+    val edge = 1.5.dp.toPx()
+    // Three widening rings at falling strength: a glow that fades inward
+    // instead of a flat stripe.
+    val glows = listOf(3.dp.toPx() to 0.12f, 6.dp.toPx() to 0.06f, 10.dp.toPx() to 0.03f)
+    fun ring(width: Float) = Path().apply {
+        fillType = PathFillType.EvenOdd
+        addRoundRect(RoundRect(Rect(Offset.Zero, size), CornerRadius(corner)))
+        addRoundRect(
+            RoundRect(
+                Rect(Offset(width, width), Size(size.width - width * 2, size.height - width * 2)),
+                CornerRadius((corner - width).coerceAtLeast(0f)),
             ),
         )
+    }
+    val line = ring(edge)
+    fun sweep(peak: Float) = Brush.sweepGradient(
+        0f to Color.Transparent,
+        0.36f to Color.Transparent,
+        0.47f to RimLight.copy(alpha = peak * 0.5f),
+        0.5f to RimLight.copy(alpha = peak),
+        0.53f to RimLight.copy(alpha = peak * 0.5f),
+        0.64f to Color.Transparent,
+        1f to Color.Transparent,
+        center = size.center,
+    )
+    val bright = sweep(0.95f)
+    val halos = glows.map { (width, peak) -> ring(width) to sweep(peak) }
+    // Big enough that the rotated gradient always covers the card's corners.
+    val reach = size.maxDimension
+    val cover = Rect(size.center - Offset(reach, reach), Size(reach * 2, reach * 2))
+    onDrawWithContent {
+        drawContent()
+        val degrees = angle()
+        halos.forEach { (ring, brush) ->
+            clipPath(ring) {
+                rotate(degrees, size.center) { drawRect(brush, cover.topLeft, cover.size) }
+            }
+        }
+        clipPath(line) {
+            rotate(degrees, size.center) { drawRect(bright, cover.topLeft, cover.size) }
+        }
     }
 }
 

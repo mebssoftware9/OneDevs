@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,9 +21,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.lab.Analysis
@@ -74,6 +78,29 @@ internal enum class ToolKind(val toolName: String) {
 
     companion object {
         fun of(name: String): ToolKind? = entries.firstOrNull { it.toolName == name }
+    }
+}
+
+/**
+ * The first card at the top, the last at the bottom, the rest evenly between
+ * -- but never closer than 8dp, so an opened layer that overflows the screen
+ * still reads as separate cards rather than one block.
+ */
+private val SpreadAtLeast8 = object : Arrangement.Vertical {
+    override val spacing = 8.dp
+
+    override fun Density.arrange(totalSize: Int, sizes: IntArray, outPositions: IntArray) {
+        val least = 8.dp.roundToPx()
+        val gap = if (sizes.size > 1) {
+            maxOf(least, (totalSize - sizes.sum()) / (sizes.size - 1))
+        } else {
+            0
+        }
+        var y = 0
+        sizes.forEachIndexed { i, height ->
+            outPositions[i] = y
+            y += height + gap
+        }
     }
 }
 
@@ -142,10 +169,17 @@ fun LabHome(modifier: Modifier = Modifier) {
 
     BackHandler(enabled = tool != null) { tool = null }
 
+    // The viewport's height, and the header's, so the seven cards can share
+    // what is left of the screen instead of bunching at the top of it.
+    var viewport by remember { mutableIntStateOf(0) }
+    var header by remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
+
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
             .fillMaxSize()
+            .onSizeChanged { viewport = it.height }
             .verticalScroll(rememberScrollState())
             .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 16.dp),
     ) {
@@ -174,39 +208,51 @@ fun LabHome(modifier: Modifier = Modifier) {
             }
             return@Column
         }
-        Text(
-            text = stringResource(R.string.lab_intro),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 2.dp),
-        )
-        if (working) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.onSizeChanged { header = it.height },
+        ) {
             Text(
-                text = stringResource(R.string.lab_working),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
+                text = stringResource(R.string.lab_intro),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 2.dp),
             )
+            if (working) {
+                Text(
+                    text = stringResource(R.string.lab_working),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            failure?.let {
+                Text(
+                    text = stringResource(R.string.lab_failed, it),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = oneDevsColors.critical.solid,
+                )
+            }
         }
-        failure?.let {
-            Text(
-                text = stringResource(R.string.lab_failed, it),
-                style = MaterialTheme.typography.bodySmall,
-                color = oneDevsColors.critical.solid,
-            )
-        }
-        LabCatalogue.forEach { layer ->
-            LabLayerCard(
-                layer = layer,
-                expanded = open == layer.number,
-                onToggle = { open = if (open == layer.number) -1 else layer.number },
-                runnable = { ToolKind.of(it.name) != null },
-                onTool = { chosen ->
-                    tool = ToolKind.of(chosen.name)
-                    if (analysis == null) pick.launch(APK_TYPES)
-                },
-            )
-        }
-    }
+        // Everything below the header, less the padding and the one gap
+        // between them. A layer opened past that height scrolls as before.
+        val room = with(density) { (viewport - header).toDp() } - 28.dp
+        Column(
+            verticalArrangement = SpreadAtLeast8,
+            modifier = Modifier.heightIn(min = room.coerceAtLeast(0.dp)),
+        ) {
+            LabCatalogue.forEach { layer ->
+                LabLayerCard(
+                    layer = layer,
+                    expanded = open == layer.number,
+                    onToggle = { open = if (open == layer.number) -1 else layer.number },
+                    runnable = { ToolKind.of(it.name) != null },
+                    onTool = { chosen ->
+                        tool = ToolKind.of(chosen.name)
+                        if (analysis == null) pick.launch(APK_TYPES)
+                    },
+                )
+            }
+        }    }
 }
 
 @Composable
