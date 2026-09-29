@@ -6,11 +6,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -107,7 +110,12 @@ fun WalletScreen(modifier: Modifier = Modifier) {
     ) {
         item { Hero(shown) }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // One height for all three, so a label that wraps in one language
+            // does not leave that box taller than its neighbours.
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.height(IntrinsicSize.Min),
+            ) {
                 Stat(stringResource(R.string.wallet_available), wallet?.available, Modifier.weight(1f))
                 Stat(stringResource(R.string.wallet_reserved), wallet?.held, Modifier.weight(1f))
                 Stat(stringResource(R.string.wallet_pending), pending.sumOf { it.coins }, Modifier.weight(1f))
@@ -166,7 +174,9 @@ private fun Stat(label: String, value: Int?, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
         modifier = modifier
+            .fillMaxHeight()
             .clip(RoundedCornerShape(14.dp))
             .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
             .padding(vertical = 12.dp, horizontal = 6.dp),
