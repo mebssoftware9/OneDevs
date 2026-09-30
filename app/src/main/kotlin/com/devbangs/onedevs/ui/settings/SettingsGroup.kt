@@ -26,10 +26,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.devbangs.onedevs.R
+import com.devbangs.onedevs.ui.theme.Accent
 import com.devbangs.onedevs.ui.theme.oneDevsColors
+
+/** Where a row's words start: past the 16dp edge, the 30dp mark and the 12dp gap. */
+private val RowTextStart = 58.dp
 
 /**
  * A titled group of settings rows, drawn as one hairline card.
@@ -66,7 +71,8 @@ fun SettingsGroup(
 /**
  * One row. [value] is what the setting currently is, shown on the right in the
  * brand colour when it can be changed and in the muted one when it is simply a
- * fact about the device.
+ * fact about the device. [icon] sits in a small tile of its [accent], so each
+ * row can be found by its mark before its words are read.
  */
 @Composable
 fun SettingsRow(
@@ -76,6 +82,8 @@ fun SettingsRow(
     readOnly: Boolean = false,
     expanded: Boolean = false,
     onClick: (() -> Unit)? = null,
+    icon: Int? = null,
+    accent: Accent? = null,
     detail: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -85,8 +93,26 @@ fun SettingsRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
+            if (icon != null) {
+                val tone = accent ?: oneDevsColors.testing
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(9.dp))
+                        .background(tone.tint),
+                ) {
+                    Icon(
+                        painter = painterResource(icon),
+                        contentDescription = null,
+                        tint = tone.solid,
+                        modifier = Modifier.size(17.dp),
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+            }
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
@@ -120,13 +146,16 @@ fun SettingsRow(
     }
 }
 
-/** A hairline between rows, inset so it reads as a separator and not a border. */
+/**
+ * A hairline between rows, inset to where the words start so it reads as a
+ * separator and not a border.
+ */
 @Composable
-fun SettingsDivider() {
+fun SettingsDivider(inset: Dp = RowTextStart) {
     Box(
         Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp)
+            .padding(start = inset)
             .height(1.dp)
             .background(MaterialTheme.colorScheme.outlineVariant),
     )
@@ -135,6 +164,7 @@ fun SettingsDivider() {
 /**
  * One option inside an expanded row. The chosen one is marked rather than
  * merely coloured, because colour alone is not a state anyone can rely on.
+ * [leading] is a short mark before the words, such as a flag.
  */
 @Composable
 fun SettingsChoice(
@@ -142,6 +172,7 @@ fun SettingsChoice(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    leading: String? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     Row(
@@ -150,13 +181,19 @@ fun SettingsChoice(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(start = 28.dp, end = 16.dp, top = 9.dp, bottom = 9.dp),
+            .padding(start = RowTextStart, end = 16.dp, top = 9.dp, bottom = 9.dp),
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-            color = if (selected) scheme.primary else scheme.onSurface,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+            if (leading != null) {
+                Text(text = leading, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp))
+                Spacer(Modifier.width(10.dp))
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                color = if (selected) scheme.primary else scheme.onSurface,
+            )
+        }
         if (selected) {
             Box(
                 contentAlignment = Alignment.Center,

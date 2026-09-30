@@ -1005,6 +1005,11 @@
     <string name="tier_done">Tu plan está activo.</string>
     <string name="tier_guarantee">Garantía de acceso a producción: si un ciclo termina sin todos sus testers, sigue 7 días más, gratis. Google Play decide el acceso a producción con su propia revisión.</string>
     <string name="tier_fine_print">Los planes se renuevan cada mes hasta que los canceles en Google Play, que muestra el precio en tu moneda. Cada mes incluye un ciclo de pruebas por app. Un tester cuenta cuando ha usado tu app al menos 32 segundos.</string>
+    <string name="promo_premium_title">16 testers, activos en 5 horas</string>
+    <string name="promo_premium_body">Premium lleva tu prueba de 16 días con un panel en vivo, informes de testers y soporte prioritario.</string>
+    <string name="promo_pro_title">25 testers. 2 apps. Lab sin límite.</string>
+    <string name="promo_pro_body">Pro suma una segunda app en pruebas, 25 testers verificados y un Lab que acepta todas tus apps.</string>
+    <string name="promo_on_pro_body">25 testers, 2 apps en pruebas y un Lab con sitio para todas tus apps, cada mes.</string>
     <string name="upgrade_title">Tu Lab Community guarda una app</string>
     <string name="upgrade_title_premium">Tu Lab Premium guarda 5 apps</string>
     <string name="upgrade_body">%1$s se queda justo donde está. Premium hace sitio para 5 apps, y Pro para todas tus apps.</string>

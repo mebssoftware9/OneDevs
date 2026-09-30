@@ -56,6 +56,9 @@ ICONS = {
     # Plans. Each paid plan wears one mark on its own colour, and a filled
     # shape holds together on a gradient where an outline thins out.
     "sparkle": ("fill",), "crown": ("fill",),
+    # Profile: one mark per settings row.
+    "translate": ("bold",), "circle-half": ("bold",), "bell": ("bold",),
+    "android-logo": ("bold",), "cpu": ("bold",), "info": ("bold",), "scroll": ("bold",),
 }
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
 COIN_DP, HERO_DP = 32, 96

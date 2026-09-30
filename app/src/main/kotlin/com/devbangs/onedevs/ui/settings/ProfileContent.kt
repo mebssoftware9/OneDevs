@@ -89,13 +89,15 @@ fun AppSettingsGroup(modifier: Modifier = Modifier) {
     SettingsGroup(title = stringResource(R.string.settings_app), modifier = modifier) {
         SettingsRow(
             label = stringResource(R.string.settings_language),
-            value = if (language == AppLanguage.System) {
+            value = language.flag + "  " + if (language == AppLanguage.System) {
                 stringResource(R.string.settings_language_system)
             } else {
                 language.label
             },
             expanded = open == "language",
             onClick = { open = if (open == "language") null else "language" },
+            icon = R.drawable.ic_translate,
+            accent = oneDevsColors.testing,
             detail = {
                 AppLanguage.entries.forEach { choice ->
                     SettingsChoice(
@@ -105,6 +107,7 @@ fun AppSettingsGroup(modifier: Modifier = Modifier) {
                             choice.label
                         },
                         selected = choice == language,
+                        leading = choice.flag,
                         onClick = {
                             AppLocale.set(context, choice)
                             language = choice
@@ -125,6 +128,8 @@ fun AppSettingsGroup(modifier: Modifier = Modifier) {
             value = stringResource(ThemeStore.current.label),
             expanded = open == "theme",
             onClick = { open = if (open == "theme") null else "theme" },
+            icon = R.drawable.ic_circle_half,
+            accent = oneDevsColors.mission,
             detail = {
                 AppTheme.entries.forEach { choice ->
                     SettingsChoice(
@@ -143,6 +148,8 @@ fun AppSettingsGroup(modifier: Modifier = Modifier) {
         SettingsRow(
             label = stringResource(R.string.settings_notifications),
             onClick = { openNotificationSettings(context) },
+            icon = R.drawable.ic_bell,
+            accent = oneDevsColors.caution,
         )
     }
 }
@@ -181,18 +188,24 @@ fun DeviceGroup(modifier: Modifier = Modifier) {
             label = stringResource(R.string.device_model),
             value = "${Build.MANUFACTURER} ${Build.MODEL}",
             readOnly = true,
+            icon = R.drawable.ic_device_mobile,
+            accent = oneDevsColors.live,
         )
         SettingsDivider()
         SettingsRow(
             label = stringResource(R.string.device_android),
             value = "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})",
             readOnly = true,
+            icon = R.drawable.ic_android_logo,
+            accent = oneDevsColors.community,
         )
         SettingsDivider()
         SettingsRow(
             label = stringResource(R.string.device_abi),
             value = Build.SUPPORTED_ABIS.firstOrNull().orEmpty(),
             readOnly = true,
+            icon = R.drawable.ic_cpu,
+            accent = oneDevsColors.feedback,
         )
     }
 }
@@ -219,12 +232,16 @@ fun AboutGroup(modifier: Modifier = Modifier) {
             label = stringResource(R.string.about_version),
             value = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
             readOnly = true,
+            icon = R.drawable.ic_info,
+            accent = oneDevsColors.testing,
         )
         SettingsDivider()
         SettingsRow(
             label = stringResource(R.string.about_licenses),
             expanded = open,
             onClick = { open = !open },
+            icon = R.drawable.ic_scroll,
+            accent = oneDevsColors.mission,
             detail = {
                 Text(
                     text = notices,

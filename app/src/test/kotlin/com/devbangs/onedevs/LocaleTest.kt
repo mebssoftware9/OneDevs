@@ -1,6 +1,7 @@
 package com.devbangs.onedevs
 
 import com.devbangs.onedevs.settings.AppLanguage
+import com.devbangs.onedevs.settings.flagOf
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -93,5 +94,14 @@ class LocaleWiringTest {
         assertEquals("English", AppLanguage.English.label)
         assertEquals("Français", AppLanguage.French.label)
         assertEquals("Português (Brasil)", AppLanguage.Portuguese.label)
+    }
+
+    @Test
+    fun `every language shows a flag, and the phone's choice a globe`() {
+        assertEquals("\uD83C\uDDE7\uD83C\uDDF7", flagOf("BR"))
+        assertEquals("\uD83C\uDDFA\uD83C\uDDF8", AppLanguage.English.flag)
+        assertEquals("\uD83C\uDDEA\uD83C\uDDF8", AppLanguage.Spanish.flag)
+        assertEquals("\uD83C\uDDEB\uD83C\uDDF7", AppLanguage.French.flag)
+        assertEquals("\uD83C\uDF10", AppLanguage.System.flag)
     }
 }

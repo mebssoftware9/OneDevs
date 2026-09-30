@@ -335,7 +335,7 @@ fun LaunchesScreen(
 }
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
+fun ProfileScreen(onPlans: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.spacedBy(20.dp),
         modifier = modifier
@@ -343,6 +343,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
             .verticalScroll(rememberScrollState())
             .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 28.dp),
     ) {
+        com.devbangs.onedevs.ui.plans.PlanPromo(onPlans = onPlans)
         AccountCard()
         AppSettingsGroup()
         DeviceGroup()

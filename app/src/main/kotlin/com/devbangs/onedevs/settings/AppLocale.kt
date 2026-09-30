@@ -21,12 +21,21 @@ import java.util.Locale
  * anyone choosing anything. The picker is for the case where the two should
  * differ.
  */
-enum class AppLanguage(val tag: String, val label: String) {
-    System("", "System default"),
-    English("en", "English"),
-    Spanish("es", "Español"),
-    French("fr", "Français"),
-    Portuguese("pt-BR", "Português (Brasil)"),
+enum class AppLanguage(val tag: String, val label: String, region: String?) {
+    System("", "System default", null),
+    English("en", "English", "US"),
+    Spanish("es", "Español", "ES"),
+    French("fr", "Français", "FR"),
+    Portuguese("pt-BR", "Português (Brasil)", "BR"),
+    ;
+
+    /** The flag beside the name; a globe for the phone's own choice, which is no one country. */
+    val flag: String = region?.let(::flagOf) ?: "\uD83C\uDF10"
+}
+
+/** A country's flag emoji from its two-letter region code: two regional indicator letters. */
+fun flagOf(region: String): String = buildString {
+    region.uppercase().forEach { appendCodePoint(0x1F1E6 + (it - 'A')) }
 }
 
 /**
