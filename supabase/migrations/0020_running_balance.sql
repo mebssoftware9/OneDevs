@@ -42,17 +42,22 @@ end $$;
 revoke all on function public.apply_coin_entry() from public, anon, authenticated;
 
 -- Backfill under a lock, so no ledger write can land between the sum and the
--- trigger taking over. The whole migration is one transaction.
-lock table public.coin_entries in share row exclusive mode;
+-- trigger taking over. One DO block, because the Supabase CLI runs each
+-- statement on its own: a bare LOCK TABLE would have no transaction to hold
+-- it, and the lock, the sum and the trigger must be one unit.
+do $$
+begin
+    lock table public.coin_entries in share row exclusive mode;
 
-insert into public.account_balances (account, balance)
-select account, sum(delta)::int from public.coin_entries group by account
-on conflict (account) do update set balance = excluded.balance;
+    insert into public.account_balances (account, balance)
+    select account, sum(delta)::int from public.coin_entries group by account
+    on conflict (account) do update set balance = excluded.balance;
 
-drop trigger if exists coin_entries_running_balance on public.coin_entries;
-create trigger coin_entries_running_balance
-    after insert or update or delete on public.coin_entries
-    for each row execute function public.apply_coin_entry();
+    drop trigger if exists coin_entries_running_balance on public.coin_entries;
+    create trigger coin_entries_running_balance
+        after insert or update or delete on public.coin_entries
+        for each row execute function public.apply_coin_entry();
+end $$;
 
 -- ------------------------------------------------------------------ readers
 
