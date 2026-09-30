@@ -74,6 +74,18 @@ class Backend(
 
     val configured: Boolean get() = url.isNotBlank() && key.isNotBlank()
 
+    /**
+     * Opens the connection before anything needs it. The DNS lookup, TCP and
+     * TLS handshake are most of a first request's time on a far-away phone
+     * network; paying them while the splash screen is up means the Board's
+     * request finds a warm connection in the pool. Quiet, and the answer is
+     * ignored: it only has to reach the server.
+     */
+    suspend fun warmUp() {
+        if (!configured) return
+        quietly { httpRequest(url = "$url/auth/v1/health", headers = mapOf("apikey" to key)) }
+    }
+
     suspend fun signInWithGoogle(
         idToken: String,
         nonce: String? = null,

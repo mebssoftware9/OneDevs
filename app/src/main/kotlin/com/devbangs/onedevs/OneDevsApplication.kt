@@ -50,6 +50,8 @@ class OneDevsApplication : Application() {
         // start costs nothing when the outbox is empty, and is the difference
         // between a reward arriving late and a reward never arriving.
         val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        // Handshake with the server while the splash is up.
+        scope.launch { backend.warmUp() }
         scope.launch { claims.load() }
         ClaimWorker.drain(this)
         // A claim waits for the account that earned it. Signing in is the
