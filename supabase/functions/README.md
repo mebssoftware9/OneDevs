@@ -11,61 +11,61 @@ Nothing in the app can grant a plan or start a run on its own. The flow is:
 Renewals, cancellations and refunds arrive from Google at `play-rtdn`, whether
 or not the app is open.
 
-## 1. Play Console products
+## Products
 
-Monetize → Products.
-
-| Type | Product ID | Base plans / price |
+| Type | Product ID | Base plan / price |
 |---|---|---|
-| Subscription | `premium` | base plan `monthly` (auto-renewing, 1 month, $19.99) |
-| Subscription | `pro` | base plan `monthly` (auto-renewing, 1 month, $39.99) |
+| Subscription | `premium` | `monthly`, auto-renewing, 1 month, $19.99 |
+| Subscription | `pro` | `monthly`, auto-renewing, 1 month, $39.99 |
 
-The IDs must match exactly; they are constants in `Products` in the app, and
-a product ID can never be reused once created. `lab_pro` and `ghostline` are
-being retired: do not create them.
+The IDs are constants in `Products` in the app and must match Play Console
+exactly; a product ID can never be reused once created. `lab_pro` and
+`ghostline` are retired and do not exist in Play.
 
-## 2. Service account
+## How Google reaches the server
 
-1. In Google Cloud (the project linked to Play Console), enable the
-   **Google Play Android Developer API**.
-2. Create a service account and download a JSON key for it.
-3. In Play Console → Users and permissions, invite the service account's email
-   with **View financial data** and **Manage orders and subscriptions**.
-   Permissions can take up to 24 hours to apply.
+- Google Cloud project `onedevs-510000` has the Google Play Android Developer
+  API enabled.
+- The functions sign in to that API as the service account
+  `play-purchases@onedevs-510000.iam.gserviceaccount.com`. Play Console grants
+  it **View financial data** and **Manage orders and subscriptions**.
+- Real-time notifications: Play publishes to the Pub/Sub topic
+  `play-notifications` (Google's
+  `google-play-developer-notifications@system.gserviceaccount.com` holds
+  Pub/Sub Publisher on it). The push subscription `play-rtdn` forwards each
+  one to `https://<project-ref>.supabase.co/functions/v1/play-rtdn?secret=<RTDN_SECRET>`.
+  `play-rtdn` is deployed with `--no-verify-jwt`, since Google carries no
+  Supabase JWT; the secret in the URL is what refuses everyone else.
 
-## 3. Secrets and deploy
+## Secrets
+
+Set in Supabase (Edge Functions → Secrets), never in the repo:
+
+| Name | What it is |
+|---|---|
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | The service account's JSON key |
+| `PLAY_PACKAGE_NAME` | `com.devbangs.onedevs` |
+| `RTDN_SECRET` | The shared secret in the push subscription's URL |
+
+## Deploy
 
 ```bash
-npx supabase secrets set GOOGLE_SERVICE_ACCOUNT_JSON="$(cat path/to/key.json)"
-npx supabase secrets set PLAY_PACKAGE_NAME=com.devbangs.onedevs
-npx supabase secrets set RTDN_SECRET="$(openssl rand -hex 24)"
 npx supabase functions deploy play-purchases
 npx supabase functions deploy play-rtdn --no-verify-jwt
 ```
 
-## 4. Real-time notifications
+## Testing purchases
 
-1. In Google Cloud Pub/Sub, create a topic, e.g. `play-notifications`.
-2. Give `google-play-developer-notifications@system.gserviceaccount.com` the
-   **Pub/Sub Publisher** role on that topic.
-3. Create a **push** subscription on the topic with the endpoint
-   `https://<project-ref>.supabase.co/functions/v1/play-rtdn?secret=<RTDN_SECRET>`.
-4. Play Console → Monetization setup → Real-time developer notifications: enter
-   the topic name and press **Send test notification**.
+License testers (Play Console → Settings → License testing) are never
+charged, and their subscriptions renew every few minutes. Billing only works
+in a build installed from Play, such as the internal testing track.
 
-## 5. Testing purchases
+## Privacy
 
-- Add your Google account under Play Console → Settings → License testing.
-  License testers are never charged, and subscriptions renew every few minutes.
-- Billing only works in a build installed from Play: upload to the internal
-  testing track and install it from there.
-
-## 6. Privacy
-
-Mission check-ins now send the phone's model and Android version, which a
-Ghostline owner sees counted on their dashboard (never with names). Mention
-this in the privacy policy, and in the Data safety form under device
-information shared with other users.
+Mission check-ins send the phone's model and Android version, which a
+Ghostline owner sees counted on their dashboard, never with names. The privacy
+policy and the Data safety form (device information shared with other users)
+say so.
 
 ## Tests
 
