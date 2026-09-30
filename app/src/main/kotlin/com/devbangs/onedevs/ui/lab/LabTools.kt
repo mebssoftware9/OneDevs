@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -139,7 +140,7 @@ private val APK_TYPES = arrayOf("application/vnd.android.package-archive", "appl
  * away for when the question is about a different file.
  */
 @Composable
-fun LabHome(modifier: Modifier = Modifier) {
+fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
     // One layer open at a time. Seven cards all open is the wall of ninety-six
     // names the closed state exists to avoid.
     var open by rememberSaveable { mutableIntStateOf(-1) }
@@ -150,6 +151,12 @@ fun LabHome(modifier: Modifier = Modifier) {
     var installedFailure by remember { mutableStateOf<String?>(null) }
     var working by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val app = context.applicationContext as com.devbangs.onedevs.OneDevsApplication
+    val plan by app.plans.plan.collectAsState()
+    // Set when a free Lab is asked to analyse a second app: the sheet that
+    // explains it, rather than an error.
+    var lockedTo by remember { mutableStateOf<String?>(null) }
+    var planUnknown by remember { mutableStateOf(false) }
     // Keyed on the configuration so a rotation or a resize re-reads the
     // screen: the testing tools compare against it.
     val configuration = LocalConfiguration.current
@@ -172,12 +179,28 @@ fun LabHome(modifier: Modifier = Modifier) {
         working = true
         scope.launch {
             val result = withContext(Dispatchers.IO) { ApkAnalyzer.analyze(context, uri) }
+            // Which app this is decides whether a free Lab may show it, so
+            // the claim is asked before anything of the report appears.
+            val claim = result.getOrNull()?.let { app.plans.claimLabApp(it.report.packageName) }
             working = false
+            planUnknown = false
             result.onSuccess {
-                analysis = it
-                // The earlier version was chosen against the old file.
-                installed = null
-                installedFailure = null
+                when (claim) {
+                    is com.devbangs.onedevs.data.plans.LabClaim.Upgrade -> {
+                        lockedTo = claim.labApp
+                        if (analysis == null) tool = null
+                    }
+                    com.devbangs.onedevs.data.plans.LabClaim.Unknown -> {
+                        planUnknown = true
+                        if (analysis == null) tool = null
+                    }
+                    else -> {
+                        analysis = it
+                        // The earlier version was chosen against the old file.
+                        installed = null
+                        installedFailure = null
+                    }
+                }
             }.onFailure {
                 failure = it.message
                 tool = null
@@ -282,6 +305,18 @@ fun LabHome(modifier: Modifier = Modifier) {
                     color = oneDevsColors.critical.solid,
                 )
             }
+            if (planUnknown) {
+                Text(
+                    text = stringResource(R.string.lab_plan_offline),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = oneDevsColors.critical.solid,
+                )
+            }
+            com.devbangs.onedevs.ui.plans.LabAppCard(
+                current = analysis?.report?.packageName ?: plan?.labApp,
+                pro = plan?.pro == true,
+                onChange = { pick.launch(APK_TYPES) },
+            )
         }
         // Everything below the header, less the padding and the one gap
         // between them. A layer opened past that height scrolls as before.
@@ -303,7 +338,21 @@ fun LabHome(modifier: Modifier = Modifier) {
                     },
                 )
             }
-        }    }
+        }
+        if (plan?.pro != true) {
+            com.devbangs.onedevs.ui.plans.UpgradeBanner(onClick = onPlans)
+        }
+    }
+    lockedTo?.let { kept ->
+        com.devbangs.onedevs.ui.plans.UpgradeSheet(
+            labApp = kept,
+            onUpgrade = {
+                lockedTo = null
+                onPlans()
+            },
+            onDismiss = { lockedTo = null },
+        )
+    }
 }
 
 @Composable

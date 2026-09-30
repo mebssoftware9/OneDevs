@@ -102,6 +102,8 @@ data class Mission(
     val state: String = "recruiting",
     val day: Int = 0,
     val member: Boolean = false,
+    /** Seats members have taken. Extra apps placed in the mission are not seats. */
+    val taken: Int? = null,
     val seats: List<MissionSeat> = emptyList(),
 ) {
     val stage: MissionStage
@@ -111,7 +113,7 @@ data class Mission(
             else -> MissionStage.Recruiting
         }
 
-    val joined: Int get() = seats.size
+    val joined: Int get() = taken ?: seats.count { it.seat >= 1 }
 
     /** Free slots. Zero means the next join starts the clock. */
     val open: Int get() = (slots - joined).coerceAtLeast(0)
@@ -155,6 +157,8 @@ data class MissionMessage(
 data class MissionAck(
     val ok: Boolean = false,
     val reason: String? = null,
+    /** DevCoins the check-in earned, when it earned any. */
+    val coins: Int = 0,
 )
 
 /** What the server made of a join. A refusal is an answer, not a fault. */
@@ -232,6 +236,8 @@ class MissionRepository(private val backend: Backend) {
                     put("p_listing", JsonPrimitive(listingId))
                     put("p_seconds", JsonPrimitive(seconds))
                     put("p_device", JsonPrimitive(device))
+                    put("p_model", JsonPrimitive(phoneModel()))
+                    put("p_sdk", JsonPrimitive(android.os.Build.VERSION.SDK_INT))
                 },
             ),
         )
@@ -284,4 +290,17 @@ class MissionRepository(private val backend: Backend) {
     } catch (e: IllegalArgumentException) {
         null
     }
+}
+
+/** "Samsung Galaxy S24", not "samsung SM-S921B samsung". */
+internal fun phoneModel(
+    maker: String = android.os.Build.MANUFACTURER.orEmpty(),
+    model: String = android.os.Build.MODEL.orEmpty(),
+): String {
+    val brand = maker.replaceFirstChar { it.titlecase() }
+    return when {
+        model.isBlank() -> brand
+        model.startsWith(maker, ignoreCase = true) -> model.replaceFirstChar { it.titlecase() }
+        else -> "$brand $model"
+    }.take(80)
 }

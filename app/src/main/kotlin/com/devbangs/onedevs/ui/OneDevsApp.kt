@@ -59,7 +59,11 @@ import com.devbangs.onedevs.ui.navigation.Launches
 import com.devbangs.onedevs.ui.missions.MissionCommandScreen
 import com.devbangs.onedevs.ui.missions.MissionDetailsScreen
 import com.devbangs.onedevs.ui.missions.MissionsScreen
+import com.devbangs.onedevs.ui.navigation.Ghostline
 import com.devbangs.onedevs.ui.navigation.MissionCommand
+import com.devbangs.onedevs.ui.navigation.Plans
+import com.devbangs.onedevs.ui.plans.GhostlineScreen
+import com.devbangs.onedevs.ui.plans.PlansScreen
 import com.devbangs.onedevs.ui.navigation.MissionDetails
 import com.devbangs.onedevs.ui.navigation.Missions
 import com.devbangs.onedevs.ui.navigation.Profile
@@ -313,6 +317,7 @@ fun OneDevsApp() {
                             }
                         },
                         onOpen = { id -> navController.navigate(AppDetails(id)) },
+                        onGhostline = { navController.navigate(Ghostline) { launchSingleTop = true } },
                     )
                 }
                 composable<AppDetails> { entry ->
@@ -338,7 +343,13 @@ fun OneDevsApp() {
                         onDone = { navController.popBackStack() },
                     )
                 }
-                composable<Lab> { LabScreen() }
+                composable<Lab> {
+                    LabScreen(onPlans = { navController.navigate(Plans) { launchSingleTop = true } })
+                }
+                composable<Plans> {
+                    PlansScreen(onGhostline = { navController.navigate(Ghostline) { launchSingleTop = true } })
+                }
+                composable<Ghostline> { GhostlineScreen() }
                 composable<Badge> { BadgeScreen() }
                 composable<Profile> { ProfileScreen() }
                 composable<Wallet> { WalletScreen() }

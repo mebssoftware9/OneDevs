@@ -232,6 +232,7 @@ private val CardGap = 12.dp
 fun LaunchesScreen(
     onAdd: (Channel) -> Unit,
     onOpen: (String) -> Unit,
+    onGhostline: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var filter by rememberSaveable { mutableStateOf(LaunchFilter.All) }
@@ -278,6 +279,10 @@ fun LaunchesScreen(
                 onClick = { onAdd(Channel.Live) },
             )
         }
+        com.devbangs.onedevs.ui.plans.GhostlineStrip(
+            onClick = onGhostline,
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = CardGap),
+        )
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 20.dp),
@@ -351,8 +356,8 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun LabScreen(modifier: Modifier = Modifier) {
-    LabHome(modifier)
+fun LabScreen(onPlans: () -> Unit, modifier: Modifier = Modifier) {
+    LabHome(onPlans = onPlans, modifier = modifier)
 }
 
 /**

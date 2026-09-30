@@ -206,7 +206,8 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
                 val ack = app.missions.checkIn(missionId, listing, seconds, deviceId(context))
                 if (ack?.ok == true) {
                     taskListing = null
-                    taskNote = TaskNote.Saved(seat.title)
+                    taskNote = TaskNote.Saved(seat.title, ack.coins)
+                    if (ack.coins > 0) app.account.refreshBalance()
                     tick++
                 } else {
                     taskNote = TaskNote.Failed
@@ -300,7 +301,11 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
                     Text(
                         text = when (note) {
                             is TaskNote.Short -> pluralStringResource(R.plurals.test_too_short, note.remaining, note.remaining)
-                            is TaskNote.Saved -> stringResource(R.string.mission_task_saved, note.title)
+                            is TaskNote.Saved -> if (note.coins > 0) {
+                                pluralStringResource(R.plurals.mission_task_paid, note.coins, note.title, note.coins)
+                            } else {
+                                stringResource(R.string.mission_task_saved, note.title)
+                            }
                             TaskNote.Failed -> stringResource(R.string.mission_task_failed)
                         },
                         style = MaterialTheme.typography.bodySmall,
@@ -423,7 +428,7 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
  */
 private sealed interface TaskNote {
     data class Short(val remaining: Int) : TaskNote
-    data class Saved(val title: String) : TaskNote
+    data class Saved(val title: String, val coins: Int) : TaskNote
     data object Failed : TaskNote
 }
 

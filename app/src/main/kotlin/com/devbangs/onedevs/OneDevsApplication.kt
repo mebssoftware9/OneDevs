@@ -53,6 +53,9 @@ class OneDevsApplication : Application() {
         // Handshake with the server while the splash is up.
         scope.launch { backend.warmUp() }
         scope.launch { claims.load() }
+        // A purchase whose confirmation was lost on a previous run is sent
+        // again now; Billing itself waits for someone to be signed in.
+        scope.launch { billing.restore() }
         ClaimWorker.drain(this)
         // A claim waits for the account that earned it. Signing in is the
         // moment that account's claims can finally be asked about.
@@ -137,6 +140,31 @@ class OneDevsApplication : Application() {
     }
 
     val missions: MissionRepository by lazy { MissionRepository(backend) }
+
+    /** The account's plan, and the one app a free Lab is kept to. */
+    val plans: com.devbangs.onedevs.data.plans.PlanStore by lazy {
+        com.devbangs.onedevs.data.plans.PlanStore(
+            context = this,
+            backend = backend,
+            account = account,
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+        )
+    }
+
+    /** Play Billing. Purchases are only ever confirmed by the server. */
+    val billing: com.devbangs.onedevs.data.plans.Billing by lazy {
+        com.devbangs.onedevs.data.plans.Billing(
+            context = this,
+            backend = backend,
+            account = account,
+            plans = plans,
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+        )
+    }
+
+    val ghostline: com.devbangs.onedevs.data.plans.GhostlineRepository by lazy {
+        com.devbangs.onedevs.data.plans.GhostlineRepository(backend)
+    }
 
     /** Starting, checking and finishing tests: the questions that move DevCoins. */
     val tests: TestRepository by lazy { TestRepository(backend) }

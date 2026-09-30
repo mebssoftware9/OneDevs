@@ -215,6 +215,18 @@ class Backend(
         }
     }
 
+    /**
+     * An Edge Function, signed in as the current user. Purchases are verified
+     * here: the database will only grant a plan when a function running with
+     * the service role asks it to, after Google has confirmed the payment.
+     */
+    internal suspend fun function(name: String, args: JsonObject): HttpResult = authorised(
+        path = "/functions/v1/$name",
+        method = "POST",
+        body = args.toString(),
+        extra = emptyMap(),
+    )
+
     /** A database function. Every coin movement arrives through here. */
     internal suspend fun rpc(function: String, args: JsonObject): HttpResult = authorised(
         path = "/rest/v1/rpc/$function",

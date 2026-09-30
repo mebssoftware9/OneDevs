@@ -15,6 +15,8 @@ import kotlinx.serialization.Serializable
 @Serializable object Badge
 @Serializable object Profile
 @Serializable object Wallet
+@Serializable object Plans
+@Serializable object Ghostline
 
 /**
  * Filing an app on one of the two boards. The board is an argument rather

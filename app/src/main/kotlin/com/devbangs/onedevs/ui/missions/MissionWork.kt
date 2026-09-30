@@ -232,7 +232,8 @@ internal fun MemberProgress(mission: Mission) {
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
         )
-        mission.seats.forEach { seat ->
+        // Members' seats only: an app placed in the mission tests nobody.
+        mission.seats.filter { it.seat >= 1 }.forEach { seat ->
             val tested = seat.tested ?: 0
             Row(verticalAlignment = Alignment.CenterVertically) {
                 SeatIcon(seat, Modifier.size(32.dp))

@@ -53,3 +53,13 @@ class MissionTest {
         assertEquals(2, line.seat)
     }
 }
+
+class PhoneModelTest {
+    @Test
+    fun `the maker is not repeated`() {
+        assertEquals("Google Pixel 8", phoneModel("Google", "Pixel 8"))
+        assertEquals("Samsung SM-S921B", phoneModel("samsung", "SM-S921B"))
+        assertEquals("OnePlus 12", phoneModel("OnePlus", "OnePlus 12"))
+        assertEquals("Xiaomi", phoneModel("Xiaomi", ""))
+    }
+}

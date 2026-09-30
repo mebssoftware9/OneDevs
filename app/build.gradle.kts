@@ -144,6 +144,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     // One pooled HTTP/2 client for every call to Supabase; see Http.kt.
     implementation(libs.okhttp)
+    implementation(libs.play.billing)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
     implementation(libs.androidx.lifecycle.runtime.compose)
