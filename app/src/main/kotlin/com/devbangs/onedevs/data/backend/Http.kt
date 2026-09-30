@@ -139,7 +139,7 @@ private suspend fun execute(client: OkHttpClient, request: Request): HttpResult 
                 // The body is read for errors too: PostgREST explains itself
                 // in the body of a 4xx, and dropping it drops the reason.
                 val result = try {
-                    response.use { HttpResult(it.code, it.body?.string().orEmpty()) }
+                    response.use { HttpResult(it.code, it.body.string()) }
                 } catch (e: IOException) {
                     HttpResult(0, e.message.orEmpty())
                 }

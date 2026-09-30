@@ -13,7 +13,7 @@ datastore = "1.2.1"
 work = "2.12.0"
 serializationJson = "1.11.0"
 credentials = "1.6.0"
-okhttp = "4.12.0"
+okhttp = "5.5.0"
 googleid = "1.2.1"
 
 [libraries]
