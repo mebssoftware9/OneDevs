@@ -69,6 +69,31 @@ class PlansTest {
     }
 
     @Test
+    fun `a premium lab keeps five`() {
+        val plan = json.decodeFromString(
+            Plan.serializer(),
+            """{"plan":"premium","lab_app":"a.a","lab_apps":["a.a","a.b"],"lab_limit":5}""",
+        )
+        assertEquals(Tier.Premium, plan.tier)
+        assertTrue(plan.labAllows("a.b"))
+        assertTrue(plan.labAllows("a.c"))
+        val full = plan.copy(labApps = listOf("a.a", "a.b", "a.c", "a.d", "a.e"))
+        assertTrue(full.labAllows("a.c"))
+        assertFalse(full.labAllows("a.f"))
+    }
+
+    @Test
+    fun `no limit takes any app, and a reply from before plans gets the smallest lab`() {
+        val pro = json.decodeFromString(Plan.serializer(), """{"plan":"pro","lab_apps":["a.a"],"lab_limit":null}""")
+        assertTrue(pro.labAllows("a.z"))
+        val old = json.decodeFromString(Plan.serializer(), """{"plan":"free","lab_app":"a.a"}""")
+        assertEquals(1, old.labLimit)
+        assertEquals(listOf("a.a"), old.labKept)
+        assertTrue(old.labAllows("a.a"))
+        assertFalse(old.labAllows("a.b"))
+    }
+
+    @Test
     fun `a bad timestamp is unknown, not zero`() {
         assertNull(epochOf("yesterday"))
     }

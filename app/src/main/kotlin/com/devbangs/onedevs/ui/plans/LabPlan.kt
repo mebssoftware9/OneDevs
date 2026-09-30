@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.devbangs.onedevs.R
+import com.devbangs.onedevs.data.plans.Tier
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 
 /**
@@ -35,7 +36,7 @@ import com.devbangs.onedevs.ui.theme.oneDevsColors
  * app is the upgrade sheet, which says why, not a button that does nothing.
  */
 @Composable
-fun LabAppCard(current: String?, pro: Boolean, onChange: () -> Unit) {
+fun LabAppCard(current: String?, tier: Tier, onChange: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val accent = oneDevsColors.testing
     Row(
@@ -70,7 +71,13 @@ fun LabAppCard(current: String?, pro: Boolean, onChange: () -> Unit) {
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = stringResource(if (pro) R.string.lab_app_pro else R.string.lab_app_free),
+                text = stringResource(
+                    when (tier) {
+                        Tier.Community -> R.string.lab_app_free
+                        Tier.Premium -> R.string.lab_app_premium
+                        Tier.Pro -> R.string.lab_app_pro
+                    },
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = accent.solid,
             )

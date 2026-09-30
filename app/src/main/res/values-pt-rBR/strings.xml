@@ -957,8 +957,6 @@
     <!-- Plans and Ghostline -->
     <string name="plans_current">Seu plano</string>
     <string name="plans_included">Incluído</string>
-    <string name="plans_pro_1">Quantos apps quiser no Lab</string>
-    <string name="plans_pro_2">Troque de app quando quiser</string>
     <string name="plans_opening">Abrindo o Google Play…</string>
     <string name="plans_done_pro">O Lab Pro está ativo. Seu Lab já aceita qualquer app.</string>
     <string name="plans_pending">O Google Play ainda está processando o pagamento. Libera assim que for confirmado.</string>
@@ -1003,19 +1001,21 @@
     <string name="tier_done">Seu plano está ativo.</string>
     <string name="tier_guarantee">Garantia de acesso à produção: um ciclo que termina sem todos os testadores continua por mais 7 dias, de graça. O Google Play decide o acesso à produção pela própria análise.</string>
     <string name="tier_fine_print">Os planos renovam todo mês até você cancelar no Google Play, que mostra o preço na sua moeda. Cada mês inclui um ciclo de testes por app. Um testador conta quando usa seu app por pelo menos 32 segundos.</string>
-    <string name="upgrade_title">Seu Lab grátis guarda um app</string>
-    <string name="upgrade_body">%1$s continua exatamente onde está. O Lab Pro abre o Lab para todos os seus apps.</string>
-    <string name="upgrade_ghostline">Ou ganhe um mês com um teste Ghostline</string>
-    <string name="upgrade_see_pro">Ver o Lab Pro</string>
+    <string name="upgrade_title">Seu Lab Community guarda um app</string>
+    <string name="upgrade_title_premium">Seu Lab Premium guarda 5 apps</string>
+    <string name="upgrade_body">%1$s continua exatamente onde está. O Premium abre espaço para 5 apps, e o Pro para todos os seus apps.</string>
+    <string name="upgrade_body_premium">Seus 5 apps continuam exatamente onde estão. O Pro abre espaço para todos os seus apps.</string>
+    <string name="upgrade_see_pro">Ver planos</string>
     <string name="upgrade_not_now">Agora não</string>
     <string name="lab_app_none">Nenhum app ainda</string>
-    <string name="lab_app_free">Lab grátis, um app</string>
+    <string name="lab_app_free">Lab Community, um app</string>
+    <string name="lab_app_premium">Lab Premium, até 5 apps</string>
     <string name="lab_app_pro">Lab Pro, qualquer app</string>
     <string name="lab_app_choose">Escolher app</string>
     <string name="lab_app_change">Trocar app</string>
     <string name="lab_plan_offline">Não foi possível verificar seu plano. Conecte-se e escolha o app de novo.</string>
     <string name="lab_upgrade_title">Analisar outro app?</string>
-    <string name="lab_upgrade_body">Seu Lab grátis guarda um. O Lab Pro aceita todos.</string>
+    <string name="lab_upgrade_body">O Premium guarda 5 apps no Lab. O Pro guarda todos.</string>
     <string name="lab_upgrade_action">Assinar</string>
     <string name="gl_name">Ghostline</string>
     <string name="gl_f_guarantee">Menos de 12 testadores no dia 14? Ele continua mais sete dias, de graça</string>

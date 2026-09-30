@@ -28,14 +28,14 @@ import com.devbangs.onedevs.R
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 
 /**
- * What a free Lab says when someone reaches for a second app.
+ * What a full Lab says when someone reaches for one more app.
  *
  * Not a wall: the app they have stays exactly where it was, the sheet says
  * so first, and "Not now" puts them back in the Lab with nothing lost.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UpgradeSheet(labApp: String, onUpgrade: () -> Unit, onDismiss: () -> Unit) {
+fun UpgradeSheet(kept: List<String>, limit: Int, onUpgrade: () -> Unit, onDismiss: () -> Unit) {
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = state) {
         Column(
@@ -61,21 +61,26 @@ fun UpgradeSheet(labApp: String, onUpgrade: () -> Unit, onDismiss: () -> Unit) {
                 )
             }
             Text(
-                text = stringResource(R.string.upgrade_title),
+                text = stringResource(if (limit == 1) R.string.upgrade_title else R.string.upgrade_title_premium),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = stringResource(R.string.upgrade_body, labApp),
+                text = if (limit == 1) {
+                    stringResource(R.string.upgrade_body, kept.firstOrNull().orEmpty())
+                } else {
+                    stringResource(R.string.upgrade_body_premium)
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                Feature(stringResource(R.string.plans_pro_1), MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onSurface)
-                Feature(stringResource(R.string.plans_pro_2), MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onSurface)
-                Feature(stringResource(R.string.upgrade_ghostline), MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onSurface)
+                val tick = MaterialTheme.colorScheme.primary
+                val ink = MaterialTheme.colorScheme.onSurface
+                if (limit == 1) Feature(stringResource(R.string.tier_premium_10), tick, ink)
+                Feature(stringResource(R.string.tier_pro_4), tick, ink)
             }
             ActionButton(
                 text = stringResource(R.string.upgrade_see_pro),

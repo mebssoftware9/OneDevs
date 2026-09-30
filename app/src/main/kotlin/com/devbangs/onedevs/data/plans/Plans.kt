@@ -54,6 +54,13 @@ data class Plan(
     @SerialName("pro_until") val proUntil: String? = null,
     @SerialName("pro_source") val proSource: String? = null,
     @SerialName("lab_app") val labApp: String? = null,
+    /** The apps the Lab keeps, first chosen first. */
+    @SerialName("lab_apps") val labApps: List<String> = emptyList(),
+    /**
+     * How many apps the Lab keeps; null when there is no limit. A reply
+     * without the field predates plans, so it gets the smallest Lab.
+     */
+    @SerialName("lab_limit") val labLimit: Int? = 1,
 ) {
     val pro: Boolean get() = plan == "pro"
 
@@ -64,14 +71,23 @@ data class Plan(
             "pro" -> Tier.Pro
             else -> Tier.Community
         }
+
+    /** The apps the Lab keeps. A reply from before plans names only the first. */
+    val labKept: List<String> get() = labApps.ifEmpty { listOfNotNull(labApp) }
+
+    /** Whether the Lab may take [packageName], as far as this reply knows. */
+    fun labAllows(packageName: String): Boolean {
+        val limit = labLimit ?: return true
+        return packageName in labKept || labKept.size < limit
+    }
 }
 
 /** Whether the Lab may analyse an app. */
 sealed interface LabClaim {
     data object Allowed : LabClaim
 
-    /** A free Lab already belongs to [labApp]. */
-    data class Upgrade(val labApp: String) : LabClaim
+    /** The Lab is full: it keeps [kept], which is all [limit] allows. */
+    data class Upgrade(val kept: List<String>, val limit: Int) : LabClaim
 
     /** Could not ask, and nothing on this phone says it is allowed. */
     data object Unknown : LabClaim
@@ -82,6 +98,8 @@ private data class ClaimReply(
     val ok: Boolean = false,
     val reason: String? = null,
     @SerialName("lab_app") val labApp: String? = null,
+    @SerialName("lab_apps") val labApps: List<String> = emptyList(),
+    @SerialName("lab_limit") val labLimit: Int? = null,
 )
 
 /**
@@ -151,10 +169,14 @@ class PlanStore(
             }
             when {
                 reply?.ok == true -> {
-                    if (_plan.value?.labApp == null) refresh()
+                    // A newly kept app changes what the Lab holds; one it keeps already does not.
+                    if (_plan.value?.labKept?.contains(packageName) != true) refresh()
                     return LabClaim.Allowed
                 }
-                reply?.reason == "upgrade" && reply.labApp != null -> return LabClaim.Upgrade(reply.labApp)
+                reply != null && reply.reason == "upgrade" -> {
+                    val kept = reply.labApps.ifEmpty { listOfNotNull(reply.labApp) }
+                    return LabClaim.Upgrade(kept, reply.labLimit ?: kept.size.coerceAtLeast(1))
+                }
                 // A package name the server will not store -- a test APK
                 // with an odd name -- is still analysed; there is nothing
                 // to keep it to.
@@ -163,9 +185,10 @@ class PlanStore(
         }
         // No answer. What this phone last heard decides.
         val known = _plan.value ?: return LabClaim.Unknown
-        return when {
-            known.pro || known.labApp == null || known.labApp == packageName -> LabClaim.Allowed
-            else -> LabClaim.Upgrade(known.labApp)
+        return if (known.labAllows(packageName)) {
+            LabClaim.Allowed
+        } else {
+            LabClaim.Upgrade(known.labKept, known.labLimit ?: 1)
         }
     }
 

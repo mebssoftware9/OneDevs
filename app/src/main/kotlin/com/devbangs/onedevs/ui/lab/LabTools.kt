@@ -153,9 +153,9 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val app = context.applicationContext as com.devbangs.onedevs.OneDevsApplication
     val plan by app.plans.plan.collectAsState()
-    // Set when a free Lab is asked to analyse a second app: the sheet that
+    // Set when a full Lab is asked to analyse one more app: the sheet that
     // explains it, rather than an error.
-    var lockedTo by remember { mutableStateOf<String?>(null) }
+    var full by remember { mutableStateOf<com.devbangs.onedevs.data.plans.LabClaim.Upgrade?>(null) }
     var planUnknown by remember { mutableStateOf(false) }
     // Keyed on the configuration so a rotation or a resize re-reads the
     // screen: the testing tools compare against it.
@@ -187,7 +187,7 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
             result.onSuccess {
                 when (claim) {
                     is com.devbangs.onedevs.data.plans.LabClaim.Upgrade -> {
-                        lockedTo = claim.labApp
+                        full = claim
                         if (analysis == null) tool = null
                     }
                     com.devbangs.onedevs.data.plans.LabClaim.Unknown -> {
@@ -314,7 +314,7 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
             }
             com.devbangs.onedevs.ui.plans.LabAppCard(
                 current = analysis?.report?.packageName ?: plan?.labApp,
-                pro = plan?.pro == true,
+                tier = plan?.tier ?: com.devbangs.onedevs.data.plans.Tier.Community,
                 onChange = { pick.launch(APK_TYPES) },
             )
         }
@@ -339,18 +339,20 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
                 )
             }
         }
-        if (plan?.pro != true) {
+        // Room to grow while the Lab has a limit; a Pro Lab has none.
+        if (plan?.labLimit != null || plan == null) {
             com.devbangs.onedevs.ui.plans.UpgradeBanner(onClick = onPlans)
         }
     }
-    lockedTo?.let { kept ->
+    full?.let { claim ->
         com.devbangs.onedevs.ui.plans.UpgradeSheet(
-            labApp = kept,
+            kept = claim.kept,
+            limit = claim.limit,
             onUpgrade = {
-                lockedTo = null
+                full = null
                 onPlans()
             },
-            onDismiss = { lockedTo = null },
+            onDismiss = { full = null },
         )
     }
 }
