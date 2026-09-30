@@ -390,7 +390,7 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
             // A grey button always says why.
             val why = when {
                 testing.isEmpty() -> null // mission_no_app is already shown above
-                shortOfCoins -> stringResource(R.string.mission_join_need, fee, coins ?: 0)
+                shortOfCoins -> stringResource(R.string.mission_join_need, fee, coins)
                 testing.size > 1 -> stringResource(R.string.mission_join_pick)
                 else -> null
             }
