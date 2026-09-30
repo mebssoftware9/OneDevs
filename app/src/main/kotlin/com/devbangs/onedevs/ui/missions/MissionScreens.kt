@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -182,7 +183,7 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
     var taskListing by rememberSaveable { mutableStateOf<String?>(null) }
     var taskStarted by rememberSaveable { mutableLongStateOf(0L) }
     var wentAway by remember { mutableStateOf(false) }
-    var taskNote by remember { mutableStateOf<String?>(null) }
+    var taskNote by remember { mutableStateOf<TaskNote?>(null) }
     var needsAccess by remember { mutableStateOf(false) }
     var opened by remember { mutableStateOf(false) }
 
@@ -199,16 +200,16 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
             scope.launch {
                 val seconds = foregroundSeconds(context, seat.packageName, started)
                 if (seconds < REQUIRED_SECONDS) {
-                    taskNote = context.getString(R.string.mission_task_short, seat.title, seconds, REQUIRED_SECONDS)
+                    taskNote = TaskNote.Short(REQUIRED_SECONDS - seconds)
                     return@launch
                 }
                 val ack = app.missions.checkIn(missionId, listing, seconds, deviceId(context))
                 if (ack?.ok == true) {
                     taskListing = null
-                    taskNote = context.getString(R.string.mission_task_saved, seat.title)
+                    taskNote = TaskNote.Saved(seat.title)
                     tick++
                 } else {
-                    taskNote = context.getString(R.string.mission_task_failed)
+                    taskNote = TaskNote.Failed
                 }
             }
         } else if (opened) {
@@ -275,7 +276,7 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
             if (current.others.isNotEmpty() && current.stage != MissionStage.Elapsed) {
                 Section(stringResource(R.string.mission_tasks, current.others.size))
                 Text(
-                    text = stringResource(R.string.mission_task_hint, REQUIRED_SECONDS),
+                    text = stringResource(R.string.mission_task_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -295,9 +296,13 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
                             .padding(vertical = 14.dp),
                     )
                 }
-                taskNote?.let {
+                taskNote?.let { note ->
                     Text(
-                        text = it,
+                        text = when (note) {
+                            is TaskNote.Short -> pluralStringResource(R.plurals.test_too_short, note.remaining, note.remaining)
+                            is TaskNote.Saved -> stringResource(R.string.mission_task_saved, note.title)
+                            TaskNote.Failed -> stringResource(R.string.mission_task_failed)
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -410,6 +415,16 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+/**
+ * What happened to the last task, kept as data rather than a sentence: text
+ * resolved outside composition would not follow a language change.
+ */
+private sealed interface TaskNote {
+    data class Short(val remaining: Int) : TaskNote
+    data class Saved(val title: String) : TaskNote
+    data object Failed : TaskNote
 }
 
 /** The sentence for a refusal the server gave. */

@@ -930,11 +930,10 @@
     <string name="mission_step_daily">Teste hoje todos os outros apps (%1$d/%2$d)</string>
     <string name="mission_step_fill">Aguarde as %1$d vagas serem preenchidas (%2$d/%1$d)</string>
     <string name="mission_tasks">Suas tarefas (%1$d)</string>
-    <string name="mission_task_hint">Toque um app, use por pelo menos %1$d segundos e volte aqui. Ele é marcado sozinho.</string>
+    <string name="mission_task_hint">Toque um app, use por pelo menos 32 segundos e volte aqui. Ele é marcado sozinho.</string>
     <string name="mission_task_title">Teste o app de %1$s</string>
     <string name="mission_task_done">Feito</string>
     <string name="mission_task_open">Abrir</string>
-    <string name="mission_task_short">%1$s ficou aberto por %2$d segundos. Precisa de %3$d. Abra de novo para terminar.</string>
     <string name="mission_task_saved">%1$s contado.</string>
     <string name="mission_task_failed">Não foi possível registrar. Verifique sua conexão e abra o app de novo.</string>
     <string name="mission_usage_needed">A OneDevs precisa de acesso de uso para ver quanto tempo você usou cada app. Nada mais é lido.</string>

@@ -923,11 +923,10 @@
     <string name="mission_step_daily">Test every other app today (%1$d/%2$d)</string>
     <string name="mission_step_fill">Wait for all %1$d seats to fill (%2$d/%1$d)</string>
     <string name="mission_tasks">Your tasks (%1$d)</string>
-    <string name="mission_task_hint">Tap an app, use it for at least %1$d seconds, then come back here. It ticks by itself.</string>
+    <string name="mission_task_hint">Tap an app, use it for at least 32 seconds, then come back here. It ticks by itself.</string>
     <string name="mission_task_title">Test %1$s\'s app</string>
     <string name="mission_task_done">Done</string>
     <string name="mission_task_open">Open</string>
-    <string name="mission_task_short">%1$s was open for %2$d seconds. It needs %3$d. Open it again to finish.</string>
     <string name="mission_task_saved">%1$s counted.</string>
     <string name="mission_task_failed">Could not record that. Check your connection and open the app again.</string>
     <string name="mission_usage_needed">OneDevs needs usage access to see how long you used each app. Nothing else is read.</string>
