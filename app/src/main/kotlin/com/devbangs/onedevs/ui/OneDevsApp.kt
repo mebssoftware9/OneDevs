@@ -56,8 +56,10 @@ import com.devbangs.onedevs.ui.navigation.Badge
 import com.devbangs.onedevs.ui.navigation.Board
 import com.devbangs.onedevs.ui.navigation.Lab
 import com.devbangs.onedevs.ui.navigation.Launches
+import com.devbangs.onedevs.ui.missions.MissionCommandScreen
 import com.devbangs.onedevs.ui.missions.MissionDetailsScreen
 import com.devbangs.onedevs.ui.missions.MissionsScreen
+import com.devbangs.onedevs.ui.navigation.MissionCommand
 import com.devbangs.onedevs.ui.navigation.MissionDetails
 import com.devbangs.onedevs.ui.navigation.Missions
 import com.devbangs.onedevs.ui.navigation.Profile
@@ -294,7 +296,14 @@ fun OneDevsApp() {
                     MissionsScreen(onOpen = { id -> navController.navigate(MissionDetails(id)) })
                 }
                 composable<MissionDetails> { entry ->
-                    MissionDetailsScreen(missionId = entry.toRoute<MissionDetails>().id)
+                    val id = entry.toRoute<MissionDetails>().id
+                    MissionDetailsScreen(
+                        missionId = id,
+                        onCommand = { navController.navigate(MissionCommand(id)) },
+                    )
+                }
+                composable<MissionCommand> { entry ->
+                    MissionCommandScreen(missionId = entry.toRoute<MissionCommand>().id)
                 }
                 composable<Launches> {
                     LaunchesScreen(

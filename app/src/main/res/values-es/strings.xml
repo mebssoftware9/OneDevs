@@ -922,4 +922,38 @@
     <string name="aso_score_parts">Cómo se calcula</string>
     <string name="aso_score_next">Qué lo subiría</string>
     <string name="aso_score_d">La puntuación mide el texto según las reglas de Play y dónde están las palabras clave. El posicionamiento también depende de instalaciones, valoraciones y datos de Google que ninguna herramienta ve.</string>
+
+    <!-- Mission work and Mission Command -->
+    <string name="mission_join_pick">Toca la app que quieres en esta misión. La primera ya está elegida.</string>
+    <string name="mission_join_need">Unirse requiere %1$s DevCoins disponibles. Tienes %2$s.</string>
+    <string name="mission_your_mission">TU MISIÓN</string>
+    <string name="mission_step_joined">Te uniste a la misión</string>
+    <string name="mission_step_preinstall">Instala y prueba las otras apps (%1$d/%2$d)</string>
+    <string name="mission_step_daily">Prueba hoy todas las otras apps (%1$d/%2$d)</string>
+    <string name="mission_step_fill">Espera a que se ocupen los %1$d puestos (%2$d/%1$d)</string>
+    <string name="mission_tasks">Tus tareas (%1$d)</string>
+    <string name="mission_task_hint">Toca una app, úsala al menos %1$d segundos y vuelve aquí. Se marca sola.</string>
+    <string name="mission_task_title">Prueba la app de %1$s</string>
+    <string name="mission_task_done">Hecho</string>
+    <string name="mission_task_open">Abrir</string>
+    <string name="mission_task_short">%1$s estuvo abierta %2$d segundos. Necesita %3$d. Ábrela otra vez para terminar.</string>
+    <string name="mission_task_saved">%1$s contada.</string>
+    <string name="mission_task_failed">No se pudo registrar. Revisa tu conexión y abre la app otra vez.</string>
+    <string name="mission_usage_needed">OneDevs necesita acceso de uso para ver cuánto tiempo usaste cada app. No se lee nada más.</string>
+    <string name="mission_usage_grant">Dar acceso de uso</string>
+    <string name="mission_members">Progreso de los miembros</string>
+    <string name="mission_member_filling">%1$d/%2$d instaladas</string>
+    <string name="mission_member_running">%1$d/%2$d hoy</string>
+    <string name="mission_you">Tú</string>
+    <string name="mission_command">Mando de misión</string>
+    <string name="mission_command_sub">Una sala para todos en esta misión</string>
+    <string name="mission_command_members_only">Todos en esta misión leen esta sala. Solo los miembros pueden verla.</string>
+    <string name="mission_command_empty">Aún no hay nada. Saluda a la misión.</string>
+    <string name="mission_command_hint">Escribe a la misión</string>
+    <string name="mission_command_send">Enviar</string>
+    <string name="mission_command_joined">%1$s se unió con %2$s</string>
+    <string name="mission_command_started">Todos los puestos están ocupados. Los %1$s días empiezan hoy.</string>
+    <string name="mission_command_slow">Ve un poco más despacio y vuelve a enviar.</string>
+    <string name="mission_command_failed">No se envió. Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="mission_seat_label">Puesto %1$d</string>
 </resources>

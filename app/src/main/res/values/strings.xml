@@ -913,4 +913,38 @@
     <string name="aso_score_parts">How it adds up</string>
     <string name="aso_score_next">What would raise it</string>
     <string name="aso_score_d">The score measures the text against Play\'s rules and where keywords sit. Rankings also depend on installs, ratings and Google\'s data, which no listing tool can see.</string>
+
+    <!-- Mission work and Mission Command -->
+    <string name="mission_join_pick">Tap the app you want in this mission. The first one is picked for you.</string>
+    <string name="mission_join_need">Joining needs %1$s DevCoins available. You have %2$s.</string>
+    <string name="mission_your_mission">YOUR MISSION</string>
+    <string name="mission_step_joined">Joined the mission</string>
+    <string name="mission_step_preinstall">Install and try the other apps (%1$d/%2$d)</string>
+    <string name="mission_step_daily">Test every other app today (%1$d/%2$d)</string>
+    <string name="mission_step_fill">Wait for all %1$d seats to fill (%2$d/%1$d)</string>
+    <string name="mission_tasks">Your tasks (%1$d)</string>
+    <string name="mission_task_hint">Tap an app, use it for at least %1$d seconds, then come back here. It ticks by itself.</string>
+    <string name="mission_task_title">Test %1$s\'s app</string>
+    <string name="mission_task_done">Done</string>
+    <string name="mission_task_open">Open</string>
+    <string name="mission_task_short">%1$s was open for %2$d seconds. It needs %3$d. Open it again to finish.</string>
+    <string name="mission_task_saved">%1$s counted.</string>
+    <string name="mission_task_failed">Could not record that. Check your connection and open the app again.</string>
+    <string name="mission_usage_needed">OneDevs needs usage access to see how long you used each app. Nothing else is read.</string>
+    <string name="mission_usage_grant">Grant usage access</string>
+    <string name="mission_members">Member progress</string>
+    <string name="mission_member_filling">%1$d/%2$d installed</string>
+    <string name="mission_member_running">%1$d/%2$d today</string>
+    <string name="mission_you">You</string>
+    <string name="mission_command">Mission Command</string>
+    <string name="mission_command_sub">One room for everyone in this mission</string>
+    <string name="mission_command_members_only">Everyone in this mission reads this room. Only members can see it.</string>
+    <string name="mission_command_empty">Nothing here yet. Say hello to the mission.</string>
+    <string name="mission_command_hint">Message the mission</string>
+    <string name="mission_command_send">Send</string>
+    <string name="mission_command_joined">%1$s joined with %2$s</string>
+    <string name="mission_command_started">Every seat is taken. The %1$s days start today.</string>
+    <string name="mission_command_slow">Slow down a little, then send again.</string>
+    <string name="mission_command_failed">Not sent. Check your connection and try again.</string>
+    <string name="mission_seat_label">Seat %1$d</string>
 </resources>

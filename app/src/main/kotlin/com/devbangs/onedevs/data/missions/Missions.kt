@@ -1,6 +1,7 @@
 package com.devbangs.onedevs.data.missions
 
 import com.devbangs.onedevs.data.backend.Backend
+import com.devbangs.onedevs.data.backend.HttpResult
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -56,7 +57,12 @@ enum class MissionStage {
     Elapsed,
 }
 
-/** One taken seat: whose app sits in it. */
+/**
+ * One taken seat: whose app sits in it.
+ *
+ * Everything after [mine] is only sent to members, who need it to do their
+ * tasks; anyone browsing the mission sees titles and icons.
+ */
 @Serializable
 data class MissionSeat(
     val seat: Int,
@@ -64,6 +70,18 @@ data class MissionSeat(
     val title: String = "",
     @SerialName("icon_url") val iconUrl: String? = null,
     val mine: Boolean = false,
+    @SerialName("owner_name") val ownerName: String? = null,
+    @SerialName("package_name") val packageName: String? = null,
+    @SerialName("play_url") val playUrl: String? = null,
+    /** Whether you have used this app today. */
+    @SerialName("done_today") val doneToday: Boolean = false,
+    /** Whether you have used this app at all during the mission. */
+    @SerialName("done_ever") val doneEver: Boolean = false,
+    /**
+     * How many of the others this seat's member has used: today once the
+     * mission runs, at all while it is still filling. Null for non-members.
+     */
+    val tested: Int? = null,
 )
 
 /**
@@ -105,7 +123,39 @@ data class Mission(
     val coTesters: Int get() = (joined - 1).coerceAtLeast(0)
 
     val meetsRequirement: Boolean get() = coTesters >= MissionRules.TESTERS_REQUIRED
+
+    /** The other members' apps: the tasks. */
+    val others: List<MissionSeat> get() = seats.filterNot { it.mine }
+
+    /**
+     * Whether a task is done for the current stage: used at all while the
+     * mission fills (installing ahead), used today once it runs.
+     */
+    fun done(seat: MissionSeat): Boolean =
+        if (stage == MissionStage.Recruiting) seat.doneEver else seat.doneToday
+
+    val tasksDone: Int get() = others.count { done(it) }
 }
+
+/** One line in Mission Command. */
+@Serializable
+data class MissionMessage(
+    val id: Long,
+    /** chat, or the server's own: join (body is the app), start (body is the days). */
+    val kind: String = "chat",
+    val body: String = "",
+    val at: String = "",
+    val mine: Boolean = false,
+    val author: String? = null,
+    val seat: Int? = null,
+)
+
+/** What the server made of a post or a check-in. */
+@Serializable
+data class MissionAck(
+    val ok: Boolean = false,
+    val reason: String? = null,
+)
 
 /** What the server made of a join. A refusal is an answer, not a fault. */
 @Serializable
@@ -165,6 +215,61 @@ class MissionRepository(private val backend: Backend) {
         if (!result.ok) return null
         return try {
             MissionJson.decodeFromString(JoinResult.serializer(), result.body)
+        } catch (e: SerializationException) {
+            null
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    /** Records that you used another member's app for [seconds] today. */
+    suspend fun checkIn(missionId: String, listingId: String, seconds: Int, device: String): MissionAck? =
+        ack(
+            backend.rpc(
+                "mission_checkin",
+                buildJsonObject {
+                    put("p_mission", JsonPrimitive(missionId))
+                    put("p_listing", JsonPrimitive(listingId))
+                    put("p_seconds", JsonPrimitive(seconds))
+                    put("p_device", JsonPrimitive(device))
+                },
+            ),
+        )
+
+    /** Mission Command, oldest first: everything after [after], or the latest page. */
+    suspend fun feed(missionId: String, after: Long = 0L): List<MissionMessage>? {
+        val result = backend.rpc(
+            "mission_feed",
+            buildJsonObject {
+                put("p_mission", JsonPrimitive(missionId))
+                put("p_after", JsonPrimitive(after))
+            },
+        )
+        if (!result.ok) return null
+        return try {
+            MissionJson.decodeFromString(ListSerializer(MissionMessage.serializer()), result.body)
+        } catch (e: SerializationException) {
+            null
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    /** Posts to Mission Command. */
+    suspend fun post(missionId: String, body: String): MissionAck? = ack(
+        backend.rpc(
+            "mission_post",
+            buildJsonObject {
+                put("p_mission", JsonPrimitive(missionId))
+                put("p_body", JsonPrimitive(body))
+            },
+        ),
+    )
+
+    private fun ack(result: HttpResult): MissionAck? {
+        if (!result.ok) return null
+        return try {
+            MissionJson.decodeFromString(MissionAck.serializer(), result.body)
         } catch (e: SerializationException) {
             null
         } catch (e: IllegalArgumentException) {

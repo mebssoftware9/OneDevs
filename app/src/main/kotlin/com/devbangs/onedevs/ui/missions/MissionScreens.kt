@@ -28,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,7 +53,11 @@ import com.devbangs.onedevs.data.missions.JoinResult
 import com.devbangs.onedevs.data.missions.Mission
 import com.devbangs.onedevs.data.missions.MissionRules
 import com.devbangs.onedevs.data.missions.MissionStage
+import com.devbangs.onedevs.data.tests.REQUIRED_SECONDS
 import com.devbangs.onedevs.data.usage.deviceId
+import com.devbangs.onedevs.data.usage.foregroundSeconds
+import com.devbangs.onedevs.data.usage.hasUsageAccess
+import com.devbangs.onedevs.data.usage.usageAccessSettings
 import com.devbangs.onedevs.ui.components.BrandedLoading
 import com.devbangs.onedevs.ui.components.DevBotMark
 import com.devbangs.onedevs.ui.components.EmptyState
@@ -157,7 +162,7 @@ fun MissionsScreen(onOpen: (String) -> Unit, modifier: Modifier = Modifier) {
  * a hundred DevCoins should see the number on the thing they press.
  */
 @Composable
-fun MissionDetailsScreen(missionId: String, modifier: Modifier = Modifier) {
+fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val app = context.applicationContext as OneDevsApplication
     val scope = rememberCoroutineScope()
@@ -166,8 +171,51 @@ fun MissionDetailsScreen(missionId: String, modifier: Modifier = Modifier) {
     var loaded by remember { mutableStateOf(false) }
     var tick by remember { mutableIntStateOf(0) }
     LaunchedEffect(missionId, tick) {
-        mission = app.missions.find(missionId)
+        // A re-read behind a mission already on screen is background work.
+        val fresh = com.devbangs.onedevs.data.backend.quietly(quiet = loaded) { app.missions.find(missionId) }
+        if (fresh != null || !loaded) mission = fresh
         loaded = true
+    }
+
+    // A task in progress: which app was opened, and when. Measured on the way
+    // back in from the usage record, the same evidence a paid test uses.
+    var taskListing by rememberSaveable { mutableStateOf<String?>(null) }
+    var taskStarted by rememberSaveable { mutableLongStateOf(0L) }
+    var wentAway by remember { mutableStateOf(false) }
+    var taskNote by remember { mutableStateOf<String?>(null) }
+    var needsAccess by remember { mutableStateOf(false) }
+    var opened by remember { mutableStateOf(false) }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        if (taskListing != null) wentAway = true
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        if (needsAccess && hasUsageAccess(context)) needsAccess = false
+        val listing = taskListing
+        val seat = mission?.seats?.firstOrNull { it.listing == listing }
+        if (listing != null && wentAway && seat?.packageName != null && hasUsageAccess(context)) {
+            wentAway = false
+            val started = taskStarted
+            scope.launch {
+                val seconds = foregroundSeconds(context, seat.packageName, started)
+                if (seconds < REQUIRED_SECONDS) {
+                    taskNote = context.getString(R.string.mission_task_short, seat.title, seconds, REQUIRED_SECONDS)
+                    return@launch
+                }
+                val ack = app.missions.checkIn(missionId, listing, seconds, deviceId(context))
+                if (ack?.ok == true) {
+                    taskListing = null
+                    taskNote = context.getString(R.string.mission_task_saved, seat.title)
+                    tick++
+                } else {
+                    taskNote = context.getString(R.string.mission_task_failed)
+                }
+            }
+        } else if (opened) {
+            tick++
+        } else {
+            opened = true
+        }
     }
 
     val listings by app.listings.listings.collectAsState(initial = emptyList())
@@ -194,10 +242,15 @@ fun MissionDetailsScreen(missionId: String, modifier: Modifier = Modifier) {
         return
     }
 
-    val selected = chosen ?: testing.singleOrNull()?.id
+    // The first app is chosen for you. With two or more and nothing picked,
+    // the button used to sit grey with no word as to why.
+    val selected = chosen?.takeIf { id -> testing.any { it.id == id } } ?: testing.firstOrNull()?.id
     val fee = current.entryFee
+    // An unknown balance does not block: the server checks what is available
+    // and says so if it is not enough.
+    val shortOfCoins = coins != null && coins < fee
     val canJoin = !current.member && current.stage == MissionStage.Recruiting &&
-        selected != null && coins != null && coins >= fee && !joining
+        selected != null && !shortOfCoins && !joining
 
     Column(
         verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -215,6 +268,60 @@ fun MissionDetailsScreen(missionId: String, modifier: Modifier = Modifier) {
             if (!result.joined) Banner(stringResource(refusal(result.reason), fee), good = false)
         }
         if (failed) Banner(stringResource(R.string.mission_err_generic), good = false)
+
+        if (current.member) {
+            YourMission(current)
+
+            if (current.others.isNotEmpty() && current.stage != MissionStage.Elapsed) {
+                Section(stringResource(R.string.mission_tasks, current.others.size))
+                Text(
+                    text = stringResource(R.string.mission_task_hint, REQUIRED_SECONDS),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (needsAccess) {
+                    Banner(stringResource(R.string.mission_usage_needed), good = false)
+                    Text(
+                        text = stringResource(R.string.mission_usage_grant),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                            .clickable { context.startActivity(usageAccessSettings()) }
+                            .padding(vertical = 14.dp),
+                    )
+                }
+                taskNote?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Undone first: the list is a to-do list.
+                    current.others.sortedBy { current.done(it) }.forEach { seat ->
+                        TaskRow(seat = seat, done = current.done(seat)) {
+                            if (!hasUsageAccess(context)) {
+                                needsAccess = true
+                                return@TaskRow
+                            }
+                            taskListing = seat.listing
+                            taskStarted = System.currentTimeMillis()
+                            taskNote = null
+                            openSeat(context, seat)
+                        }
+                    }
+                }
+            }
+
+            MemberProgress(current)
+            CommandEntry(onClick = onCommand)
+        }
 
         Rules(current)
 
@@ -280,6 +387,22 @@ fun MissionDetailsScreen(missionId: String, modifier: Modifier = Modifier) {
                     }
                     .padding(vertical = 14.dp),
             )
+            // A grey button always says why.
+            val why = when {
+                testing.isEmpty() -> null // mission_no_app is already shown above
+                shortOfCoins -> stringResource(R.string.mission_join_need, fee, coins ?: 0)
+                testing.size > 1 -> stringResource(R.string.mission_join_pick)
+                else -> null
+            }
+            why?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (shortOfCoins) oneDevsColors.critical.solid else MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
         Text(
             text = stringResource(R.string.missions_note),
