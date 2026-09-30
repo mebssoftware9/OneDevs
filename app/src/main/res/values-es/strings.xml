@@ -61,7 +61,7 @@
     <string name="mission_rule_slots">%1$s desarrolladores, cada uno con una app en prueba cerrada.</string>
     <string name="mission_rule_window">Empieza cuando se ocupan todas las plazas y dura %1$s días.</string>
     <string name="mission_rule_test">Cada día, prueba las demás apps del grupo y deja comentarios.</string>
-    <string name="mission_rule_standing">Completa al menos el %1$s de tus tareas diarias. Si no llegas durante más de %2$s días, tu app sale del grupo.</string>
+    <string name="mission_rule_standing">Usa cada una de las otras apps al menos %1$s de los %2$s días para cumplir tu parte. Quien cumple recupera su cuota, más una parte de las cuotas de quienes no.</string>
     <string name="mission_rule_one">Una misión cada vez.</string>
     <string name="missions_available">Disponibles</string>
     <string name="missions_mine">Mis misiones</string>
@@ -1122,4 +1122,26 @@
     <string name="cy_fine_print">Un tester verificado usó tu app al menos 32 segundos, en una misión o desde el tablero Testing. Cada persona cuenta una vez. Google Play decide el acceso a producción con su propia revisión.</string>
     <string name="cy_notify_title">%2$s: informe del día %1$d</string>
     <string name="cy_notify_body">Testers verificados hasta ahora: %1$d de %2$d. Abre OneDevs para ver el informe completo.</string>
+
+    <!-- How a mission ends, and leaving before it starts -->
+    <string name="mission_completed">COMPLETADA</string>
+    <string name="mission_result_title">Cómo terminó</string>
+    <string name="mission_result_did_part">Cumpliste tu parte: todas las otras apps, suficientes días (necesarios: %1$d de %2$d).</string>
+    <string name="mission_result_missed">Los menos días que usaste una de las apps: %1$d. Necesarios: %2$d. Tu cuota fue para los miembros que cumplieron.</string>
+    <string name="mission_result_completers">Miembros que cumplieron su parte: %1$d de %2$d</string>
+    <string name="mission_days_title">Tus días con cada app</string>
+    <string name="mission_days_value">%1$d/%2$d</string>
+    <string name="mission_leave">Salir y recuperar tu cuota</string>
+    <string name="mission_leaving">Saliendo…</string>
+    <string name="mission_left">Saliste de la misión. Tu cuota de entrada ha vuelto a tu billetera.</string>
+    <string name="mission_leave_failed">No se pudo salir ahora. Inténtalo de nuevo en un momento.</string>
+    <string name="mission_leave_started">La misión ya empezó, así que ya no es posible salir.</string>
+    <string name="mission_rule_leave">Hasta que se ocupe el último lugar, puedes salir y recuperar tu cuota.</string>
+    <string name="mission_command_left">%1$s salió con %2$s</string>
+    <string name="mission_command_completed">Misión completada. Cumplieron su parte: %1$s</string>
+    <plurals name="mission_result_paid">
+        <item quantity="one">+%1$d DevCoin de vuelta en tu billetera</item>
+        <item quantity="many">+%1$d DevCoins de vuelta en tu billetera</item>
+        <item quantity="other">+%1$d DevCoins de vuelta en tu billetera</item>
+    </plurals>
 </resources>

@@ -39,8 +39,44 @@ class MissionRulesTest {
         assertEquals(MissionStage.Recruiting, Mission("x", "x", state = "recruiting").stage)
         assertEquals(MissionStage.Running, Mission("x", "x", state = "running").stage)
         assertEquals(MissionStage.Elapsed, Mission("x", "x", state = "elapsed").stage)
+        assertEquals(MissionStage.Completed, Mission("x", "x", state = "completed").stage)
         // Anything unknown is treated as still filling, never as finished.
         assertEquals(MissionStage.Recruiting, Mission("x", "x", state = "something new").stage)
+    }
+
+    @Test
+    fun `a mission is over once its days are, closed or not`() {
+        assertTrue(Mission("x", "x", state = "elapsed").over)
+        assertTrue(Mission("x", "x", state = "completed").over)
+        assertFalse(Mission("x", "x", state = "running").over)
+        assertFalse(Mission("x", "x", state = "recruiting").over)
+    }
+
+    @Test
+    fun `a completed mission says how it ended for you`() {
+        val mission = lenient.decodeFromString(
+            Mission.serializer(),
+            """
+            {"id":"m","name":"Mission Kestrel","state":"completed","days_needed":10,
+             "result":{"did_part":true,"coins":134,"days":11},"completers":12,
+             "seats":[{"seat":1,"listing":"a","title":"A","mine":true},
+                      {"seat":2,"listing":"b","title":"B","my_days":11}]}
+            """,
+        )
+        assertEquals(MissionStage.Completed, mission.stage)
+        assertEquals(10, mission.daysNeeded)
+        val result = requireNotNull(mission.result)
+        assertTrue(result.didPart)
+        assertEquals(134, result.coins)
+        assertEquals(12, mission.completers)
+        assertEquals(11, mission.others.single().myDays)
+    }
+
+    @Test
+    fun `a mission from before endings has no result and needs ten days`() {
+        val mission = lenient.decodeFromString(Mission.serializer(), """{"id":"m","name":"M","state":"running"}""")
+        assertEquals(null, mission.result)
+        assertEquals(MissionRules.DAYS_NEEDED, mission.daysNeeded)
     }
 
     @Test

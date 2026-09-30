@@ -122,6 +122,7 @@ fun MissionCard(
                             MissionStage.Recruiting -> R.string.mission_recruiting
                             MissionStage.Running -> R.string.mission_running
                             MissionStage.Elapsed -> R.string.mission_elapsed
+                            MissionStage.Completed -> R.string.mission_completed
                         },
                     ),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
@@ -164,7 +165,7 @@ fun MissionCard(
                     text = stringResource(
                         when {
                             joinable -> R.string.mission_cta_join
-                            mission.member && mission.stage == MissionStage.Elapsed ->
+                            mission.member && mission.over ->
                                 R.string.mission_cta_report
                             mission.member -> R.string.mission_cta_open
                             else -> R.string.mission_cta_full

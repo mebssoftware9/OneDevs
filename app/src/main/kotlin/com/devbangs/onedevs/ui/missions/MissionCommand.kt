@@ -198,11 +198,12 @@ fun MissionCommandScreen(missionId: String, modifier: Modifier = Modifier) {
 private fun Line(message: MissionMessage) {
     val scheme = MaterialTheme.colorScheme
     when (message.kind) {
-        "join", "start" -> Text(
-            text = if (message.kind == "join") {
-                stringResource(R.string.mission_command_joined, message.author.orEmpty(), message.body)
-            } else {
-                stringResource(R.string.mission_command_started, message.body)
+        "join", "start", "leave", "complete" -> Text(
+            text = when (message.kind) {
+                "join" -> stringResource(R.string.mission_command_joined, message.author.orEmpty(), message.body)
+                "leave" -> stringResource(R.string.mission_command_left, message.author.orEmpty(), message.body)
+                "complete" -> stringResource(R.string.mission_command_completed, message.body)
+                else -> stringResource(R.string.mission_command_started, message.body)
             },
             style = MaterialTheme.typography.labelSmall,
             color = scheme.onSurfaceVariant,

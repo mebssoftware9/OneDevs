@@ -59,7 +59,7 @@
     <string name="mission_rule_slots">%1$s desenvolvedores, cada um com um app em teste fechado.</string>
     <string name="mission_rule_window">Começa quando todas as vagas são ocupadas e dura %1$s dias.</string>
     <string name="mission_rule_test">Todo dia, teste os outros apps do grupo e deixe feedback.</string>
-    <string name="mission_rule_standing">Conclua pelo menos %1$s das suas tarefas diárias. Se ficar abaixo por mais de %2$s dias, seu app sai do grupo.</string>
+    <string name="mission_rule_standing">Use cada um dos outros apps em pelo menos %1$s dos %2$s dias para fazer sua parte. Quem faz recebe a taxa de volta, mais uma parte das taxas de quem não fez.</string>
     <string name="mission_rule_one">Uma missão de cada vez.</string>
     <string name="missions_available">Disponíveis</string>
     <string name="missions_mine">Minhas missões</string>
@@ -1120,4 +1120,26 @@
     <string name="cy_fine_print">Um testador verificado usou seu app por pelo menos 32 segundos, em uma missão ou pelo quadro Testing. Cada pessoa conta uma vez. O Google Play decide o acesso à produção pela própria análise.</string>
     <string name="cy_notify_title">%2$s: relatório do dia %1$d</string>
     <string name="cy_notify_body">Testadores verificados até agora: %1$d de %2$d. Abra o OneDevs para ver o relatório completo.</string>
+
+    <!-- How a mission ends, and leaving before it starts -->
+    <string name="mission_completed">CONCLUÍDA</string>
+    <string name="mission_result_title">Como terminou</string>
+    <string name="mission_result_did_part">Você fez sua parte: todos os outros apps, em dias suficientes (necessários: %1$d de %2$d).</string>
+    <string name="mission_result_missed">O menor número de dias que você usou um dos apps: %1$d. Necessários: %2$d. Sua taxa foi para os membros que fizeram a parte deles.</string>
+    <string name="mission_result_completers">Membros que fizeram a parte deles: %1$d de %2$d</string>
+    <string name="mission_days_title">Seus dias com cada app</string>
+    <string name="mission_days_value">%1$d/%2$d</string>
+    <string name="mission_leave">Sair e receber a taxa de volta</string>
+    <string name="mission_leaving">Saindo…</string>
+    <string name="mission_left">Você saiu da missão. Sua taxa de entrada voltou para a sua carteira.</string>
+    <string name="mission_leave_failed">Não foi possível sair agora. Tente de novo em instantes.</string>
+    <string name="mission_leave_started">A missão já começou, então não é mais possível sair.</string>
+    <string name="mission_rule_leave">Até o último lugar ser ocupado, você pode sair e receber a taxa de volta.</string>
+    <string name="mission_command_left">%1$s saiu com %2$s</string>
+    <string name="mission_command_completed">Missão concluída. Fizeram a parte deles: %1$s</string>
+    <plurals name="mission_result_paid">
+        <item quantity="one">+%1$d DevCoin de volta na sua carteira</item>
+        <item quantity="many">+%1$d DevCoins de volta na sua carteira</item>
+        <item quantity="other">+%1$d DevCoins de volta na sua carteira</item>
+    </plurals>
 </resources>

@@ -59,7 +59,7 @@
     <string name="mission_rule_slots">%1$s developers, each bringing one app in closed testing.</string>
     <string name="mission_rule_window">It starts when every seat is taken and runs for %1$s days.</string>
     <string name="mission_rule_test">Every day, test the other apps in the group and leave feedback.</string>
-    <string name="mission_rule_standing">Complete at least %1$s of your daily tasks. Fall short for more than %2$s days and your app leaves the group.</string>
+    <string name="mission_rule_standing">Use every other app on at least %1$s of the %2$s days to do your part. Everyone who does gets their fee back, plus a share of the fees of those who do not.</string>
     <string name="mission_rule_one">One mission at a time.</string>
     <string name="missions_available">Available</string>
     <string name="missions_mine">My missions</string>
@@ -1113,4 +1113,25 @@
     <string name="cy_fine_print">A verified tester used your app for at least 32 seconds, in a mission or from the Testing Board. Each person counts once. Google Play decides production access on its own review.</string>
     <string name="cy_notify_title">%2$s: report for day %1$d</string>
     <string name="cy_notify_body">Verified testers so far: %1$d of %2$d. Open OneDevs for the full report.</string>
+
+    <!-- How a mission ends, and leaving before it starts -->
+    <string name="mission_completed">COMPLETED</string>
+    <string name="mission_result_title">How it ended</string>
+    <string name="mission_result_did_part">You did your part: every other app, on enough days (needed: %1$d of %2$d).</string>
+    <string name="mission_result_missed">The fewest days you used one of the apps: %1$d. Needed: %2$d. Your fee went to the members who did their part.</string>
+    <string name="mission_result_completers">Members who did their part: %1$d of %2$d</string>
+    <string name="mission_days_title">Your days with each app</string>
+    <string name="mission_days_value">%1$d/%2$d</string>
+    <string name="mission_leave">Leave and get your fee back</string>
+    <string name="mission_leaving">Leaving…</string>
+    <string name="mission_left">You left the mission. Your entry fee is back in your wallet.</string>
+    <string name="mission_leave_failed">Could not leave right now. Try again in a moment.</string>
+    <string name="mission_leave_started">The mission has started, so leaving is no longer possible.</string>
+    <string name="mission_rule_leave">Until the last seat is taken, you can leave and get your fee back.</string>
+    <string name="mission_command_left">%1$s left, taking %2$s</string>
+    <string name="mission_command_completed">Mission complete. Did their part: %1$s</string>
+    <plurals name="mission_result_paid">
+        <item quantity="one">+%1$d DevCoin back in your wallet</item>
+        <item quantity="other">+%1$d DevCoins back in your wallet</item>
+    </plurals>
 </resources>

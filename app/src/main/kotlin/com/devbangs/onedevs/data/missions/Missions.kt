@@ -27,22 +27,17 @@ object MissionRules {
     const val WINDOW_DAYS = 14
     const val TESTERS_REQUIRED = 12
 
-    /** What a seat costs. Paid once, when the seat is taken. */
+    /**
+     * What a seat costs. Paid when the seat is taken; back, with a share of
+     * the others' fees, to everyone who does their part.
+     */
     const val ENTRY_FEE = 100
+
+    /** Days of the window a member must use each other app to do their part. */
+    const val DAYS_NEEDED = 10
 
     /** Tasks a member is asked to complete each day, across the whole group. */
     const val DAILY_TASKS = 3
-
-    /**
-     * The share of daily tasks a member has to complete to stay in good
-     * standing, and how many days they can fall under it before their app is
-     * pulled from the group.
-     *
-     * This counts completed tasks and submitted feedback, never app opens.
-     * Opens are the metric that is easiest to hit and means least.
-     */
-    const val DAILY_THRESHOLD = 0.7f
-    const val GRACE_DAYS = 3
 }
 
 /** Where a mission is in its life. */
@@ -53,9 +48,23 @@ enum class MissionStage {
     /** Full, running, counting days. */
     Running,
 
-    /** The window has elapsed. Not "approved" -- see [Mission]. */
+    /** The window has elapsed, and the server has not closed it yet. Not "approved" -- see [Mission]. */
     Elapsed,
+
+    /** Closed and paid out: [Mission.result] says how it ended for you. */
+    Completed,
 }
+
+/** How a finished mission ended for you. */
+@Serializable
+data class MissionResult(
+    /** Whether you used every other app on enough days. */
+    @SerialName("did_part") val didPart: Boolean = false,
+    /** DevCoins it paid you: your fee back and a share of the others'. */
+    val coins: Int = 0,
+    /** The fewest days you used any one of the other apps. */
+    val days: Int = 0,
+)
 
 /**
  * One taken seat: whose app sits in it.
@@ -77,6 +86,8 @@ data class MissionSeat(
     @SerialName("done_today") val doneToday: Boolean = false,
     /** Whether you have used this app at all during the mission. */
     @SerialName("done_ever") val doneEver: Boolean = false,
+    /** Days you have used this app in the mission. Null for non-members. */
+    @SerialName("my_days") val myDays: Int? = null,
     /**
      * How many of the others this seat's member has used: today once the
      * mission runs, at all while it is still filling. Null for non-members.
@@ -105,13 +116,23 @@ data class Mission(
     /** Seats members have taken. Extra apps placed in the mission are not seats. */
     val taken: Int? = null,
     val seats: List<MissionSeat> = emptyList(),
+    /** Days of the window each other app must be used to do your part. */
+    @SerialName("days_needed") val daysNeeded: Int = MissionRules.DAYS_NEEDED,
+    /** Yours, once the mission is completed. */
+    val result: MissionResult? = null,
+    /** Members who did their part, once it is completed. */
+    val completers: Int? = null,
 ) {
     val stage: MissionStage
         get() = when (state) {
             "running" -> MissionStage.Running
             "elapsed" -> MissionStage.Elapsed
+            "completed" -> MissionStage.Completed
             else -> MissionStage.Recruiting
         }
+
+    /** The days are over, whether or not the server has closed it yet. */
+    val over: Boolean get() = stage == MissionStage.Elapsed || stage == MissionStage.Completed
 
     val joined: Int get() = taken ?: seats.count { it.seat >= 1 }
 
@@ -143,7 +164,10 @@ data class Mission(
 @Serializable
 data class MissionMessage(
     val id: Long,
-    /** chat, or the server's own: join (body is the app), start (body is the days). */
+    /**
+     * chat, or the server's own: join and leave (body is the app), start
+     * (body is the days), complete (body is "did their part/members").
+     */
     val kind: String = "chat",
     val body: String = "",
     val at: String = "",
@@ -158,6 +182,15 @@ data class MissionAck(
     val ok: Boolean = false,
     val reason: String? = null,
     /** DevCoins the check-in earned, when it earned any. */
+    val coins: Int = 0,
+)
+
+/** What the server made of leaving a mission that had not started. */
+@Serializable
+data class LeaveResult(
+    val left: Boolean = false,
+    val reason: String? = null,
+    /** DevCoins paid back. */
     val coins: Int = 0,
 )
 
@@ -219,6 +252,22 @@ class MissionRepository(private val backend: Backend) {
         if (!result.ok) return null
         return try {
             MissionJson.decodeFromString(JoinResult.serializer(), result.body)
+        } catch (e: SerializationException) {
+            null
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    /** Leaves a mission that has not started yet, with the fee back. */
+    suspend fun leave(missionId: String): LeaveResult? {
+        val result = backend.rpc(
+            "leave_mission",
+            buildJsonObject { put("p_mission", JsonPrimitive(missionId)) },
+        )
+        if (!result.ok) return null
+        return try {
+            MissionJson.decodeFromString(LeaveResult.serializer(), result.body)
         } catch (e: SerializationException) {
             null
         } catch (e: IllegalArgumentException) {

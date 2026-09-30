@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,6 +44,7 @@ import androidx.core.net.toUri
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.images.cachedImage
 import com.devbangs.onedevs.data.missions.Mission
+import com.devbangs.onedevs.data.missions.MissionResult
 import com.devbangs.onedevs.data.missions.MissionSeat
 import com.devbangs.onedevs.data.missions.MissionStage
 import com.devbangs.onedevs.data.play.parseOptInLink
@@ -104,7 +106,7 @@ internal fun YourMission(mission: Mission) {
         } else {
             Step(
                 text = stringResource(R.string.mission_day, mission.day, mission.windowDays),
-                done = mission.stage == MissionStage.Elapsed,
+                done = mission.over,
             )
         }
         if (tasks > 0) {
@@ -346,5 +348,99 @@ internal fun SeatIcon(seat: MissionSeat, modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(10.dp))
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh),
         )
+    }
+}
+
+/**
+ * How the mission ended for you: whether you did your part, and what it paid.
+ * Someone who fell short is told by how much, not just that they did.
+ */
+@Composable
+internal fun MissionEnding(mission: Mission, result: MissionResult) {
+    val scheme = MaterialTheme.colorScheme
+    val accent = if (result.didPart) oneDevsColors.live else oneDevsColors.critical
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(accent.tint)
+            .padding(16.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.mission_result_title),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = accent.solid,
+        )
+        if (result.didPart) {
+            Text(
+                text = stringResource(R.string.mission_result_did_part, mission.daysNeeded, mission.windowDays),
+                style = MaterialTheme.typography.bodyMedium,
+                color = scheme.onSurface,
+            )
+            if (result.coins > 0) {
+                Text(
+                    text = pluralStringResource(R.plurals.mission_result_paid, result.coins, result.coins),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = accent.solid,
+                )
+            }
+        } else {
+            Text(
+                text = stringResource(R.string.mission_result_missed, result.days, mission.daysNeeded),
+                style = MaterialTheme.typography.bodyMedium,
+                color = scheme.onSurface,
+            )
+        }
+        mission.completers?.let {
+            Text(
+                text = stringResource(R.string.mission_result_completers, it, mission.joined),
+                style = MaterialTheme.typography.labelSmall,
+                color = scheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** Days you have used each other app, against the days that count as your part. */
+@Composable
+internal fun DaysPerApp(mission: Mission) {
+    val scheme = MaterialTheme.colorScheme
+    val apps = mission.others.filter { it.seat >= 1 }
+    if (apps.isEmpty()) return
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(16.dp))
+            .padding(16.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.mission_days_title),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+        )
+        apps.sortedBy { it.myDays ?: 0 }.forEach { seat ->
+            val days = seat.myDays ?: 0
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = seat.title,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = stringResource(R.string.mission_days_value, days, mission.daysNeeded),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (days >= mission.daysNeeded) oneDevsColors.live.solid else scheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }

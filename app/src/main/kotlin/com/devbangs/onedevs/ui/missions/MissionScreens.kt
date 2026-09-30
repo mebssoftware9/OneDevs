@@ -52,7 +52,6 @@ import com.devbangs.onedevs.data.backend.Balance
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.data.missions.JoinResult
 import com.devbangs.onedevs.data.missions.Mission
-import com.devbangs.onedevs.data.missions.MissionRules
 import com.devbangs.onedevs.data.missions.MissionStage
 import com.devbangs.onedevs.data.tests.REQUIRED_SECONDS
 import com.devbangs.onedevs.data.usage.deviceId
@@ -229,6 +228,8 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
     var joining by remember { mutableStateOf(false) }
     var outcome by remember { mutableStateOf<JoinResult?>(null) }
     var failed by remember { mutableStateOf(false) }
+    var leaving by remember { mutableStateOf(false) }
+    var leaveNote by remember { mutableStateOf<Int?>(null) }
 
     val current = mission
     if (!loaded) {
@@ -274,7 +275,10 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
         if (current.member) {
             YourMission(current)
 
-            if (current.others.isNotEmpty() && current.stage != MissionStage.Elapsed) {
+            current.result?.let { MissionEnding(current, it) }
+            if (current.stage != MissionStage.Recruiting) DaysPerApp(current)
+
+            if (current.others.isNotEmpty() && !current.over) {
                 Section(stringResource(R.string.mission_tasks, current.others.size))
                 Text(
                     text = stringResource(R.string.mission_task_hint),
@@ -331,7 +335,42 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
 
             MemberProgress(current)
             CommandEntry(onClick = onCommand)
+
+            // Until the last seat is taken, a member can change their mind.
+            if (current.stage == MissionStage.Recruiting) {
+                Text(
+                    text = stringResource(if (leaving) R.string.mission_leaving else R.string.mission_leave),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = oneDevsColors.critical.solid,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(CircleShape)
+                        .border(1.dp, oneDevsColors.critical.solid, CircleShape)
+                        .clickable(enabled = !leaving) {
+                            leaving = true
+                            leaveNote = null
+                            scope.launch {
+                                val result = app.missions.leave(current.id)
+                                leaving = false
+                                leaveNote = when {
+                                    result == null -> R.string.mission_leave_failed
+                                    result.left -> R.string.mission_left
+                                    result.reason == "started" -> R.string.mission_leave_started
+                                    else -> R.string.mission_leave_failed
+                                }
+                                if (result?.left == true) {
+                                    app.account.refreshBalance()
+                                    tick++
+                                }
+                            }
+                        }
+                        .padding(vertical = 12.dp),
+                )
+            }
         }
+        leaveNote?.let { Banner(stringResource(it), good = it == R.string.mission_left) }
 
         Rules(current)
 
@@ -469,11 +508,8 @@ private fun Rules(mission: Mission) {
             stringResource(R.string.mission_rule_slots, mission.slots),
             stringResource(R.string.mission_rule_window, mission.windowDays),
             stringResource(R.string.mission_rule_test),
-            stringResource(
-                R.string.mission_rule_standing,
-                "${(MissionRules.DAILY_THRESHOLD * 100).toInt()}%",
-                MissionRules.GRACE_DAYS,
-            ),
+            stringResource(R.string.mission_rule_standing, mission.daysNeeded, mission.windowDays),
+            stringResource(R.string.mission_rule_leave),
             stringResource(R.string.mission_rule_one),
         ).forEach { rule ->
             Row(verticalAlignment = Alignment.Top) {
