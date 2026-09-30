@@ -147,6 +147,7 @@
     <string name="wallet_history">History</string>
     <string name="wallet_claim_waiting">Saved on this phone, waiting for OneDevs to confirm.</string>
     <string name="wallet_reason_grant">Welcome DevCoins</string>
+    <string name="wallet_reason_plan_bonus">Plan bonus</string>
     <string name="wallet_reason_test_reward">Tested %1$s</string>
     <string name="wallet_reason_test_payment">Someone tested %1$s</string>
     <string name="wallet_reason_mission_entry">Joined %1$s</string>
@@ -978,7 +979,7 @@
     <string name="tier_premium_bonus">+500 DevCoins bonus</string>
     <string name="tier_premium_1">1 app in testing</string>
     <string name="tier_premium_2">16 verified testers</string>
-    <string name="tier_premium_3">5-hour tester activation</string>
+    <string name="tier_premium_3">Placed with testers within 5 hours</string>
     <string name="tier_premium_4">16-day testing cycle</string>
     <string name="tier_premium_5">Tester insights every 4 days</string>
     <string name="tier_premium_6">Production access review and support</string>
@@ -1072,4 +1073,44 @@
         <item quantity="one">%1$s counted. +%2$d DevCoin.</item>
         <item quantity="other">%1$s counted. +%2$d DevCoins.</item>
     </plurals>
+
+    <!-- Testing cycles: Premium and Pro -->
+    <string name="tier_cycles">Your testing cycles</string>
+    <string name="board_spotlight">Spotlight</string>
+    <string name="cy_name">Testing cycles</string>
+    <string name="cy_offline">Could not reach OneDevs. Your cycles keep running; this page updates when you are back online.</string>
+    <string name="cy_plan_needed">Testing cycles come with Premium and Pro: real testers for your app, a live dashboard and a report every 4 days.</string>
+    <string name="cy_see_plans">See plans</string>
+    <string name="cy_state_running">Testing</string>
+    <string name="cy_spotlight_now">In the Spotlight for %1$s more</string>
+    <string name="cy_spotlight_next">Next Spotlight in %1$s</string>
+    <string name="cy_how_title">How a cycle runs</string>
+    <string name="cy_how_1">Within 5 hours your app is placed with testers in active missions</string>
+    <string name="cy_how_2">16 days of testing, aiming for %1$d verified testers</string>
+    <string name="cy_how_3">Every 4 days: a tester report here, and 24 hours at the top of the Testing Board, where each test pays the tester 50 DevCoins</string>
+    <string name="cy_how_4">Short of testers on day 16? It runs 7 more days, free</string>
+    <string name="cy_another">Test another app</string>
+    <string name="cy_left">Cycles left this month: %1$d of %2$d</string>
+    <string name="cy_no_app">Put an app on the Testing board first. That is the app a cycle tests.</string>
+    <string name="cy_start">Start testing cycle</string>
+    <string name="cy_starting">Starting…</string>
+    <string name="cy_started">Your cycle has started. Your app is being placed with testers now.</string>
+    <string name="cy_err_running">That app already has a cycle running.</string>
+    <string name="cy_err_app">Only your own app on the Testing board can start a cycle.</string>
+    <string name="cy_err_plan">Testing cycles need Premium or Pro.</string>
+    <string name="cy_err_month">This month\'s cycles are used. The next one unlocks when your plan renews.</string>
+    <string name="cy_err_month_until">This month\'s cycles are used. The next one unlocks on %1$s.</string>
+    <string name="cy_err_offline">Could not reach OneDevs. Try again when you are back online.</string>
+    <string name="cy_insights">Tester reports</string>
+    <string name="cy_insights_none">Your first report arrives on day 4.</string>
+    <string name="cy_insight_title">Day %1$d report</string>
+    <string name="cy_insight_testers">Verified testers</string>
+    <string name="cy_insight_new">New in these 4 days</string>
+    <string name="cy_insight_minutes">Average minutes per tester</string>
+    <string name="cy_insight_one_day">Used it on one day only</string>
+    <string name="cy_insight_phones">Top phones</string>
+    <string name="cy_past">Past cycles</string>
+    <string name="cy_fine_print">A verified tester used your app for at least 32 seconds, in a mission or from the Testing Board. Each person counts once. Google Play decides production access on its own review.</string>
+    <string name="cy_notify_title">Day %1$d report for %2$s</string>
+    <string name="cy_notify_body">%1$d of %2$d verified testers so far. Open OneDevs for the full report.</string>
 </resources>

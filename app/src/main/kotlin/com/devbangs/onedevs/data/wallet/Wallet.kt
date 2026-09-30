@@ -49,7 +49,8 @@ class WalletRepository(private val backend: Backend) {
  */
 fun entryLabel(reason: String): Int = when (reason) {
     "grant" -> R.string.wallet_reason_grant
-    "test_reward", "ghostline_reward" -> R.string.wallet_reason_test_reward
+    "test_reward", "ghostline_reward", "spotlight_reward" -> R.string.wallet_reason_test_reward
+    "plan_bonus" -> R.string.wallet_reason_plan_bonus
     "test_payment" -> R.string.wallet_reason_test_payment
     "mission_entry" -> R.string.wallet_reason_mission_entry
     "mission_day", "mission_bonus" -> R.string.wallet_reason_mission_reward

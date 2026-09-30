@@ -90,6 +90,11 @@ data class Listing(
     val sizeBytes: Long? = null,
     val createdAt: Long = 0L,
     val check: CheckRecord = CheckRecord(),
+    /**
+     * Heading the Testing Board for a day, as part of its owner's testing
+     * cycle. Only the Board says so; a listing read anywhere else is false.
+     */
+    val spotlight: Boolean = false,
 )
 
 /** Everything the device has stored. A wrapper so the file has a growable root. */

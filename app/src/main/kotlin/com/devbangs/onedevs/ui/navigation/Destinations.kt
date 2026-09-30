@@ -17,6 +17,7 @@ import kotlinx.serialization.Serializable
 @Serializable object Wallet
 @Serializable object Plans
 @Serializable object Ghostline
+@Serializable object Cycles
 
 /**
  * Filing an app on one of the two boards. The board is an argument rather

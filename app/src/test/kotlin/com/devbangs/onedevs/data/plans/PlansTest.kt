@@ -97,4 +97,51 @@ class PlansTest {
     fun `a bad timestamp is unknown, not zero`() {
         assertNull(epochOf("yesterday"))
     }
+
+    @Test
+    fun `a cycle decodes with its spotlight and reports`() {
+        val run = json.decodeFromString(
+            ListSerializer(GhostRun.serializer()),
+            """
+            [{"id":"c","kind":"cycle","plan":"premium","state":"running",
+              "started_at":"2026-09-01T00:00:00+00:00","ends_at":"2026-09-17T00:00:00+00:00",
+              "server_now":"2026-09-09T02:00:00+00:00","listing":"l","title":"Focus",
+              "package_name":"com.focus","needed":16,"testers":11,"spotlight":true,
+              "spotlight_until":"2026-09-10T00:00:00+00:00","next_spotlight_at":"2026-09-13T00:00:00+00:00",
+              "insights":[
+                {"day":8,"at":"2026-09-09T00:00:00+00:00","testers":11,"new":4,"avg_seconds":312,
+                 "one_day":3,"models":[{"model":"Pixel 8","n":5}],"android":[{"sdk":35,"n":6}]},
+                {"day":4,"at":"2026-09-05T00:00:00+00:00","testers":7,"new":7,"avg_seconds":200,
+                 "one_day":5,"models":[],"android":[]}]}]
+            """,
+        ).single()
+        assertTrue(run.isCycle)
+        assertTrue(run.spotlight)
+        assertEquals(16, run.needed)
+        assertEquals(listOf(8, 4), run.insights.map { it.day })
+        assertEquals(4, run.insights.first().newTesters)
+        assertEquals("Pixel 8", run.insights.first().models.single().model)
+    }
+
+    @Test
+    fun `a ghostline run is not a cycle and has no reports`() {
+        val run = json.decodeFromString(GhostRun.serializer(), """{"id":"r"}""")
+        assertFalse(run.isCycle)
+        assertTrue(run.insights.isEmpty())
+    }
+
+    @Test
+    fun `a month with its cycles used has none left`() {
+        val used = json.decodeFromString(
+            CycleAllowance.serializer(),
+            """{"plan":"premium","apps":1,"used":1,"needed":16,"next_at":"2026-10-30T10:00:00+00:00"}""",
+        )
+        assertEquals(0, used.left)
+        val free = json.decodeFromString(
+            CycleAllowance.serializer(),
+            """{"plan":"free","apps":0,"used":0,"needed":null,"next_at":null}""",
+        )
+        assertEquals(0, free.left)
+        assertNull(free.needed)
+    }
 }

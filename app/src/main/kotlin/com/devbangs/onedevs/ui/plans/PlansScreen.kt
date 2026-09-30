@@ -44,7 +44,7 @@ import kotlinx.coroutines.launch
  * it says yes.
  */
 @Composable
-fun PlansScreen(modifier: Modifier = Modifier) {
+fun PlansScreen(onCycles: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val app = context.applicationContext as OneDevsApplication
     val scope = rememberCoroutineScope()
@@ -98,6 +98,15 @@ fun PlansScreen(modifier: Modifier = Modifier) {
         )
         CurrentTier(tier)
         note?.let { Note(stringResource(it)) }
+        // What a paid plan is for: its testing cycles, one tap away.
+        if (tier != Tier.Community) {
+            ActionButton(
+                text = stringResource(R.string.tier_cycles),
+                enabled = true,
+                filled = true,
+                onClick = onCycles,
+            )
+        }
 
         TierCard(
             style = communityStyle(),

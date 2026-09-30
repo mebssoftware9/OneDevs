@@ -31,6 +31,9 @@ internal data class ListingRow(
     @SerialName("public_listing") val publicListing: Boolean? = null,
     @SerialName("checked_at") val checkedAt: String? = null,
     @SerialName("created_at") val createdAt: String? = null,
+    /** Only the Board sends these: the app is in a testing cycle's spotlight. */
+    val spotlight: Boolean = false,
+    @SerialName("spotlight_reward") val spotlightReward: Int? = null,
 )
 
 /**
@@ -55,7 +58,9 @@ internal fun ListingRow.toListing(): Listing = Listing(
     title = title,
     category = category,
     channel = if (channel == "live") Channel.Live else Channel.Testing,
-    reward = reward,
+    // A spotlighted test is paid by OneDevs, not the owner, and pays more.
+    reward = spotlightReward ?: reward,
+    spotlight = spotlight,
     optInLink = playUrl,
     testNote = testNote,
     iconUrl = iconUrl,

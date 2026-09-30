@@ -32,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -56,6 +57,10 @@ import com.devbangs.onedevs.ui.theme.oneDevsColors
  *
  * No rating. There is no rating system, and a star with a number beside it is
  * the most believable thing on a row.
+ *
+ * A spotlighted app -- one day in four of its owner's testing cycle -- is
+ * tinted and marked Spotlight, so the whole community can see it, and its
+ * reward is the one OneDevs pays for it.
  */
 @Composable
 fun BoardRow(
@@ -66,14 +71,16 @@ fun BoardRow(
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     val icon = rememberListingIcon(listing)
+    val spot = oneDevsColors.mission
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
+            .then(if (listing.spotlight) Modifier.background(spot.tint) else Modifier)
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp, horizontal = 4.dp),
+            .padding(vertical = 8.dp, horizontal = if (listing.spotlight) 10.dp else 4.dp),
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -111,6 +118,31 @@ fun BoardRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (listing.spotlight) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .padding(top = 3.dp)
+                        .clip(CircleShape)
+                        .background(spot.solid)
+                        .padding(horizontal = 7.dp, vertical = 2.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_sparkle_fill),
+                        contentDescription = null,
+                        tint = spot.onSolid,
+                        modifier = Modifier.size(10.dp),
+                    )
+                    Text(
+                        text = stringResource(R.string.board_spotlight),
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                        fontWeight = FontWeight.SemiBold,
+                        color = spot.onSolid,
+                        maxLines = 1,
+                    )
+                }
+            }
             Text(
                 text = listOfNotNull(
                     listing.category.ifBlank { null },

@@ -188,9 +188,12 @@ fun GhostlineScreen(modifier: Modifier = Modifier) {
     }
 }
 
-/** One live run: the countdown, the people, the phones. */
+/**
+ * One live run or cycle: the countdown, the people, the phones. A cycle adds
+ * its Spotlight and its reports every fourth day.
+ */
 @Composable
-private fun Dashboard(run: GhostRun, skew: Long) {
+internal fun Dashboard(run: GhostRun, skew: Long) {
     var now by remember { mutableLongStateOf(System.currentTimeMillis() + skew) }
     LaunchedEffect(run.id, skew) {
         while (true) {
@@ -234,7 +237,13 @@ private fun Dashboard(run: GhostRun, skew: Long) {
                 )
             }
             Text(
-                text = stringResource(if (run.state == "extended") R.string.gl_state_extended else R.string.gl_state_running),
+                text = stringResource(
+                    when {
+                        run.state == "extended" -> R.string.gl_state_extended
+                        run.isCycle -> R.string.cy_state_running
+                        else -> R.string.gl_state_running
+                    },
+                ),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = GhostInk,
@@ -252,7 +261,8 @@ private fun Dashboard(run: GhostRun, skew: Long) {
         )
         Countdown(left)
 
-        // Fourteen days, with a mark where each boost lands.
+        // The whole run, with a mark every fourth day: a boost, and for a
+        // cycle the start of a Spotlight.
         Box(Modifier.fillMaxWidth().height(10.dp)) {
             LinearProgressIndicator(
                 progress = { done },
@@ -284,12 +294,28 @@ private fun Dashboard(run: GhostRun, skew: Long) {
                 color = GhostMuted,
                 modifier = Modifier.weight(1f),
             )
-            epochOf(run.nextBoostAt)?.takeIf { it > now && it < end }?.let { next ->
-                Text(
-                    text = stringResource(R.string.gl_next_boost, short(next - now)),
+            val spotlightEnds = epochOf(run.spotlightUntil)?.takeIf { run.spotlight && it > now }
+            val nextSpotlight = epochOf(run.nextSpotlightAt)?.takeIf { it > now && it < end }
+            when {
+                !run.isCycle -> epochOf(run.nextBoostAt)?.takeIf { it > now && it < end }?.let { next ->
+                    Text(
+                        text = stringResource(R.string.gl_next_boost, short(next - now)),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = GhostMuted,
+                    )
+                }
+                spotlightEnds != null -> Text(
+                    text = stringResource(R.string.cy_spotlight_now, short(spotlightEnds - now)),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = GhostInk,
+                )
+                nextSpotlight != null -> Text(
+                    text = stringResource(R.string.cy_spotlight_next, short(nextSpotlight - now)),
                     style = MaterialTheme.typography.labelSmall,
                     color = GhostMuted,
                 )
+                else -> Unit
             }
         }
     }
@@ -315,6 +341,7 @@ private fun Dashboard(run: GhostRun, skew: Long) {
         )
     }
 
+    if (run.isCycle) Insights(run)
     if (run.daily.isNotEmpty()) Daily(run)
     if (run.byAndroid.isNotEmpty()) Versions(run)
     Installs(run, System.currentTimeMillis())
@@ -354,7 +381,7 @@ private fun Countdown(millis: Long) {
 
 /** "3 days", "5 hours", "8 minutes": enough to know when, not a second clock. */
 @Composable
-private fun short(millis: Long): String {
+internal fun short(millis: Long): String {
     val m = (millis / 60_000).toInt()
     return when {
         m >= 1440 -> pluralStringResource(R.plurals.gl_days, m / 1440, m / 1440)
@@ -404,7 +431,7 @@ private fun Daily(run: GhostRun) {
             verticalAlignment = Alignment.Bottom,
             modifier = Modifier.fillMaxWidth().height(72.dp),
         ) {
-            run.daily.takeLast(Products.GHOSTLINE_DAYS + 7).forEach { day ->
+            run.daily.takeLast((if (run.isCycle) Products.CYCLE_DAYS else Products.GHOSTLINE_DAYS) + 7).forEach { day ->
                 Box(
                     Modifier
                         .weight(1f)
@@ -493,7 +520,7 @@ private fun Installs(run: GhostRun, now: Long) {
 }
 
 @Composable
-private fun Section(title: String, content: @Composable () -> Unit) {
+internal fun Section(title: String, content: @Composable () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -595,7 +622,7 @@ private fun StartRun(
 }
 
 @Composable
-private fun PastRun(run: GhostRun) {
+internal fun PastRun(run: GhostRun) {
     val scheme = MaterialTheme.colorScheme
     Row(
         verticalAlignment = Alignment.CenterVertically,

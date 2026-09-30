@@ -149,6 +149,7 @@
     <string name="wallet_history">Historial</string>
     <string name="wallet_claim_waiting">Guardado en este teléfono, esperando la confirmación de OneDevs.</string>
     <string name="wallet_reason_grant">DevCoins de bienvenida</string>
+    <string name="wallet_reason_plan_bonus">Bono del plan</string>
     <string name="wallet_reason_test_reward">Probaste %1$s</string>
     <string name="wallet_reason_test_payment">Alguien probó %1$s</string>
     <string name="wallet_reason_mission_entry">Te uniste a %1$s</string>
@@ -982,7 +983,7 @@
     <string name="tier_premium_bonus">+500 DevCoins de bono</string>
     <string name="tier_premium_1">1 app en pruebas</string>
     <string name="tier_premium_2">16 testers verificados</string>
-    <string name="tier_premium_3">Activación de testers en 5 horas</string>
+    <string name="tier_premium_3">Con testers en menos de 5 horas</string>
     <string name="tier_premium_4">Ciclo de pruebas de 16 días</string>
     <string name="tier_premium_5">Informes de testers cada 4 días</string>
     <string name="tier_premium_6">Revisión y soporte para el acceso a producción</string>
@@ -1081,4 +1082,44 @@
         <item quantity="many">%1$s contada. +%2$d DevCoins.</item>
         <item quantity="other">%1$s contada. +%2$d DevCoins.</item>
     </plurals>
+
+    <!-- Testing cycles: Premium and Pro -->
+    <string name="tier_cycles">Tus ciclos de prueba</string>
+    <string name="board_spotlight">Destacada</string>
+    <string name="cy_name">Ciclos de prueba</string>
+    <string name="cy_offline">No se pudo conectar con OneDevs. Tus ciclos siguen en marcha; esta página se actualiza cuando vuelvas a estar en línea.</string>
+    <string name="cy_plan_needed">Los ciclos de prueba vienen con Premium y Pro: testers reales para tu app, un panel en vivo y un informe cada 4 días.</string>
+    <string name="cy_see_plans">Ver planes</string>
+    <string name="cy_state_running">En prueba</string>
+    <string name="cy_spotlight_now">Destacada %1$s más</string>
+    <string name="cy_spotlight_next">Próximo destacado en %1$s</string>
+    <string name="cy_how_title">Cómo funciona un ciclo</string>
+    <string name="cy_how_1">En menos de 5 horas tu app llega a los testers de las misiones activas</string>
+    <string name="cy_how_2">16 días de pruebas, con el objetivo de %1$d testers verificados</string>
+    <string name="cy_how_3">Cada 4 días: un informe aquí y 24 horas al frente del tablero Testing, donde cada prueba paga 50 DevCoins al tester</string>
+    <string name="cy_how_4">¿Faltan testers el día 16? Sigue 7 días más, gratis</string>
+    <string name="cy_another">Probar otra app</string>
+    <string name="cy_left">Ciclos que quedan este mes: %1$d de %2$d</string>
+    <string name="cy_no_app">Primero pon una app en el tablero Testing. Esa es la app que prueba un ciclo.</string>
+    <string name="cy_start">Iniciar ciclo de prueba</string>
+    <string name="cy_starting">Iniciando…</string>
+    <string name="cy_started">Tu ciclo ha empezado. Tu app ya está llegando a los testers.</string>
+    <string name="cy_err_running">Esa app ya tiene un ciclo en marcha.</string>
+    <string name="cy_err_app">Solo tu propia app del tablero Testing puede iniciar un ciclo.</string>
+    <string name="cy_err_plan">Los ciclos de prueba necesitan Premium o Pro.</string>
+    <string name="cy_err_month">Ya usaste los ciclos de este mes. El siguiente se desbloquea cuando se renueve tu plan.</string>
+    <string name="cy_err_month_until">Ya usaste los ciclos de este mes. El siguiente se desbloquea el %1$s.</string>
+    <string name="cy_err_offline">No se pudo conectar con OneDevs. Inténtalo de nuevo cuando estés en línea.</string>
+    <string name="cy_insights">Informes de testers</string>
+    <string name="cy_insights_none">Tu primer informe llega el día 4.</string>
+    <string name="cy_insight_title">Informe del día %1$d</string>
+    <string name="cy_insight_testers">Testers verificados</string>
+    <string name="cy_insight_new">Nuevos en estos 4 días</string>
+    <string name="cy_insight_minutes">Minutos promedio por tester</string>
+    <string name="cy_insight_one_day">La usaron un solo día</string>
+    <string name="cy_insight_phones">Teléfonos más comunes</string>
+    <string name="cy_past">Ciclos anteriores</string>
+    <string name="cy_fine_print">Un tester verificado usó tu app al menos 32 segundos, en una misión o desde el tablero Testing. Cada persona cuenta una vez. Google Play decide el acceso a producción con su propia revisión.</string>
+    <string name="cy_notify_title">Informe del día %1$d de %2$s</string>
+    <string name="cy_notify_body">%1$d de %2$d testers verificados hasta ahora. Abre OneDevs para ver el informe completo.</string>
 </resources>

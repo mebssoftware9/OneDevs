@@ -59,9 +59,11 @@ import com.devbangs.onedevs.ui.navigation.Launches
 import com.devbangs.onedevs.ui.missions.MissionCommandScreen
 import com.devbangs.onedevs.ui.missions.MissionDetailsScreen
 import com.devbangs.onedevs.ui.missions.MissionsScreen
+import com.devbangs.onedevs.ui.navigation.Cycles
 import com.devbangs.onedevs.ui.navigation.Ghostline
 import com.devbangs.onedevs.ui.navigation.MissionCommand
 import com.devbangs.onedevs.ui.navigation.Plans
+import com.devbangs.onedevs.ui.plans.CyclesScreen
 import com.devbangs.onedevs.ui.plans.GhostlineScreen
 import com.devbangs.onedevs.ui.plans.PlansScreen
 import com.devbangs.onedevs.ui.navigation.MissionDetails
@@ -345,7 +347,12 @@ fun OneDevsApp() {
                 composable<Lab> {
                     LabScreen(onPlans = { navController.navigate(Plans) { launchSingleTop = true } })
                 }
-                composable<Plans> { PlansScreen() }
+                composable<Plans> {
+                    PlansScreen(onCycles = { navController.navigate(Cycles) { launchSingleTop = true } })
+                }
+                composable<Cycles> {
+                    CyclesScreen(onPlans = { navController.navigate(Plans) { launchSingleTop = true } })
+                }
                 composable<Ghostline> { GhostlineScreen() }
                 composable<Badge> { BadgeScreen() }
                 composable<Profile> { ProfileScreen() }

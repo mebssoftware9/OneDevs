@@ -42,6 +42,9 @@ object Products {
     const val GHOSTLINE_TESTERS = 12
     const val GHOSTLINE_BOOST_EVERY = 4
     const val GHOSTLINE_LAB_DAYS = 30
+
+    /** A testing cycle's length before any extension. The server decides; this draws it. */
+    const val CYCLE_DAYS = 16
 }
 
 /** The three plans, from free to the top. */

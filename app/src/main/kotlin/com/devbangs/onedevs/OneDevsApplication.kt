@@ -9,6 +9,7 @@ import com.devbangs.onedevs.data.backend.SessionHolder
 import com.devbangs.onedevs.data.backend.SessionSerializer
 import com.devbangs.onedevs.data.claims.ClaimOutbox
 import com.devbangs.onedevs.data.claims.ClaimWorker
+import com.devbangs.onedevs.data.plans.InsightWorker
 import com.devbangs.onedevs.data.listings.RemoteListingRepository
 import com.devbangs.onedevs.data.missions.MissionRepository
 import com.devbangs.onedevs.data.tests.TestRepository
@@ -57,6 +58,8 @@ class OneDevsApplication : Application() {
         // again now; Billing itself waits for someone to be signed in.
         scope.launch { billing.restore() }
         ClaimWorker.drain(this)
+        // A testing cycle's reports arrive whether or not the app is open.
+        InsightWorker.schedule(this)
         // A claim waits for the account that earned it. Signing in is the
         // moment that account's claims can finally be asked about.
         scope.launch {

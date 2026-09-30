@@ -22,6 +22,11 @@ The IDs are constants in `Products` in the app and must match Play Console
 exactly; a product ID can never be reused once created. `lab_pro` and
 `ghostline` are retired and do not exist in Play.
 
+Each paid month of Premium or Pro pays 500 or 1,000 DevCoins, once per Google
+order (`plan_bonuses`), so a retried verification or a repeated notification
+never pays it twice. What the plans buy, testing cycles, is described in
+`supabase/migrations/0026_testing_cycles.sql`.
+
 ## How Google reaches the server
 
 - Google Cloud project `onedevs-510000` has the Google Play Android Developer
