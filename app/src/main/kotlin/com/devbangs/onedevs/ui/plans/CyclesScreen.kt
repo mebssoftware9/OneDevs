@@ -261,7 +261,7 @@ private fun StartCycle(
         }
         when {
             left == 0 -> Text(
-                text = epochOf(allowance?.nextAt)?.let {
+                text = epochOf(allowance.nextAt)?.let {
                     stringResource(R.string.cy_err_month_until, dateOf(context, it))
                 } ?: stringResource(R.string.cy_err_month),
                 style = MaterialTheme.typography.bodySmall,

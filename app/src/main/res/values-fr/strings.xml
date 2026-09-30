@@ -1095,7 +1095,7 @@
     <string name="cy_spotlight_next">Prochaine mise à la une dans %1$s</string>
     <string name="cy_how_title">Comment se déroule un cycle</string>
     <string name="cy_how_1">En moins de 5 heures, votre app est présentée aux testeurs des missions en cours</string>
-    <string name="cy_how_2">16 jours de test, avec un objectif de %1$d testeurs vérifiés</string>
+    <string name="cy_how_2">Testeurs vérifiés visés sur un cycle de 16 jours : %1$d</string>
     <string name="cy_how_3">Tous les 4 jours : un rapport ici, et 24 heures en tête du tableau Testing, où chaque test rapporte 50 DevCoins au testeur</string>
     <string name="cy_how_4">Pas assez de testeurs au jour 16 ? Le cycle continue 7 jours de plus, gratuitement</string>
     <string name="cy_another">Tester une autre app</string>
@@ -1120,6 +1120,6 @@
     <string name="cy_insight_phones">Téléphones les plus présents</string>
     <string name="cy_past">Cycles passés</string>
     <string name="cy_fine_print">Un testeur vérifié a utilisé votre app au moins 32 secondes, dans une mission ou depuis le tableau Testing. Chaque personne compte une fois. Google Play décide de l\'accès à la production selon son propre examen.</string>
-    <string name="cy_notify_title">Rapport du jour %1$d pour %2$s</string>
-    <string name="cy_notify_body">%1$d testeurs vérifiés sur %2$d pour l\'instant. Ouvrez OneDevs pour le rapport complet.</string>
+    <string name="cy_notify_title">%2$s : rapport du jour %1$d</string>
+    <string name="cy_notify_body">Testeurs vérifiés pour l\'instant : %1$d sur %2$d. Ouvrez OneDevs pour le rapport complet.</string>
 </resources>

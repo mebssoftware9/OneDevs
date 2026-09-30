@@ -1086,7 +1086,7 @@
     <string name="cy_spotlight_next">Next Spotlight in %1$s</string>
     <string name="cy_how_title">How a cycle runs</string>
     <string name="cy_how_1">Within 5 hours your app is placed with testers in active missions</string>
-    <string name="cy_how_2">16 days of testing, aiming for %1$d verified testers</string>
+    <string name="cy_how_2">Verified testers a 16-day cycle aims for: %1$d</string>
     <string name="cy_how_3">Every 4 days: a tester report here, and 24 hours at the top of the Testing Board, where each test pays the tester 50 DevCoins</string>
     <string name="cy_how_4">Short of testers on day 16? It runs 7 more days, free</string>
     <string name="cy_another">Test another app</string>
@@ -1103,7 +1103,7 @@
     <string name="cy_err_offline">Could not reach OneDevs. Try again when you are back online.</string>
     <string name="cy_insights">Tester reports</string>
     <string name="cy_insights_none">Your first report arrives on day 4.</string>
-    <string name="cy_insight_title">Day %1$d report</string>
+    <string name="cy_insight_title">Report for day %1$d</string>
     <string name="cy_insight_testers">Verified testers</string>
     <string name="cy_insight_new">New in these 4 days</string>
     <string name="cy_insight_minutes">Average minutes per tester</string>
@@ -1111,6 +1111,6 @@
     <string name="cy_insight_phones">Top phones</string>
     <string name="cy_past">Past cycles</string>
     <string name="cy_fine_print">A verified tester used your app for at least 32 seconds, in a mission or from the Testing Board. Each person counts once. Google Play decides production access on its own review.</string>
-    <string name="cy_notify_title">Day %1$d report for %2$s</string>
-    <string name="cy_notify_body">%1$d of %2$d verified testers so far. Open OneDevs for the full report.</string>
+    <string name="cy_notify_title">%2$s: report for day %1$d</string>
+    <string name="cy_notify_body">Verified testers so far: %1$d of %2$d. Open OneDevs for the full report.</string>
 </resources>
