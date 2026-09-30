@@ -1,26 +1,14 @@
 package com.devbangs.onedevs.ui.plans
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,59 +18,41 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.R
+import com.devbangs.onedevs.data.plans.PlanLaunch
 import com.devbangs.onedevs.data.plans.Products
 import com.devbangs.onedevs.data.plans.PurchaseOutcome
-import com.devbangs.onedevs.data.plans.epochOf
-import com.devbangs.onedevs.ui.components.FilterPills
+import com.devbangs.onedevs.data.plans.Tier
 import com.devbangs.onedevs.ui.theme.oneDevsColors
-import java.text.DateFormat
-import java.util.Date
 import kotlinx.coroutines.launch
 
-/** The Activity a Compose context belongs to; Play's sheet needs one. */
-tailrec fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
-}
-
-/** Ink on the Ghostline card, which is dark in both themes. */
-internal val GhostInk = Color.White
-internal val GhostMuted = Color.White.copy(alpha = 0.72f)
-internal val GhostWash = Color.White.copy(alpha = 0.12f)
-
 /**
- * Free, Lab Pro and Ghostline, side by side.
+ * Community, Premium and Pro, from free to the top.
  *
- * Prices come from Play, in the person's own currency. Nothing is unlocked
- * from this screen: a purchase is sent to the server, which asks Google, and
- * the plan changes when it says yes.
+ * Prices come from Play, in the person's own currency; until Play answers, a
+ * paid card shows the US price its plan was set at. Nothing unlocks here: a
+ * purchase goes to the server, which asks Google, and the plan changes when
+ * it says yes.
  */
 @Composable
-fun PlansScreen(onGhostline: () -> Unit, modifier: Modifier = Modifier) {
+fun PlansScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val app = context.applicationContext as OneDevsApplication
     val scope = rememberCoroutineScope()
     val plan by app.plans.plan.collectAsState()
     val offers by app.billing.offers.collectAsState()
-    var yearly by rememberSaveable { mutableStateOf(true) }
     var note by remember { mutableStateOf<Int?>(null) }
-    var busy by remember { mutableStateOf(false) }
+    // The plan whose Play sheet is opening, so one press cannot open two.
+    var opening by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         app.plans.refresh()
@@ -90,123 +60,146 @@ fun PlansScreen(onGhostline: () -> Unit, modifier: Modifier = Modifier) {
     }
     LaunchedEffect(Unit) {
         app.billing.outcomes.collect { outcome ->
-            busy = false
-            note = outcomeText(outcome)
+            opening = null
+            note = if (outcome == PurchaseOutcome.ProActive) R.string.tier_done else outcomeText(outcome)
         }
     }
 
-    val pro = plan?.pro == true
+    fun buy(productId: String) {
+        val activity = context.findActivity() ?: return
+        opening = productId
+        note = null
+        scope.launch {
+            val launched = app.billing.buyPlan(activity, productId)
+            if (launched != PlanLaunch.Opened) {
+                opening = null
+                note = if (launched == PlanLaunch.OnOtherPlan) R.string.tier_other_plan else R.string.plans_unavailable
+            }
+        }
+    }
+
+    val tier = plan?.tier ?: Tier.Community
     Column(
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 24.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 28.dp),
     ) {
         Text(
-            text = stringResource(R.string.plans_title),
+            text = stringResource(R.string.tier_heading),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
         Text(
-            text = stringResource(R.string.plans_intro),
+            text = stringResource(R.string.tier_subheading),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        CurrentPlan(pro = pro, until = plan?.proUntil, source = plan?.proSource)
+        CurrentTier(tier)
         note?.let { Note(stringResource(it)) }
 
-        PlanCard(
-            title = stringResource(R.string.plans_free),
-            price = stringResource(R.string.plans_free_price),
+        TierCard(
+            style = communityStyle(),
+            mark = painterResource(R.drawable.ic_users_three),
+            name = stringResource(R.string.plan_community),
+            tagline = stringResource(R.string.tier_community_tagline),
+            price = stringResource(R.string.tier_free),
             features = listOf(
-                stringResource(R.string.plans_free_1),
-                stringResource(R.string.plans_free_2),
-                stringResource(R.string.plans_free_3),
+                stringResource(R.string.tier_community_1),
+                stringResource(R.string.tier_community_2),
+                stringResource(R.string.tier_community_3),
+                stringResource(R.string.tier_community_4),
+                stringResource(R.string.tier_community_5),
             ),
-            action = stringResource(if (pro) R.string.plans_included else R.string.plans_current),
+            action = stringResource(if (tier == Tier.Community) R.string.plans_current else R.string.plans_included),
             enabled = false,
             onAction = {},
         )
 
-        PlanCard(
-            title = stringResource(R.string.plans_pro),
-            price = (if (yearly) offers.yearly else offers.monthly)?.let {
-                stringResource(if (yearly) R.string.plans_per_year else R.string.plans_per_month, it)
-            } ?: "–",
+        TierCard(
+            style = PremiumStyle,
+            mark = painterResource(R.drawable.ic_sparkle_fill),
+            name = stringResource(R.string.plan_premium),
+            tagline = stringResource(R.string.tier_premium_tagline),
+            price = offers.premium ?: stringResource(R.string.tier_premium_price),
+            period = stringResource(R.string.tier_per_month),
+            badge = stringResource(R.string.tier_popular),
+            bonus = stringResource(R.string.tier_premium_bonus),
             features = listOf(
-                stringResource(R.string.plans_pro_1),
-                stringResource(R.string.plans_pro_2),
-                stringResource(R.string.plans_pro_3),
+                stringResource(R.string.tier_premium_1),
+                stringResource(R.string.tier_premium_2),
+                stringResource(R.string.tier_premium_3),
+                stringResource(R.string.tier_premium_4),
+                stringResource(R.string.tier_premium_5),
+                stringResource(R.string.tier_premium_6),
+                stringResource(R.string.tier_premium_7),
+                stringResource(R.string.tier_premium_8),
+                stringResource(R.string.tier_premium_9),
+                stringResource(R.string.tier_premium_10),
+                stringResource(R.string.tier_priority_support),
             ),
-            highlight = true,
-            header = {
-                FilterPills(
-                    labels = listOf(stringResource(R.string.plans_monthly), stringResource(R.string.plans_yearly)),
-                    selected = if (yearly) 1 else 0,
-                    onSelect = { yearly = it == 1 },
-                    fillWidth = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            },
             action = stringResource(
                 when {
-                    pro -> R.string.plans_have_pro
-                    busy -> R.string.plans_opening
-                    else -> R.string.plans_upgrade
+                    tier == Tier.Premium -> R.string.plans_current
+                    tier == Tier.Pro -> R.string.plans_included
+                    opening == Products.PREMIUM -> R.string.plans_opening
+                    else -> R.string.tier_get_premium
                 },
             ),
-            enabled = !pro && !busy,
-            onAction = {
-                val activity = context.findActivity() ?: return@PlanCard
-                busy = true
-                note = null
-                scope.launch {
-                    val opened = app.billing.buyPro(activity, if (yearly) Products.YEARLY else Products.MONTHLY)
-                    if (!opened) {
-                        busy = false
-                        note = R.string.plans_unavailable
-                    }
-                }
-            },
+            enabled = tier == Tier.Community && opening == null,
+            onAction = { buy(Products.PREMIUM) },
         )
 
-        GhostlineCard(price = offers.ghostline, onStart = onGhostline)
+        TierCard(
+            style = ProStyle,
+            mark = painterResource(R.drawable.ic_crown_fill),
+            name = stringResource(R.string.plan_pro),
+            tagline = stringResource(R.string.tier_pro_tagline),
+            price = offers.pro ?: stringResource(R.string.tier_pro_price),
+            period = stringResource(R.string.tier_per_month),
+            bonus = stringResource(R.string.tier_pro_bonus),
+            features = listOf(
+                stringResource(R.string.tier_pro_1),
+                stringResource(R.string.tier_pro_2),
+                stringResource(R.string.tier_pro_3),
+                stringResource(R.string.tier_pro_4),
+                stringResource(R.string.tier_priority_support),
+            ),
+            action = stringResource(
+                when {
+                    tier == Tier.Pro -> R.string.plans_current
+                    opening == Products.PRO -> R.string.plans_opening
+                    else -> R.string.tier_get_pro
+                },
+            ),
+            enabled = tier != Tier.Pro && opening == null,
+            onAction = { buy(Products.PRO) },
+        )
 
         Text(
-            text = stringResource(R.string.plans_fine_print),
+            text = stringResource(R.string.tier_guarantee),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = stringResource(R.string.tier_fine_print),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
 
-internal fun outcomeText(outcome: PurchaseOutcome): Int = when (outcome) {
-    PurchaseOutcome.ProActive -> R.string.plans_done_pro
-    PurchaseOutcome.GhostlineStarted -> R.string.gl_started
-    PurchaseOutcome.Pending -> R.string.plans_pending
-    PurchaseOutcome.Cancelled -> R.string.plans_cancelled
-    PurchaseOutcome.Unconfirmed -> R.string.plans_unconfirmed
-    is PurchaseOutcome.Refused -> when (outcome.reason) {
-        "already_running" -> R.string.gl_err_running
-        "not_your_testing_app" -> R.string.gl_err_app
-        else -> R.string.plans_refused
-    }
-    PurchaseOutcome.Unavailable -> R.string.plans_unavailable
-}
-
+/** The plan this account is on, in that plan's colour. */
 @Composable
-private fun CurrentPlan(pro: Boolean, until: String?, source: String?) {
-    val accent = if (pro) oneDevsColors.live else oneDevsColors.testing
-    val locale = LocalConfiguration.current.locales[0]
-    val date = epochOf(until)?.let { DateFormat.getDateInstance(DateFormat.MEDIUM, locale).format(Date(it)) }
+private fun CurrentTier(tier: Tier) {
+    val accent = when (tier) {
+        Tier.Community -> oneDevsColors.live
+        Tier.Premium -> oneDevsColors.mission
+        Tier.Pro -> oneDevsColors.testing
+    }
     Text(
-        text = when {
-            !pro -> stringResource(R.string.plans_on_free)
-            source == "ghostline" && date != null -> stringResource(R.string.plans_on_pro_ghostline, date)
-            date != null -> stringResource(R.string.plans_on_pro_until, date)
-            else -> stringResource(R.string.plans_have_pro)
-        },
+        text = stringResource(R.string.tier_you_are_on, stringResource(nameOf(tier))),
         style = MaterialTheme.typography.labelLarge,
         fontWeight = FontWeight.SemiBold,
         color = accent.solid,
@@ -217,162 +210,9 @@ private fun CurrentPlan(pro: Boolean, until: String?, source: String?) {
     )
 }
 
-@Composable
-private fun PlanCard(
-    title: String,
-    price: String,
-    features: List<String>,
-    action: String,
-    enabled: Boolean,
-    onAction: () -> Unit,
-    highlight: Boolean = false,
-    header: (@Composable () -> Unit)? = null,
-) {
-    val scheme = MaterialTheme.colorScheme
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .border(
-                width = if (highlight) 2.dp else 1.dp,
-                color = if (highlight) scheme.primary else scheme.outlineVariant,
-                shape = RoundedCornerShape(20.dp),
-            )
-            .padding(18.dp),
-    ) {
-        Row(verticalAlignment = Alignment.Bottom) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                text = price,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = if (highlight) scheme.primary else scheme.onSurface,
-            )
-        }
-        header?.invoke()
-        features.forEach { Feature(it, scheme.primary, scheme.onSurface) }
-        ActionButton(
-            text = action,
-            enabled = enabled,
-            filled = highlight,
-            onClick = onAction,
-        )
-    }
-}
-
-@Composable
-internal fun Feature(text: String, tick: Color, ink: Color) {
-    Row(verticalAlignment = Alignment.Top) {
-        Icon(
-            painter = painterResource(R.drawable.ic_check),
-            contentDescription = null,
-            tint = tick,
-            modifier = Modifier
-                .padding(top = 2.dp)
-                .size(16.dp),
-        )
-        Spacer(Modifier.width(10.dp))
-        Text(text = text, style = MaterialTheme.typography.bodyMedium, color = ink)
-    }
-}
-
-@Composable
-internal fun ActionButton(text: String, enabled: Boolean, filled: Boolean, onClick: () -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        fontWeight = FontWeight.SemiBold,
-        textAlign = TextAlign.Center,
-        color = when {
-            !enabled -> scheme.onSurfaceVariant
-            filled -> scheme.onPrimary
-            else -> scheme.primary
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(CircleShape)
-            .background(if (enabled && filled) scheme.primary else scheme.surfaceContainerHigh)
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(vertical = 14.dp),
-    )
-}
-
-/** Ghostline's card: dark in both themes, like the thing it is named after. */
-@Composable
-private fun GhostlineCard(price: String?, onStart: () -> Unit) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(oneDevsColors.brandNavy)
-            .padding(18.dp),
-    ) {
-        Row(verticalAlignment = Alignment.Bottom) {
-            Text(
-                text = stringResource(R.string.gl_name),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = GhostInk,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                text = price?.let { stringResource(R.string.gl_per_run, it) } ?: "–",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = GhostInk,
-            )
-        }
-        Text(
-            text = stringResource(R.string.gl_tagline),
-            style = MaterialTheme.typography.bodyMedium,
-            color = GhostMuted,
-        )
-        listOf(
-            stringResource(R.string.gl_f_first),
-            stringResource(R.string.gl_f_boost),
-            stringResource(R.string.gl_f_dashboard),
-            stringResource(R.string.gl_f_hidden),
-            stringResource(R.string.gl_f_lab),
-            stringResource(R.string.gl_f_guarantee),
-        ).forEach { Feature(it, GhostInk, GhostInk) }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(CircleShape)
-                .background(GhostInk)
-                .clickable(onClick = onStart)
-                .padding(vertical = 14.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = stringResource(R.string.gl_start),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = oneDevsColors.brandNavy,
-            )
-        }
-    }
-}
-
-@Composable
-internal fun Note(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodySmall,
-        fontWeight = FontWeight.Medium,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .padding(14.dp),
-    )
+@StringRes
+private fun nameOf(tier: Tier): Int = when (tier) {
+    Tier.Community -> R.string.plan_community
+    Tier.Premium -> R.string.plan_premium
+    Tier.Pro -> R.string.plan_pro
 }

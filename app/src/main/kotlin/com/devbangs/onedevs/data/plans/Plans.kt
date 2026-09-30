@@ -44,6 +44,9 @@ object Products {
     const val GHOSTLINE_LAB_DAYS = 30
 }
 
+/** The three plans, from free to the top. */
+enum class Tier { Community, Premium, Pro }
+
 /** What the server says this account has. */
 @Serializable
 data class Plan(
@@ -53,6 +56,14 @@ data class Plan(
     @SerialName("lab_app") val labApp: String? = null,
 ) {
     val pro: Boolean get() = plan == "pro"
+
+    /** Which of the three plans this is. A name this build does not know is Community. */
+    val tier: Tier
+        get() = when (plan) {
+            "premium" -> Tier.Premium
+            "pro" -> Tier.Pro
+            else -> Tier.Community
+        }
 }
 
 /** Whether the Lab may analyse an app. */

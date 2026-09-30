@@ -60,6 +60,15 @@ class PlansTest {
     }
 
     @Test
+    fun `plan names map to tiers`() {
+        fun tier(name: String) = json.decodeFromString(Plan.serializer(), """{"plan":"$name"}""").tier
+        assertEquals(Tier.Community, tier("free"))
+        assertEquals(Tier.Premium, tier("premium"))
+        assertEquals(Tier.Pro, tier("pro"))
+        assertEquals(Tier.Community, tier("something_new"))
+    }
+
+    @Test
     fun `a bad timestamp is unknown, not zero`() {
         assertNull(epochOf("yesterday"))
     }

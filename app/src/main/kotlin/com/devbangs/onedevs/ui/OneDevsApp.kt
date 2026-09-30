@@ -345,9 +345,7 @@ fun OneDevsApp() {
                 composable<Lab> {
                     LabScreen(onPlans = { navController.navigate(Plans) { launchSingleTop = true } })
                 }
-                composable<Plans> {
-                    PlansScreen(onGhostline = { navController.navigate(Ghostline) { launchSingleTop = true } })
-                }
+                composable<Plans> { PlansScreen() }
                 composable<Ghostline> { GhostlineScreen() }
                 composable<Badge> { BadgeScreen() }
                 composable<Profile> { ProfileScreen() }
