@@ -921,7 +921,7 @@
     <string name="mission_step_joined">Joined the mission</string>
     <string name="mission_step_preinstall">Install and try the other apps (%1$d/%2$d)</string>
     <string name="mission_step_daily">Test every other app today (%1$d/%2$d)</string>
-    <string name="mission_step_fill">Wait for all %1$d seats to fill (%2$d/%1$d)</string>
+    <string name="mission_step_fill">Wait for every seat to fill (%2$d/%1$d)</string>
     <string name="mission_tasks">Your tasks (%1$d)</string>
     <string name="mission_task_hint">Tap an app, use it for at least 32 seconds, then come back here. It ticks by itself.</string>
     <string name="mission_task_title">Test %1$s\'s app</string>
@@ -932,8 +932,8 @@
     <string name="mission_usage_needed">OneDevs needs usage access to see how long you used each app. Nothing else is read.</string>
     <string name="mission_usage_grant">Grant usage access</string>
     <string name="mission_members">Member progress</string>
-    <string name="mission_member_filling">%1$d/%2$d installed</string>
-    <string name="mission_member_running">%1$d/%2$d today</string>
+    <string name="mission_member_filling">Installed: %1$d/%2$d</string>
+    <string name="mission_member_running">Today: %1$d/%2$d</string>
     <string name="mission_you">You</string>
     <string name="mission_command">Mission Command</string>
     <string name="mission_command_sub">One room for everyone in this mission</string>

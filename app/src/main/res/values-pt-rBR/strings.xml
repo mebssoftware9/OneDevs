@@ -928,7 +928,7 @@
     <string name="mission_step_joined">Entrou na missão</string>
     <string name="mission_step_preinstall">Instale e teste os outros apps (%1$d/%2$d)</string>
     <string name="mission_step_daily">Teste hoje todos os outros apps (%1$d/%2$d)</string>
-    <string name="mission_step_fill">Aguarde as %1$d vagas serem preenchidas (%2$d/%1$d)</string>
+    <string name="mission_step_fill">Aguarde todas as vagas serem preenchidas (%2$d/%1$d)</string>
     <string name="mission_tasks">Suas tarefas (%1$d)</string>
     <string name="mission_task_hint">Toque um app, use por pelo menos 32 segundos e volte aqui. Ele é marcado sozinho.</string>
     <string name="mission_task_title">Teste o app de %1$s</string>
@@ -939,12 +939,12 @@
     <string name="mission_usage_needed">A OneDevs precisa de acesso de uso para ver quanto tempo você usou cada app. Nada mais é lido.</string>
     <string name="mission_usage_grant">Permitir acesso de uso</string>
     <string name="mission_members">Progresso dos membros</string>
-    <string name="mission_member_filling">%1$d/%2$d instalados</string>
-    <string name="mission_member_running">%1$d/%2$d hoje</string>
+    <string name="mission_member_filling">Instalados: %1$d/%2$d</string>
+    <string name="mission_member_running">Hoje: %1$d/%2$d</string>
     <string name="mission_you">Você</string>
     <string name="mission_command">Comando da missão</string>
     <string name="mission_command_sub">Uma sala para todos nesta missão</string>
-    <string name="mission_command_members_only">Todos nesta missão leem esta sala. Só os membros podem vê-la.</string>
+    <string name="mission_command_members_only">Esta sala é de todos nesta missão. Só os membros podem vê-la.</string>
     <string name="mission_command_empty">Nada ainda. Diga olá para a missão.</string>
     <string name="mission_command_hint">Mensagem para a missão</string>
     <string name="mission_command_send">Enviar</string>

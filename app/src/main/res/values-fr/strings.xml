@@ -930,7 +930,7 @@
     <string name="mission_step_joined">Mission rejointe</string>
     <string name="mission_step_preinstall">Installez et essayez les autres apps (%1$d/%2$d)</string>
     <string name="mission_step_daily">Testez aujourd\'hui toutes les autres apps (%1$d/%2$d)</string>
-    <string name="mission_step_fill">Attendez que les %1$d places soient prises (%2$d/%1$d)</string>
+    <string name="mission_step_fill">Attendez que toutes les places soient prises (%2$d/%1$d)</string>
     <string name="mission_tasks">Vos tâches (%1$d)</string>
     <string name="mission_task_hint">Touchez une app, utilisez-la au moins 32 secondes, puis revenez ici. Elle se coche toute seule.</string>
     <string name="mission_task_title">Testez l\'app de %1$s</string>
@@ -941,8 +941,8 @@
     <string name="mission_usage_needed">OneDevs a besoin de l\'accès aux données d\'utilisation pour voir combien de temps vous avez utilisé chaque app. Rien d\'autre n\'est lu.</string>
     <string name="mission_usage_grant">Autoriser l\'accès</string>
     <string name="mission_members">Progression des membres</string>
-    <string name="mission_member_filling">%1$d/%2$d installées</string>
-    <string name="mission_member_running">%1$d/%2$d aujourd\'hui</string>
+    <string name="mission_member_filling">Installées : %1$d/%2$d</string>
+    <string name="mission_member_running">Aujourd\'hui : %1$d/%2$d</string>
     <string name="mission_you">Vous</string>
     <string name="mission_command">Poste de commandement</string>
     <string name="mission_command_sub">Un salon pour toute la mission</string>

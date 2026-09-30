@@ -930,7 +930,7 @@
     <string name="mission_step_joined">Te uniste a la misión</string>
     <string name="mission_step_preinstall">Instala y prueba las otras apps (%1$d/%2$d)</string>
     <string name="mission_step_daily">Prueba hoy todas las otras apps (%1$d/%2$d)</string>
-    <string name="mission_step_fill">Espera a que se ocupen los %1$d puestos (%2$d/%1$d)</string>
+    <string name="mission_step_fill">Espera a que se ocupen todos los puestos (%2$d/%1$d)</string>
     <string name="mission_tasks">Tus tareas (%1$d)</string>
     <string name="mission_task_hint">Toca una app, úsala al menos 32 segundos y vuelve aquí. Se marca sola.</string>
     <string name="mission_task_title">Prueba la app de %1$s</string>
@@ -941,8 +941,8 @@
     <string name="mission_usage_needed">OneDevs necesita acceso de uso para ver cuánto tiempo usaste cada app. No se lee nada más.</string>
     <string name="mission_usage_grant">Dar acceso de uso</string>
     <string name="mission_members">Progreso de los miembros</string>
-    <string name="mission_member_filling">%1$d/%2$d instaladas</string>
-    <string name="mission_member_running">%1$d/%2$d hoy</string>
+    <string name="mission_member_filling">Instaladas: %1$d/%2$d</string>
+    <string name="mission_member_running">Hoy: %1$d/%2$d</string>
     <string name="mission_you">Tú</string>
     <string name="mission_command">Mando de misión</string>
     <string name="mission_command_sub">Una sala para todos en esta misión</string>
