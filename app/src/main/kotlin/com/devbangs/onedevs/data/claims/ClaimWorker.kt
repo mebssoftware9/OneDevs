@@ -66,7 +66,11 @@ class ClaimWorker(
     params: WorkerParameters,
 ) : CoroutineWorker(context, params) {
 
-    override suspend fun doWork(): Result {
+    // A claim retried in the background has no one watching a spinner.
+    override suspend fun doWork(): Result =
+        com.devbangs.onedevs.data.backend.quietly { work() }
+
+    private suspend fun work(): Result {
         val app = applicationContext as? OneDevsApplication ?: return Result.success()
         val outbox = app.claims
         outbox.load()

@@ -264,7 +264,9 @@ class Backend(
     ): HttpResult {
         val started = System.currentTimeMillis()
         val result = sendNow(path, method, body, session, extra)
-        if (System.currentTimeMillis() - started > SlowRequestMs && !result.offline) {
+        if (System.currentTimeMillis() - started > SlowRequestMs && !result.offline &&
+            kotlin.coroutines.coroutineContext[QuietRequest] == null
+        ) {
             _slow.tryEmit(Unit)
         }
         return result

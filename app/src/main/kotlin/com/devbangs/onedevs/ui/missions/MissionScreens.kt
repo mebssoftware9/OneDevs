@@ -79,8 +79,11 @@ fun MissionsScreen(onOpen: (String) -> Unit, modifier: Modifier = Modifier) {
     var tick by remember { mutableIntStateOf(0) }
     var opened by remember { mutableStateOf(false) }
     LaunchedEffect(tick) {
-        current = app.missions.current()
-        joined = app.missions.mine().orEmpty()
+        // A refresh behind missions already on screen is background work.
+        com.devbangs.onedevs.data.backend.quietly(quiet = loaded) {
+            current = app.missions.current()
+            joined = app.missions.mine().orEmpty()
+        }
         loaded = true
     }
     // Re-read on the way back in: joining happens on the mission's own page.

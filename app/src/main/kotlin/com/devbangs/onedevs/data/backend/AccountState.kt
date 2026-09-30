@@ -128,7 +128,8 @@ class AccountState(
             var answer: Int? = null
             var attempt = 0
             while (answer == null && attempt < 3) {
-                answer = backend.balance()
+                // The balance chip is never what anyone is waiting on.
+                answer = quietly { backend.balance() }
                 if (answer == null) {
                     attempt++
                     if (attempt < 3) delay(1500L * attempt)

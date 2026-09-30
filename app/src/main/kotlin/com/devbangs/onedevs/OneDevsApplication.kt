@@ -119,6 +119,21 @@ class OneDevsApplication : Application() {
         )
     }
 
+    /**
+     * The Board, cached on disk and in memory. Your own listings changing, or
+     * a claim settling, marks it stale so the next visit re-reads it.
+     */
+    val board: com.devbangs.onedevs.data.listings.BoardStore by lazy {
+        com.devbangs.onedevs.data.listings.BoardStore(
+            context = this,
+            backend = backend,
+            listings = listings,
+            account = account,
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+            changes = listOf(listings.listings, claims.records),
+        )
+    }
+
     val missions: MissionRepository by lazy { MissionRepository(backend) }
 
     /** Starting, checking and finishing tests: the questions that move DevCoins. */

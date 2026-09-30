@@ -37,7 +37,9 @@ class RemoteListingRepository(
         }
     }
 
-    suspend fun refresh() {
+    suspend fun refresh() = com.devbangs.onedevs.data.backend.quietly { refreshNow() }
+
+    private suspend fun refreshNow() {
         val owner = account.session.value?.userId
         if (owner == null) {
             _mine.value = emptyList()
@@ -94,7 +96,11 @@ class RemoteListingRepository(
      * can no longer pay, because a row that cannot pay wastes a tester's
      * thirty-two seconds and then refuses them.
      */
-    suspend fun board(channel: Channel, device: String, limit: Int = 50): List<Listing> {
+    suspend fun board(channel: Channel, device: String, limit: Int = 50): List<Listing> =
+        boardOrNull(channel, device, limit).orEmpty()
+
+    /** [board], but null when it could not be read, so a failure never looks like an empty board. */
+    suspend fun boardOrNull(channel: Channel, device: String, limit: Int = 50): List<Listing>? {
         val name = if (channel == Channel.Live) "live" else "testing"
         // board() also drops apps this phone has already been paid for under
         // any account. Without it someone signed into a second account sees an
@@ -108,13 +114,25 @@ class RemoteListingRepository(
                 put("p_limit", kotlinx.serialization.json.JsonPrimitive(limit))
             },
         )
-        if (fitted.ok) return decode(fitted.body)
+        if (fitted.ok) return decodeOrNull(fitted.body)
         // A database without board() yet: the plain view still works, and the
         // test screen catches the device rule before anyone starts.
         val result = backend.rest(
             "board_listings?channel=eq.$name&select=*&order=created_at.desc&limit=$limit",
         )
-        return if (result.ok) decode(result.body) else emptyList()
+        return if (result.ok) decodeOrNull(result.body) else null
+    }
+
+    /** Listing rows as the server sends them, from any endpoint that returns the listings shape. */
+    internal fun decodeOrNull(body: String): List<Listing>? = try {
+        ListingJson.decodeFromString(
+            kotlinx.serialization.builtins.ListSerializer(ListingRow.serializer()),
+            body,
+        ).map { it.toListing() }
+    } catch (e: SerializationException) {
+        null
+    } catch (e: IllegalArgumentException) {
+        null
     }
 
     private fun decode(body: String): List<Listing> = try {

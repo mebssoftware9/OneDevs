@@ -66,6 +66,22 @@ internal fun classify(result: HttpResult): Reply<String> = when {
     else -> Reply.Rejected(result.code, result.body.take(300))
 }
 
+/**
+ * Marks work nobody is waiting on: a refresh behind data already on screen, a
+ * claim retried by WorkManager, a balance re-read. Requests made inside it
+ * never raise "Slow connection", because nothing on screen is stuck.
+ *
+ * The notice exists to explain a wait. Shown for background traffic it
+ * explained nothing and read as the app being broken.
+ */
+class QuietRequest : kotlin.coroutines.AbstractCoroutineContextElement(QuietRequest) {
+    companion object Key : kotlin.coroutines.CoroutineContext.Key<QuietRequest>
+}
+
+/** Runs [block] as background traffic when [quiet] is true. */
+suspend fun <T> quietly(quiet: Boolean = true, block: suspend () -> T): T =
+    if (quiet) kotlinx.coroutines.withContext(QuietRequest()) { block() } else block()
+
 /** The same request, carrying bytes. Used for uploads, where a String is wrong. */
 internal suspend fun httpUpload(
     url: String,

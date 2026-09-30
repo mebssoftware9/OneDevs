@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,9 +44,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.R
-import com.devbangs.onedevs.data.backend.PlatformStats
 import com.devbangs.onedevs.data.listings.Channel
-import com.devbangs.onedevs.data.listings.Listing
 import com.devbangs.onedevs.data.usage.deviceId
 import com.devbangs.onedevs.ui.badges.BadgeCatalogue
 import com.devbangs.onedevs.ui.badges.BadgeGroupCard
@@ -121,26 +120,30 @@ fun BoardScreen(
     val context = LocalContext.current
     val app = context.applicationContext as OneDevsApplication
 
-    // null is "not read yet", which has to look different from an empty board
-    // or a new platform looks broken on its first day.
-    var testing by remember { mutableStateOf<List<Listing>?>(null) }
-    var live by remember { mutableStateOf<List<Listing>?>(null) }
-    var stats by remember { mutableStateOf<PlatformStats?>(null) }
+    // The Board comes from BoardStore: shown at once from the last read (on
+    // disk across launches), refreshed behind it in one request, and not
+    // re-read on resume if it is under a minute old. Coming back from the
+    // Play Store is the most common thing a tester does; it no longer costs
+    // three round trips.
+    //
+    // null is still "not read yet", which has to look different from an
+    // empty board or a new platform looks broken on its first day.
+    val home by app.board.board.collectAsState()
+    val testing = home?.testing
+    val live = home?.live
+    val stats = home?.stats
 
-    // Re-read on the way back in. A board that loads once is a board that
-    // still does not show the app you listed a minute ago.
     var tick by remember { mutableIntStateOf(0) }
-    var opened by remember { mutableStateOf(false) }
-    LaunchedEffect(tick) {
-        stats = app.backend.platformStats()
-        val device = deviceId(context)
-        testing = app.listings.board(Channel.Testing, device)
-        live = app.listings.board(Channel.Live, device)
-    }
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        // The first resume is the one that just loaded; skipping it avoids
-        // fetching everything twice on open.
-        if (opened) tick++ else opened = true
+    LaunchedEffect(tick) { app.board.refresh(deviceId(context)) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { tick++ }
+    // Nothing on screen and the read failed: try again shortly rather than
+    // leaving the spinner up until the next resume.
+    val failed by app.board.failed.collectAsState()
+    LaunchedEffect(failed, tick) {
+        if (failed && home == null) {
+            kotlinx.coroutines.delay(5_000)
+            tick++
+        }
     }
 
     val shown = if (category == BoardCategory.Testing) testing else live

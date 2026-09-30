@@ -85,7 +85,7 @@ fun WalletScreen(modifier: Modifier = Modifier) {
     var tick by remember { mutableIntStateOf(0) }
     var opened by remember { mutableStateOf(false) }
     LaunchedEffect(tick, session?.userId) {
-        when (val reply = app.wallet.load()) {
+        when (val reply = com.devbangs.onedevs.data.backend.quietly(quiet = wallet != null) { app.wallet.load() }) {
             is Reply.Answer -> {
                 wallet = reply.value
                 failed = false
