@@ -4,7 +4,7 @@
 // purchase Play still reports, so a verification lost to a bad connection is
 // retried rather than lost. Everything is idempotent on the purchase token.
 //
-// POST { kind: "subs", productId: "lab_pro", purchaseToken }
+// POST { kind: "subs", productId: "premium" | "pro", purchaseToken }
 // POST { kind: "inapp", productId: "ghostline", purchaseToken }
 //
 // The listing a Ghostline run is for is read from Google's copy of the
@@ -15,7 +15,8 @@
 import * as play from "../_shared/play.ts";
 import { json, rpc, userOf } from "../_shared/db.ts";
 
-export const SUBSCRIPTIONS = ["lab_pro"];
+// The two plans, and the old Lab subscription until it is retired.
+export const SUBSCRIPTIONS = ["premium", "pro", "lab_pro"];
 export const PRODUCTS = ["ghostline"];
 
 Deno.serve(async (req) => {

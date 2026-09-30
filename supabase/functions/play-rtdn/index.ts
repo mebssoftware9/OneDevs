@@ -34,12 +34,16 @@ Deno.serve(async (req) => {
     const sub = note.subscriptionNotification;
     if (sub?.purchaseToken) {
       const facts = await play.subscription(sub.purchaseToken);
-      const owner = (await purchaseOwner(sub.purchaseToken))?.account ?? facts?.account;
-      if (!facts || !owner) return json({ ok: true, ignored: "unknown" });
+      const known = await purchaseOwner(sub.purchaseToken);
+      const owner = known?.account ?? facts?.account;
+      // Google's line items name the plan; the notification and the stored
+      // row are fallbacks. With none of them there is nothing to record.
+      const product = facts?.products[0] ?? sub.subscriptionId ?? known?.product_id;
+      if (!facts || !owner || !product) return json({ ok: true, ignored: "unknown" });
       await rpc("subscription_update", {
         p_account: owner,
         p_token: sub.purchaseToken,
-        p_product: sub.subscriptionId ?? facts.products[0] ?? "lab_pro",
+        p_product: product,
         p_state: facts.state,
         p_expires: facts.expires,
         p_order: facts.orderId,

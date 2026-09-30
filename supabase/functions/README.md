@@ -1,11 +1,11 @@
-# Payments: Lab Pro and Ghostline
+# Payments: Premium and Pro
 
 Nothing in the app can grant a plan or start a run on its own. The flow is:
 
 1. The app opens Google Play's purchase sheet.
 2. The app sends the purchase token to the `play-purchases` function.
 3. The function asks Google whether the purchase is real, and whose it is.
-4. Only then does it call the database: `subscription_update` (Lab Pro) or
+4. Only then does it call the database: `subscription_update` (Premium, Pro) or
    `ghostline_start` (Ghostline). Those functions only run for the service role.
 
 Renewals, cancellations and refunds arrive from Google at `play-rtdn`, whether
@@ -17,12 +17,12 @@ Monetize → Products.
 
 | Type | Product ID | Base plans / price |
 |---|---|---|
-| Subscription | `lab_pro` | base plan `monthly` (auto-renewing, 1 month, $4.99) and base plan `yearly` (auto-renewing, 1 year, $39.99) |
-| In-app product | `ghostline` | $24.99 |
+| Subscription | `premium` | base plan `monthly` (auto-renewing, 1 month, $19.99) |
+| Subscription | `pro` | base plan `monthly` (auto-renewing, 1 month, $39.99) |
 
-The IDs must match exactly; they are constants in `Products` in the app.
-Ghostline is consumed by the app after each run starts, so it can be bought
-again for another app.
+The IDs must match exactly; they are constants in `Products` in the app, and
+a product ID can never be reused once created. `lab_pro` and `ghostline` are
+being retired: do not create them.
 
 ## 2. Service account
 
