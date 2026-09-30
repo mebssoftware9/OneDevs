@@ -1001,8 +1001,8 @@
     <string name="tier_done">Your plan is active.</string>
     <string name="tier_guarantee">Production Access Guarantee: a cycle that ends short of its testers runs 7 more days, free. Google Play decides production access on its own review.</string>
     <string name="tier_fine_print">Plans renew monthly until you cancel in Google Play, which shows the price in your currency. Each month includes one testing cycle per app. A tester counts once they have used your app for at least 32 seconds.</string>
-    <string name="promo_premium_title">16 testers, activated in 5 hours</string>
-    <string name="promo_premium_body">Premium runs your 16-day test with a live dashboard, tester insights and priority support.</string>
+    <string name="promo_premium_title">Placed with testers within 5 hours</string>
+    <string name="promo_premium_body">A 16-day cycle aiming for 16 verified testers, with a report and a Spotlight every 4 days.</string>
     <string name="promo_pro_title">25 testers. 2 apps. No Lab limit.</string>
     <string name="promo_pro_body">Pro adds a second app in testing, 25 verified testers and a Lab that takes every app you make.</string>
     <string name="promo_on_pro_body">25 testers, 2 apps in testing and a Lab with room for every app, every month.</string>
