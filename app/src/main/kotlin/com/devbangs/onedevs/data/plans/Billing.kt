@@ -38,6 +38,8 @@ data class Offers(
     val monthly: String? = null,
     val yearly: String? = null,
     val ghostline: String? = null,
+    val premium: String? = null,
+    val pro: String? = null,
 )
 
 /** How a purchase ended, for the screen that started it. */
@@ -57,6 +59,17 @@ sealed interface PurchaseOutcome {
     data class Refused(val reason: String?) : PurchaseOutcome
 
     data object Unavailable : PurchaseOutcome
+}
+
+/** What pressing a paid plan's button did. */
+enum class PlanLaunch {
+    /** Play's sheet is open; how it ends arrives on [Billing.outcomes]. */
+    Opened,
+
+    /** This Google account is still renewing the other paid plan. */
+    OnOtherPlan,
+
+    Unavailable,
 }
 
 @Serializable
@@ -127,11 +140,14 @@ class Billing(
         if (!ready()) return
         val subs = query(Products.LAB_PRO, BillingClient.ProductType.SUBS)
         val once = query(Products.GHOSTLINE, BillingClient.ProductType.INAPP)
-        details = listOfNotNull(subs, once).associateBy { it.productId }
+        val tiers = Products.PLANS.mapNotNull { query(it, BillingClient.ProductType.SUBS) }
+        details = (listOfNotNull(subs, once) + tiers).associateBy { it.productId }
         _offers.value = Offers(
             monthly = subs?.priceOf(Products.MONTHLY),
             yearly = subs?.priceOf(Products.YEARLY),
             ghostline = once?.oneTimePurchaseOfferDetailsList?.firstOrNull()?.formattedPrice,
+            premium = details[Products.PREMIUM]?.priceOf(Products.MONTHLY),
+            pro = details[Products.PRO]?.priceOf(Products.MONTHLY),
         )
     }
 
@@ -161,11 +177,34 @@ class Billing(
             ?.pricingPhases?.pricingPhaseList?.lastOrNull()?.formattedPrice
 
     /** Opens Play's sheet for Lab Pro on [basePlan]. */
-    suspend fun buyPro(activity: Activity, basePlan: String): Boolean {
+    suspend fun buyPro(activity: Activity, basePlan: String): Boolean =
+        subscribe(activity, Products.LAB_PRO, basePlan)
+
+    /**
+     * Opens Play's sheet for a monthly plan, [Products.PREMIUM] or [Products.PRO].
+     *
+     * Someone still renewing the other plan is not sent to a second sheet:
+     * Play would sell a second subscription beside the first, and both would
+     * bill. Moving between plans is its own flow.
+     */
+    suspend fun buyPlan(activity: Activity, productId: String): PlanLaunch {
+        if (productId !in Products.PLANS || account.session.value == null || !ready()) {
+            return PlanLaunch.Unavailable
+        }
+        val held = owned(BillingClient.ProductType.SUBS) ?: return PlanLaunch.Unavailable
+        val renewingOther = held.any { purchase ->
+            purchase.isAutoRenewing && purchase.products.any { it in Products.PLANS && it != productId }
+        }
+        if (renewingOther) return PlanLaunch.OnOtherPlan
+        val opened = subscribe(activity, productId, Products.MONTHLY)
+        return if (opened) PlanLaunch.Opened else PlanLaunch.Unavailable
+    }
+
+    private suspend fun subscribe(activity: Activity, productId: String, basePlan: String): Boolean {
         val me = account.session.value?.userId ?: return false
         if (!ready()) return false
-        if (details.isEmpty()) loadOffers()
-        val product = details[Products.LAB_PRO] ?: return false
+        if (details[productId] == null) loadOffers()
+        val product = details[productId] ?: return false
         val offer = product.subscriptionOfferDetails
             ?.filter { it.basePlanId == basePlan }
             ?.minByOrNull { it.pricingPhases.pricingPhaseList.size }
@@ -224,14 +263,21 @@ class Billing(
     suspend fun restore() {
         if (account.session.value == null || !ready()) return
         for (type in listOf(BillingClient.ProductType.SUBS, BillingClient.ProductType.INAPP)) {
-            val owned = suspendCancellableCoroutine { cont ->
-                client.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(type).build()) { _, list ->
-                    if (cont.isActive) cont.resume(list)
-                }
-            }
-            owned.forEach { settle(it, loud = false) }
+            owned(type)?.forEach { settle(it, loud = false) }
         }
         plans.refresh()
+    }
+
+    /**
+     * What Play holds for this Google account: live subscriptions and
+     * unconsumed products. Null when Play did not answer.
+     */
+    private suspend fun owned(type: String): List<Purchase>? = suspendCancellableCoroutine { cont ->
+        client.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(type).build()) { result, list ->
+            if (cont.isActive) {
+                cont.resume(if (result.responseCode == BillingClient.BillingResponseCode.OK) list else null)
+            }
+        }
     }
 
     private suspend fun settle(purchase: Purchase, loud: Boolean) = verifying.withLock {
@@ -243,7 +289,7 @@ class Billing(
         if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return@withLock
         // A subscription already confirmed needs no second trip on launch;
         // renewals reach the server from Google directly.
-        if (!loud && product == Products.LAB_PRO && purchase.isAcknowledged) return@withLock
+        if (!loud && product != Products.GHOSTLINE && purchase.isAcknowledged) return@withLock
 
         val kind = if (product == Products.GHOSTLINE) "inapp" else "subs"
         val result = quietly(quiet = !loud) {

@@ -317,7 +317,6 @@ fun OneDevsApp() {
                             }
                         },
                         onOpen = { id -> navController.navigate(AppDetails(id)) },
-                        onGhostline = { navController.navigate(Ghostline) { launchSingleTop = true } },
                     )
                 }
                 composable<AppDetails> { entry ->

@@ -25,6 +25,14 @@ object Products {
     const val MONTHLY = "monthly"
     const val YEARLY = "yearly"
 
+    /**
+     * The paid plans: one monthly subscription each, on base plan [MONTHLY].
+     * Community is free and has no product.
+     */
+    const val PREMIUM = "premium"
+    const val PRO = "pro"
+    val PLANS = listOf(PREMIUM, PRO)
+
     /** Consumable one-time product: one Ghostline run per purchase. */
     const val GHOSTLINE = "ghostline"
 

@@ -129,38 +129,3 @@ fun UpgradeBanner(onClick: () -> Unit) {
         )
     }
 }
-
-/** Ghostline's way in from Launch: one dark line under the two boards. */
-@Composable
-fun GhostlineStrip(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(oneDevsColors.brandNavy)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.gl_name),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = GhostInk,
-            )
-            Text(
-                text = stringResource(R.string.gl_tagline),
-                style = MaterialTheme.typography.bodySmall,
-                color = GhostMuted,
-            )
-        }
-        Spacer(Modifier.width(10.dp))
-        Icon(
-            painter = painterResource(R.drawable.ic_caret_right),
-            contentDescription = null,
-            tint = GhostInk,
-            modifier = Modifier.size(18.dp),
-        )
-    }
-}
