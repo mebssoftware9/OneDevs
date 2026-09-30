@@ -22,15 +22,17 @@ data class WalletEntry(
  * What the server says this developer has.
  *
  * [held] is promised to testers who are part way through testing this
- * developer's listings: still in the balance, no longer spendable.
+ * developer's listings: still in the balance, no longer spendable. Null
+ * when the reply did not say, so the wallet shows "–" rather than a
+ * confident 0 and an available figure that counts promised coins.
  */
 @Serializable
 data class Wallet(
     val balance: Int = 0,
-    val held: Int = 0,
+    val held: Int? = null,
     val entries: List<WalletEntry> = emptyList(),
 ) {
-    val available: Int get() = (balance - held).coerceAtLeast(0)
+    val available: Int? get() = held?.let { (balance - it).coerceAtLeast(0) }
 }
 
 class WalletRepository(private val backend: Backend) {
