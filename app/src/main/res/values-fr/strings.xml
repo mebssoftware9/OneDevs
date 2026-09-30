@@ -289,7 +289,8 @@
     <string name="account_sign_out">Se déconnecter</string>
 
     <!-- The door -->
-    <string name="signin_headline">Testez des apps. Gagnez des DevCoins. Lancez la vôtre.</string>
+    <string name="signin_headline">Testez des apps. Gagnez des DevCoins.</string>
+    <string name="signin_headline_end">Lancez la vôtre.</string>
     <string name="signin_body">OneDevs organise les tests fermés de Google Play. Testez les apps d\'autres développeurs pour gagner des DevCoins, puis dépensez-les pour faire tester la vôtre.</string>
     <string name="signin_cta">Continuer avec Google</string>
     <string name="signin_note">Votre compte Google sert uniquement à vous connecter. Rien n\'est publié en votre nom.</string>

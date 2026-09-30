@@ -286,7 +286,8 @@
     <string name="account_sign_out">Sign out</string>
 
     <!-- The door -->
-    <string name="signin_headline">Test apps. Earn DevCoins. Launch yours.</string>
+    <string name="signin_headline">Test apps. Earn DevCoins.</string>
+    <string name="signin_headline_end">Launch yours.</string>
     <string name="signin_body">OneDevs organises Google Play closed testing. Test other developers\' apps to earn DevCoins, then spend them to get yours tested.</string>
     <string name="signin_cta">Continue with Google</string>
     <string name="signin_note">Your Google account is used to sign you in. Nothing is posted on your behalf.</string>
