@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Generate OneDevs launcher + splash assets from the master artwork.
 
-The original pixels ship unchanged: the mark is matted out of icon_master.png
-and the background gradient is refitted from that same file. Nothing is redrawn.
-Requires only numpy + Pillow.
+The original pixels ship unchanged: the launcher shows icon_master.png framed
+exactly as the Play Store icon is, with the mark matted out onto its own layer
+so it can move over the background. Nothing is redrawn. Requires only numpy +
+Pillow.
 """
 import pathlib
 import numpy as np
@@ -13,7 +14,10 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "art/source/icon_master.png"
 RES = ROOT / "app/src/main/res"
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
-CANVAS_DP, SAFE_RADIUS_DP = 108.0, 33.0      # keep content inside the 66dp safe circle
+# An adaptive icon is 108dp a side and shows the middle 72dp. The whole master
+# fills those 72dp, as it fills the Play Store icon, so the mark sits in the
+# launcher at the size and place it has in the store.
+CANVAS_DP, VIEW_DP = 108.0, 72.0
 # Splash sizes for an icon WITH an icon background: 240dp canvas, artwork
 # inside a 160dp circle. The mark's crop is already inscribed in a circle of
 # its own side length, so pasting it at 160dp fills that circle exactly.
@@ -71,7 +75,27 @@ rgba = np.pad(rgba, pad, mode="edge")
 mark = Image.fromarray(rgba[T + pad[0][0]:T + pad[0][0] + side,
                             L + pad[1][0]:L + pad[1][0] + side])
 assert mark.size == (side, side)
-bg_img = Image.fromarray(np.clip(model, 0, 255).astype("uint8"))
+
+# --- launcher layers, at master resolution on the full 108dp canvas
+full = int(round(w * CANVAS_DP / VIEW_DP))
+off = (full - w) // 2
+# Background: the master itself, shadows and all. Only where the mark stood
+# is it the fitted gradient, which shows if the layers move apart.
+back = src.copy()
+back[mask > 0] = model[mask > 0]
+back = Image.fromarray(np.clip(back, 0, 255).astype("uint8"))
+# The ring outside the 72dp is seen only while the icon moves: the master's
+# edge colours carried outward and softened.
+launcher_bg = Image.fromarray(np.pad(np.asarray(back), ((off, full - w - off), (off, full - w - off), (0, 0)),
+                                     mode="edge")).filter(ImageFilter.GaussianBlur(off / 4))
+launcher_bg.paste(back, (off, off))
+# Foreground: the mark's own pixels where the master has them. Over the
+# background the two make the master again, pixel for pixel.
+front = np.zeros((full, full, 4), "uint8")
+front[off:off + h, off:off + w] = np.dstack([src.astype("uint8"), mask])
+launcher_fg = Image.fromarray(front)
+again = Image.alpha_composite(launcher_bg.convert("RGBA"), launcher_fg).crop((off, off, off + w, off + h))
+assert np.abs(np.asarray(again.convert("RGB")).astype(int) - src).max() <= 1, "layers do not rebuild the master"
 
 def write(folder, name, im, **kw):
     d = RES / folder
@@ -85,19 +109,15 @@ LOSSY = dict(format="WEBP", quality=95, method=6)
 n = 0
 for dens, f in DENSITIES.items():
     canvas = int(round(CANVAS_DP * f))
-    content = int(round(2 * SAFE_RADIUS_DP * f))
-    mk = mark.resize((content, content), Image.LANCZOS)
-    pos = ((canvas - content) // 2,) * 2
-
-    fg = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
-    fg.paste(mk, pos, mk)
+    fg = launcher_fg.resize((canvas, canvas), Image.LANCZOS)
     write(f"mipmap-{dens}", "ic_launcher_foreground.webp", fg, **LL)
 
     write(f"mipmap-{dens}", "ic_launcher_background.webp",
-          bg_img.resize((canvas, canvas), Image.LANCZOS), **LL)
+          launcher_bg.resize((canvas, canvas), Image.LANCZOS), **LL)
 
-    mono = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
-    mono.paste(Image.new("RGBA", (content, content), (0, 0, 0, 255)), pos, mk.getchannel("A"))
+    # Themed icons: the same mark, same size, in the one colour the system paints.
+    mono = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 255))
+    mono.putalpha(fg.getchannel("A"))
     write(f"mipmap-{dens}", "ic_launcher_monochrome.webp", mono, **LL)
 
     # The mark on transparent, not the composited square. The splash window is
