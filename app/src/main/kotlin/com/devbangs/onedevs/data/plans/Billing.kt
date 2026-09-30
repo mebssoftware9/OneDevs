@@ -199,7 +199,9 @@ class Billing(
                 listOf(
                     BillingFlowParams.ProductDetailsParams.newBuilder()
                         .setProductDetails(product)
-                        .setOfferToken(offer.offerToken)
+                        // A one-time product with a single offer may have no
+                        // token; Play then uses that offer.
+                        .apply { offer.offerToken?.let { setOfferToken(it) } }
                         .build(),
                 ),
             )
