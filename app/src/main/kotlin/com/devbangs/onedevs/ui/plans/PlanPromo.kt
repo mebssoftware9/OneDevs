@@ -42,7 +42,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * The plan, at the top of Profile: the next step up, said in numbers.
+ * The plan, under the account card in Profile: the next step up, said in numbers.
  *
  * Community sees Premium, Premium sees Pro, and Pro sees its own plan rather
  * than an offer for something it already has. The whole card is one button
