@@ -275,6 +275,18 @@ class MissionRepository(private val backend: Backend) {
         }
     }
 
+    /** Starts the server's clock on another member's app, just before it opens. */
+    suspend fun beginCheckIn(missionId: String, listingId: String): MissionAck? =
+        ack(
+            backend.rpc(
+                "mission_checkin_begin",
+                buildJsonObject {
+                    put("p_mission", JsonPrimitive(missionId))
+                    put("p_listing", JsonPrimitive(listingId))
+                },
+            ),
+        )
+
     /** Records that you used another member's app for [seconds] today. */
     suspend fun checkIn(missionId: String, listingId: String, seconds: Int, device: String): MissionAck? =
         ack(

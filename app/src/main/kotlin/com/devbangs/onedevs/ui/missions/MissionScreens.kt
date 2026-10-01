@@ -324,10 +324,19 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
                                 needsAccess = true
                                 return@TaskRow
                             }
-                            taskListing = seat.listing
-                            taskStarted = System.currentTimeMillis()
                             taskNote = null
-                            openSeat(context, seat)
+                            // The server starts its own clock first, and a check-in
+                            // counts on that one, not on the phone's.
+                            scope.launch {
+                                val begun = app.missions.beginCheckIn(missionId, seat.listing)
+                                if (begun?.ok != true) {
+                                    taskNote = TaskNote.Failed
+                                    return@launch
+                                }
+                                taskListing = seat.listing
+                                taskStarted = System.currentTimeMillis()
+                                openSeat(context, seat)
+                            }
                         }
                     }
                 }

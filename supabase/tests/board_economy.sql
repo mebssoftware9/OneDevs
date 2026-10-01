@@ -42,7 +42,7 @@ begin
     -- ---- a test holds the reward without moving it
     perform set_config('request.jwt.claims', json_build_object('sub', tester)::text, true);
     r := public.begin_test(v_listing, 'device-tester-0001');
-    if (r->>'ok')::boolean is not true or (r->>'reward')::int <> 25 then
+    if (r->>'ok')::boolean is not true or (r->>'reward')::int is distinct from 25 then
         raise exception 'FAIL begin: %', r;
     end if;
     v_session := (r->>'session')::uuid;
@@ -52,13 +52,13 @@ begin
 
     -- ---- the server's clock decides 32 seconds, not the phone's
     r := public.finish_test(v_session, 45);
-    if (r->>'paid')::boolean or r->>'reason' <> 'too_short' then
+    if (r->>'paid')::boolean or r->>'reason' is distinct from 'too_short' then
         raise exception 'FAIL: paid before 32 seconds had passed: %', r;
     end if;
 
     update public.test_sessions set started_at = now() - interval '40 seconds' where id = v_session;
     r := public.finish_test(v_session, 45);
-    if (r->>'paid')::boolean is not true or (r->>'coins')::int <> 25 then
+    if (r->>'paid')::boolean is not true or (r->>'coins')::int is distinct from 25 then
         raise exception 'FAIL finish: %', r;
     end if;
     if public.balance_of(devA) <> 50 or public.balance_of(tester) <> 100 then
@@ -74,19 +74,19 @@ begin
     -- ---- nobody tests their own app
     perform set_config('request.jwt.claims', json_build_object('sub', devA)::text, true);
     r := public.begin_test(v_listing, 'device-owner-0001');
-    if r->>'reason' <> 'own_app' then raise exception 'FAIL own app: %', r; end if;
+    if r->>'reason' is distinct from 'own_app' then raise exception 'FAIL own app: %', r; end if;
 
     -- ---- one phone is one tester, whichever account it signs in with
     perform set_config('request.jwt.claims', json_build_object('sub', devB)::text, true);
     r := public.begin_test(v_listing, 'device-tester-0001');
-    if r->>'reason' <> 'device_used' then raise exception 'FAIL same phone: %', r; end if;
+    if r->>'reason' is distinct from 'device_used' then raise exception 'FAIL same phone: %', r; end if;
 
     -- ---- a reward the developer cannot cover is not offered
     insert into public.listings (id, owner, package_name, title, category, channel, reward)
     values (v_dear, devB, 'com.b.app', 'B app', 'Tools', 'testing', 100);
     perform set_config('request.jwt.claims', json_build_object('sub', tester)::text, true);
     r := public.begin_test(v_dear, 'device-tester-0001');
-    if r->>'reason' <> 'unfunded' then raise exception 'FAIL unfunded: %', r; end if;
+    if r->>'reason' is distinct from 'unfunded' then raise exception 'FAIL unfunded: %', r; end if;
 
     -- ---- and nothing was created or destroyed along the way
     select coalesce(sum(delta), 0) into minted from public.coin_entries where reason = 'grant';

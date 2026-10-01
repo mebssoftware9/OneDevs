@@ -102,22 +102,22 @@ declare
     r jsonb;
 begin
     select reply into r from said where step = 'free_plan';
-    if r->>'plan' <> 'free' or (r->>'lab_limit')::int <> 1 or r->'lab_apps' <> '[]'::jsonb then
+    if r->>'plan' is distinct from 'free' or (r->>'lab_limit')::int is distinct from 1 or r->'lab_apps' is distinct from '[]'::jsonb then
         raise exception 'FAIL free_plan: %', r;
     end if;
     select reply into r from said where step = 'free_a1';
     if (r->>'ok')::boolean is not true then raise exception 'FAIL free_a1: %', r; end if;
     select reply into r from said where step = 'free_a2';
-    if r->>'reason' <> 'upgrade' or r->>'lab_app' <> 'com.t.a1' or (r->>'lab_limit')::int <> 1 then
+    if r->>'reason' is distinct from 'upgrade' or r->>'lab_app' is distinct from 'com.t.a1' or (r->>'lab_limit')::int is distinct from 1 then
         raise exception 'FAIL free_a2: %', r;
     end if;
     select reply into r from said where step = 'free_a1_again';
     if (r->>'ok')::boolean is not true then raise exception 'FAIL free_a1_again: %', r; end if;
 
     select reply into r from said where step = 'premium_recorded';
-    if r->>'plan' <> 'premium' then raise exception 'FAIL premium_recorded: %', r; end if;
+    if r->>'plan' is distinct from 'premium' then raise exception 'FAIL premium_recorded: %', r; end if;
     select reply into r from said where step = 'premium_plan';
-    if r->>'plan' <> 'premium' or (r->>'lab_limit')::int <> 5 or r->>'plan_until' is null then
+    if r->>'plan' is distinct from 'premium' or (r->>'lab_limit')::int is distinct from 5 or r->>'plan_until' is null then
         raise exception 'FAIL premium_plan: %', r;
     end if;
     if exists (
@@ -126,34 +126,34 @@ begin
           and (reply->>'ok')::boolean is not true
     ) then raise exception 'FAIL premium: a2..a5 should all fit'; end if;
     select reply into r from said where step = 'premium_a6';
-    if r->>'reason' <> 'upgrade' or jsonb_array_length(r->'lab_apps') <> 5 then
+    if r->>'reason' is distinct from 'upgrade' or jsonb_array_length(r->'lab_apps') is distinct from 5 then
         raise exception 'FAIL premium_a6: %', r;
     end if;
 
     select reply into r from said where step = 'pro_plan';
-    if r->>'plan' <> 'pro' or r->'lab_limit' <> 'null'::jsonb then
+    if r->>'plan' is distinct from 'pro' or r->'lab_limit' is distinct from 'null'::jsonb then
         raise exception 'FAIL pro_plan: %', r;
     end if;
     select reply into r from said where step = 'pro_a6';
     if (r->>'ok')::boolean is not true then raise exception 'FAIL pro_a6: %', r; end if;
 
     select reply into r from said where step = 'after_pro_plan';
-    if r->>'plan' <> 'premium'
-       or r->'lab_apps' <> '["com.t.a1", "com.t.a2", "com.t.a3", "com.t.a4", "com.t.a5"]'::jsonb then
+    if r->>'plan' is distinct from 'premium'
+       or r->'lab_apps' is distinct from '["com.t.a1", "com.t.a2", "com.t.a3", "com.t.a4", "com.t.a5"]'::jsonb then
         raise exception 'FAIL after_pro_plan: %', r;
     end if;
     select reply into r from said where step = 'after_pro_a6';
-    if r->>'reason' <> 'upgrade' then raise exception 'FAIL after_pro_a6: %', r; end if;
+    if r->>'reason' is distinct from 'upgrade' then raise exception 'FAIL after_pro_a6: %', r; end if;
     select reply into r from said where step = 'after_pro_a1';
     if (r->>'ok')::boolean is not true then raise exception 'FAIL after_pro_a1: %', r; end if;
 
     select reply into r from said where step = 'unknown_product';
-    if r->>'reason' <> 'unknown_product' then raise exception 'FAIL unknown_product: %', r; end if;
+    if r->>'reason' is distinct from 'unknown_product' then raise exception 'FAIL unknown_product: %', r; end if;
     select reply into r from said where step = 'stolen_token';
-    if r->>'reason' <> 'token_belongs_to_another_account' then raise exception 'FAIL stolen_token: %', r; end if;
+    if r->>'reason' is distinct from 'token_belongs_to_another_account' then raise exception 'FAIL stolen_token: %', r; end if;
 
     select reply into r from said where step = 'ghost_plan';
-    if r->>'plan' <> 'free' or r->'lab_limit' <> 'null'::jsonb then
+    if r->>'plan' is distinct from 'free' or r->'lab_limit' is distinct from 'null'::jsonb then
         raise exception 'FAIL ghost_plan: %', r;
     end if;
     if exists (

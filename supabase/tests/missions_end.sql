@@ -55,12 +55,12 @@ begin
     perform set_config('request.jwt.claims', json_build_object('sub', v_user)::text, true);
     v_before := public.balance_of(v_user);
     r := public.leave_mission(v_mission);
-    if (r->>'left')::boolean is not true or (r->>'coins')::int <> 100 then
+    if (r->>'left')::boolean is not true or (r->>'coins')::int is distinct from 100 then
         raise exception 'FAIL leave: %', r;
     end if;
     if public.balance_of(v_user) <> v_before + 100 then raise exception 'FAIL leave refund'; end if;
     r := public.leave_mission(v_mission);
-    if r->>'reason' <> 'not_member' then raise exception 'FAIL leave twice: %', r; end if;
+    if r->>'reason' is distinct from 'not_member' then raise exception 'FAIL leave twice: %', r; end if;
     select array_agg(seat order by seat) into v_seats from public.mission_seats where mission_id = v_mission;
     if v_seats <> array[1, 2, 3, 4] then raise exception 'FAIL seats after leave: %', v_seats; end if;
     if not exists (select 1 from public.mission_messages where mission_id = v_mission and kind = 'leave') then
@@ -83,7 +83,7 @@ begin
     perform set_config('request.jwt.claims',
         json_build_object('sub', '00000001-bbbb-0000-0000-000000000000')::text, true);
     r := public.leave_mission(v_mission);
-    if r->>'reason' <> 'started' then raise exception 'FAIL leave after start: %', r; end if;
+    if r->>'reason' is distinct from 'started' then raise exception 'FAIL leave after start: %', r; end if;
 
     -- Fourteen days ago. The first twelve seats test everything on 10 days;
     -- the last four on 3.
@@ -133,13 +133,13 @@ begin
     perform set_config('request.jwt.claims',
         json_build_object('sub', '00000001-bbbb-0000-0000-000000000000')::text, true);
     r := public.mission_view(v_mission);
-    if r->>'state' <> 'completed' or (r->'result'->>'did_part')::boolean is not true
-       or (r->'result'->>'coins')::int < 133 or (r->>'completers')::int <> 12
-       or (r->>'days_needed')::int <> 10 then
+    if r->>'state' is distinct from 'completed' or (r->'result'->>'did_part')::boolean is not true
+       or (r->'result'->>'coins')::int < 133 or (r->>'completers')::int is distinct from 12
+       or (r->>'days_needed')::int is distinct from 10 then
         raise exception 'FAIL view: %', r;
     end if;
     r := public.mission_checkin(v_mission, '00000002-cccc-0000-0000-000000000000', 60, 'device-e-1');
-    if r->>'reason' <> 'elapsed' then raise exception 'FAIL checkin after the end: %', r; end if;
+    if r->>'reason' is distinct from 'elapsed' then raise exception 'FAIL checkin after the end: %', r; end if;
 
     raise notice 'missions end: all checks passed';
 end $$;

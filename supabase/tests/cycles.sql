@@ -168,37 +168,37 @@ declare
     v_row jsonb;
 begin
     select reply into r from said where step = 'free_start';
-    if r->>'reason' <> 'no_plan' then raise exception 'FAIL free_start: %', r; end if;
+    if r->>'reason' is distinct from 'no_plan' then raise exception 'FAIL free_start: %', r; end if;
 
     -- The bonus: once per order, and again for a renewal.
     select reply into r from said where step = 'bonus_first';
-    if (r->>'bonus')::int <> 500 then raise exception 'FAIL bonus_first: %', r; end if;
+    if (r->>'bonus')::int is distinct from 500 then raise exception 'FAIL bonus_first: %', r; end if;
     select reply into r from said where step = 'bonus_retry';
-    if (r->>'bonus')::int <> 0 then raise exception 'FAIL bonus_retry paid twice: %', r; end if;
+    if (r->>'bonus')::int is distinct from 0 then raise exception 'FAIL bonus_retry paid twice: %', r; end if;
     select reply into r from said where step = 'bonus_renewal';
-    if (r->>'bonus')::int <> 500 then raise exception 'FAIL bonus_renewal: %', r; end if;
+    if (r->>'bonus')::int is distinct from 500 then raise exception 'FAIL bonus_renewal: %', r; end if;
     if (select sum(delta) from public.coin_entries
         where account = '0e000000-0000-0000-0000-000000000001' and reason = 'plan_bonus') <> 1000 then
         raise exception 'FAIL bonus ledger';
     end if;
 
     select reply into r from said where step = 'allowance_before';
-    if (r->>'apps')::int <> 1 or (r->>'used')::int <> 0 or (r->>'needed')::int <> 16 then
+    if (r->>'apps')::int is distinct from 1 or (r->>'used')::int is distinct from 0 or (r->>'needed')::int is distinct from 16 then
         raise exception 'FAIL allowance_before: %', r;
     end if;
     select reply into r from said where step = 'not_mine';
-    if r->>'reason' <> 'not_your_testing_app' then raise exception 'FAIL not_mine: %', r; end if;
+    if r->>'reason' is distinct from 'not_your_testing_app' then raise exception 'FAIL not_mine: %', r; end if;
     select reply into r from said where step = 'start';
     if (r->>'ok')::boolean is not true then raise exception 'FAIL start: %', r; end if;
     v_run := (r->>'run')::uuid;
     select reply into r from said where step = 'again';
-    if r->>'reason' <> 'already_running' then raise exception 'FAIL again: %', r; end if;
+    if r->>'reason' is distinct from 'already_running' then raise exception 'FAIL again: %', r; end if;
     select reply into r from said where step = 'second_app';
-    if r->>'reason' <> 'month_used' or r->>'next_at' is null then
+    if r->>'reason' is distinct from 'month_used' or r->>'next_at' is null then
         raise exception 'FAIL second_app: Premium starts one cycle a month: %', r;
     end if;
     select reply into r from said where step = 'allowance_after';
-    if (r->>'used')::int <> 1 then raise exception 'FAIL allowance_after: %', r; end if;
+    if (r->>'used')::int is distinct from 1 then raise exception 'FAIL allowance_after: %', r; end if;
 
     -- Activation: the recruiting mission (16 seats) and mission A (16
     -- members) reach 32, twice the 16 needed. Mission B is not needed,
@@ -229,11 +229,11 @@ begin
         raise exception 'FAIL board_day0: spotlight should lead the board: %', v_row;
     end if;
     select reply into r from said where step = 'status_day0';
-    if r->>'state' <> 'available' or (r->>'reward')::int <> 50 then
+    if r->>'state' is distinct from 'available' or (r->>'reward')::int is distinct from 50 then
         raise exception 'FAIL status_day0: %', r;
     end if;
     select reply into r from said where step = 'begin_day0';
-    if (r->>'ok')::boolean is not true or (r->>'reward')::int <> 50 then
+    if (r->>'ok')::boolean is not true or (r->>'reward')::int is distinct from 50 then
         raise exception 'FAIL begin_day0: %', r;
     end if;
     if exists (select 1 from public.test_sessions
@@ -241,7 +241,7 @@ begin
         raise exception 'FAIL a spotlight test held the owner''s coins';
     end if;
     select reply into r from said where step = 'finish_day0';
-    if (r->>'paid')::boolean is not true or (r->>'coins')::int <> 50 then
+    if (r->>'paid')::boolean is not true or (r->>'coins')::int is distinct from 50 then
         raise exception 'FAIL finish_day0: %', r;
     end if;
     if (select sum(delta) from public.coin_entries
@@ -276,11 +276,11 @@ begin
     end if;
 
     select reply into r from said where step = 'after_short';
-    if r->>'state' <> 'extended' or (r->>'ends_at')::timestamptz < now() + interval '6 days' then
+    if r->>'state' is distinct from 'extended' or (r->>'ends_at')::timestamptz < now() + interval '6 days' then
         raise exception 'FAIL after_short: the guarantee should add 7 days: %', r;
     end if;
     select reply into r from said where step = 'after_done';
-    if r->>'state' <> 'completed' then raise exception 'FAIL after_done: %', r; end if;
+    if r->>'state' is distinct from 'completed' then raise exception 'FAIL after_done: %', r; end if;
 
     raise notice 'cycles: all checks passed';
 end $$;
