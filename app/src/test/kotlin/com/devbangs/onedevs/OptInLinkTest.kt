@@ -1,6 +1,7 @@
 package com.devbangs.onedevs
 
 import com.devbangs.onedevs.data.play.OptInLink
+import com.devbangs.onedevs.data.play.href
 import com.devbangs.onedevs.data.play.matchesPackage
 import com.devbangs.onedevs.data.play.packageOrNull
 import com.devbangs.onedevs.data.play.parseOptInLink
@@ -90,5 +91,31 @@ class OptInLinkTest {
     fun `a group link cannot answer the package question`() {
         val link = parseOptInLink("https://groups.google.com/g/onedevs-testers")!!
         assertNull(link.matchesPackage("com.devbangs.onedevs"))
+    }
+
+    @Test
+    fun `a link that is not the web is never a Play link`() {
+        for (raw in listOf(
+            "intent://play.google.com/apps/testing/com.evil#Intent;scheme=https;end",
+            "javascript://play.google.com/apps/testing/com.evil",
+            "file://play.google.com/apps/testing/com.evil",
+        )) {
+            val link = parseOptInLink(raw)
+            assertTrue(raw, link is OptInLink.Unrecognised)
+            assertNull(raw, link?.packageOrNull())
+        }
+    }
+
+    @Test
+    fun `an http link is kept and opened as https`() {
+        val link = parseOptInLink("http://play.google.com/apps/testing/com.devbangs.onedevs")!!
+        assertEquals("https://play.google.com/apps/testing/com.devbangs.onedevs", link.href)
+        assertEquals("com.devbangs.onedevs", link.packageOrNull())
+    }
+
+    @Test
+    fun `a host hidden behind a user name is the real host`() {
+        val link = parseOptInLink("https://play.google.com@example.com/apps/testing/com.evil")
+        assertTrue(link is OptInLink.Unrecognised)
     }
 }

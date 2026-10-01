@@ -47,12 +47,18 @@ fun parseOptInLink(raw: String): OptInLink? {
     val trimmed = raw.trim()
     if (trimmed.isEmpty()) return null
     val uri = runCatching { URI(trimmed) }.getOrNull() ?: return null
+    // Only web links. An intent: or javascript: link can name play.google.com
+    // as its host and still hand the tap to something else entirely.
+    val scheme = uri.scheme?.lowercase(Locale.ROOT)
+    if (scheme != "https" && scheme != "http") return OptInLink.Unrecognised(trimmed)
     val host = uri.host?.lowercase(Locale.ROOT)?.removePrefix("www.") ?: return null
     val segments = uri.path.orEmpty().split('/').filter { it.isNotEmpty() }
+    // Kept and opened as https, whichever way it was pasted.
+    val secure = if (scheme == "http") "https:" + trimmed.substringAfter(':') else trimmed
     return when {
         host == "play.google.com" && segments.size >= 3 &&
             segments[0] == "apps" && segments[1] == "testing" ->
-            OptInLink.PlayOptIn(segments[2], trimmed)
+            OptInLink.PlayOptIn(segments[2], secure)
 
         host == "play.google.com" && segments.size >= 3 &&
             segments[0] == "store" && segments[1] == "apps" && segments[2] == "details" ->
@@ -61,11 +67,11 @@ fun parseOptInLink(raw: String): OptInLink? {
                 .firstOrNull { it.startsWith("id=") }
                 ?.removePrefix("id=")
                 ?.takeIf { it.isNotEmpty() }
-                ?.let { OptInLink.PlayStore(it, trimmed) }
+                ?.let { OptInLink.PlayStore(it, secure) }
                 ?: OptInLink.Unrecognised(trimmed)
 
         host == "groups.google.com" && segments.size >= 2 && segments[0] == "g" ->
-            OptInLink.Group(trimmed)
+            OptInLink.Group(secure)
 
         else -> OptInLink.Unrecognised(trimmed)
     }
@@ -85,6 +91,15 @@ fun OptInLink.matchesPackage(packageName: String): Boolean? = when (this) {
     is OptInLink.Group -> null
     is OptInLink.Unrecognised -> null
 }
+
+/** The link as it is saved and opened. */
+val OptInLink.href: String
+    get() = when (this) {
+        is OptInLink.PlayOptIn -> url
+        is OptInLink.PlayStore -> url
+        is OptInLink.Group -> url
+        is OptInLink.Unrecognised -> url
+    }
 
 /** The package a link names, from either Play form, or null if it names none. */
 fun OptInLink.packageOrNull(): String? = when (this) {

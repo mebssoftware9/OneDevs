@@ -1,14 +1,10 @@
 package com.devbangs.onedevs.ui.profile
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
+import com.devbangs.onedevs.data.images.decodeBounded
+import com.devbangs.onedevs.data.images.download
 import java.io.File
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -29,22 +25,7 @@ suspend fun loadAvatar(context: Context, userId: String, url: String?): ImageBit
         val file = File(context.filesDir, "avatar-$userId.png")
         if (!file.exists()) {
             val remote = url?.takeIf { it.isNotBlank() } ?: return@withContext null
-            var connection: HttpURLConnection? = null
-            try {
-                connection = (URL(remote).openConnection() as HttpURLConnection).apply {
-                    connectTimeout = 10_000
-                    readTimeout = 10_000
-                }
-                val bytes = connection.inputStream.use { it.readBytes() }
-                if (bytes.isEmpty()) return@withContext null
-                file.writeBytes(bytes)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (e: IOException) {
-                return@withContext null
-            } finally {
-                connection?.disconnect()
-            }
+            if (!download(remote, file)) return@withContext null
         }
-        BitmapFactory.decodeFile(file.path)?.asImageBitmap()
+        decodeBounded(file)
     }

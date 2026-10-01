@@ -94,6 +94,7 @@ import com.devbangs.onedevs.data.listings.parseMegabytes
 import com.devbangs.onedevs.data.play.PlayListing
 import com.devbangs.onedevs.data.play.PlayListings
 import com.devbangs.onedevs.data.play.packageOrNull
+import com.devbangs.onedevs.data.play.href
 import com.devbangs.onedevs.data.play.parseOptInLink
 import com.devbangs.onedevs.ui.components.DevBotMark
 import com.devbangs.onedevs.ui.components.Waiting
@@ -329,7 +330,7 @@ class AddListingViewModel(
                     title = title.trim(),
                     category = category.trim(),
                     channel = channel,
-                    optInLink = optInLink.trim().ifBlank { null },
+                    optInLink = parseOptInLink(optInLink)?.href ?: optInLink.trim().ifBlank { null },
                     testNote = testNote.trim().ifBlank { null },
                     sizeBytes = parseMegabytes(sizeMb),
                     createdAt = System.currentTimeMillis(),
@@ -432,7 +433,7 @@ fun AddListingScreen(
         Spacer(Modifier.height(12.dp))
         FormField(
             value = viewModel.title,
-            onValueChange = { viewModel.title = it },
+            onValueChange = { viewModel.title = it.take(80) },
             label = stringResource(R.string.add_app_name),
             leading = R.drawable.ic_squares_four,
         )
@@ -443,7 +444,7 @@ fun AddListingScreen(
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             FormField(
                 value = viewModel.category,
-                onValueChange = { viewModel.category = it },
+                onValueChange = { viewModel.category = it.take(40) },
                 label = stringResource(R.string.add_category),
                 leading = null,
                 modifier = Modifier.weight(1f),
@@ -460,7 +461,7 @@ fun AddListingScreen(
         Spacer(Modifier.height(10.dp))
         FormField(
             value = viewModel.testNote,
-            onValueChange = { viewModel.testNote = it },
+            onValueChange = { viewModel.testNote = it.take(500) },
             label = stringResource(R.string.add_note),
             leading = R.drawable.ic_clipboard_text,
             singleLine = false,
