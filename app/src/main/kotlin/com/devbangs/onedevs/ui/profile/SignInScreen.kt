@@ -1,5 +1,11 @@
 package com.devbangs.onedevs.ui.profile
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,20 +42,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
@@ -60,6 +73,7 @@ import com.devbangs.onedevs.data.backend.SignInOutcome
 import com.devbangs.onedevs.data.backend.signInWithGoogle
 import com.devbangs.onedevs.ui.components.Waiting
 import com.devbangs.onedevs.ui.plans.findActivity
+import com.devbangs.onedevs.ui.settings.LegalLinks
 import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.cos
@@ -121,75 +135,110 @@ fun SignInScreen(modifier: Modifier = Modifier) {
 
     LightBarIcons()
     BoxWithConstraints(modifier.fillMaxSize().drawBehind { brandSky() }) {
+        // The sky runs under both bars; the content stays between them, a
+        // little above the middle, with the legal line at the foot.
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .heightIn(min = maxHeight)
                 .systemBarsPadding()
-                .padding(horizontal = 24.dp, vertical = 24.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp),
         ) {
-            TesterRing()
+            Spacer(Modifier.height(0.dp))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                TesterRing()
 
-            Spacer(Modifier.height(18.dp))
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(SpanStyle(color = Color.White)) { append("One") }
-                    withStyle(SpanStyle(color = DevsBlue)) { append("Devs") }
-                },
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-            )
-
-            Spacer(Modifier.height(28.dp))
-            Text(
-                text = stringResource(R.string.signin_headline),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                textAlign = TextAlign.Center,
-            )
-            Text(
-                text = stringResource(R.string.signin_headline_end),
-                style = MaterialTheme.typography.headlineSmall.copy(brush = LaunchBrush),
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-            )
-
-            Spacer(Modifier.height(14.dp))
-            Text(
-                text = stringResource(R.string.signin_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Muted,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.widthIn(max = 360.dp),
-            )
-
-            Spacer(Modifier.height(32.dp))
-            GoogleButton(busy = busy, onClick = { signIn() })
-
-            Spacer(Modifier.height(14.dp))
-            Text(
-                text = stringResource(R.string.signin_note),
-                style = MaterialTheme.typography.labelSmall,
-                color = Quiet,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.widthIn(max = 320.dp),
-            )
-
-            if (note != null) {
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(18.dp))
                 Text(
-                    text = note.orEmpty(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = ErrorInk,
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(color = Color.White)) { append("One") }
+                        withStyle(SpanStyle(color = DevsBlue)) { append("Devs") }
+                    },
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                Spacer(Modifier.height(28.dp))
+                Text(
+                    text = stringResource(R.string.signin_headline),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
                     textAlign = TextAlign.Center,
                 )
+                Text(
+                    text = stringResource(R.string.signin_headline_end),
+                    style = MaterialTheme.typography.headlineSmall.copy(brush = LaunchBrush),
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                )
+
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    text = stringResource(R.string.signin_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Muted,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.widthIn(max = 360.dp),
+                )
+
+                Spacer(Modifier.height(32.dp))
+                GoogleButton(busy = busy, onClick = { signIn() })
+
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    text = stringResource(R.string.signin_note),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Quiet,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.widthIn(max = 320.dp),
+                )
+
+                if (note != null) {
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = note.orEmpty(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = ErrorInk,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                // Lifts the block above the middle of the screen.
+                Spacer(Modifier.height(56.dp))
+            }
+            LegalLine()
+        }
+    }
+}
+
+/** "By signing in, you agree to our Terms of Service & Privacy Policy", both linked. */
+@Composable
+private fun LegalLine() {
+    val terms = stringResource(R.string.legal_terms)
+    val privacy = stringResource(R.string.legal_privacy)
+    val full = stringResource(R.string.signin_legal, terms, privacy)
+    val link = TextLinkStyles(SpanStyle(color = DevsBlue, textDecoration = TextDecoration.Underline))
+    val text = remember(full, terms, privacy) {
+        buildAnnotatedString {
+            append(full)
+            full.indexOf(terms).takeIf { it >= 0 }?.let {
+                addLink(LinkAnnotation.Url(LegalLinks.TERMS, link), it, it + terms.length)
+            }
+            full.indexOf(privacy).takeIf { it >= 0 }?.let {
+                addLink(LinkAnnotation.Url(LegalLinks.PRIVACY, link), it, it + privacy.length)
             }
         }
     }
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = Quiet,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.widthIn(max = 360.dp).padding(top = 12.dp),
+    )
 }
 
 /** Deep navy, lit from the top right and behind the mark, as the icon is. */
@@ -206,22 +255,107 @@ private fun DrawScope.brandSky() {
 private fun glow(color: Color, alpha: Float, at: Offset, radius: Float) =
     Brush.radialGradient(listOf(color.copy(alpha = alpha), Color.Transparent), at, radius)
 
-/** The mark inside twelve lit points: the twelve testers, as on the feature graphic. */
+/**
+ * The mark inside twelve testers, alive: a scanner sweeps the orbit and each
+ * tester lights as it passes, signals run round the ring, and the outer dial
+ * turns slowly the other way. Twelve, because Google asks for twelve.
+ */
 @Composable
 private fun TesterRing() {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(188.dp)) {
+    val time = rememberInfiniteTransition(label = "ring")
+    val sweep by time.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(tween(4_000, easing = LinearEasing)),
+        label = "sweep",
+    )
+    val dial by time.animateFloat(
+        initialValue = 0f,
+        targetValue = -360f,
+        animationSpec = infiniteRepeatable(tween(36_000, easing = LinearEasing)),
+        label = "dial",
+    )
+    val signal by time.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(6_000, easing = LinearEasing)),
+        label = "signal",
+    )
+    val breath by time.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 0.45f,
+        animationSpec = infiniteRepeatable(tween(2_400), RepeatMode.Reverse),
+        label = "breath",
+    )
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(200.dp)) {
         Canvas(Modifier.fillMaxSize()) {
-            val r = size.minDimension / 2 - 10.dp.toPx()
-            val halo = 11.dp.toPx()
-            // Light behind the mark, then the ring the testers sit on.
-            drawCircle(glow(Electric, 0.35f, center, r), r)
-            drawCircle(Color.White.copy(alpha = 0.14f), r, style = Stroke(width = 1.5.dp.toPx()))
-            repeat(12) { k ->
-                val a = (k * 30 - 90) * PI / 180
+            val r = size.minDimension / 2 - 16.dp.toPx()
+            val outer = r + 11.dp.toPx()
+            val halo = 12.dp.toPx()
+
+            // Light behind the mark, breathing.
+            drawCircle(glow(Electric, breath, center, r), r)
+
+            // The outer dial: sixty ticks, every fifth one longer, turning slowly.
+            rotate(dial) {
+                repeat(60) { k ->
+                    val a = k * 6 * PI / 180
+                    val long = k % 5 == 0
+                    val from = outer - (if (long) 5.dp else 2.5.dp).toPx()
+                    drawLine(
+                        color = Cyan.copy(alpha = if (long) 0.45f else 0.18f),
+                        start = Offset(center.x + from * cos(a).toFloat(), center.y + from * sin(a).toFloat()),
+                        end = Offset(center.x + outer * cos(a).toFloat(), center.y + outer * sin(a).toFloat()),
+                        strokeWidth = 1.dp.toPx(),
+                    )
+                }
+            }
+
+            // The orbit, dashed, and the scanner's wake behind its leading edge.
+            drawCircle(
+                Color.White.copy(alpha = 0.16f),
+                r,
+                style = Stroke(
+                    width = 1.2.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(6.dp.toPx(), 4.dp.toPx())),
+                ),
+            )
+            rotate(sweep - 90f) {
+                drawArc(
+                    brush = Brush.sweepGradient(
+                        0f to Color.Transparent,
+                        0.78f to Color.Transparent,
+                        1f to Cyan.copy(alpha = 0.55f),
+                        center = center,
+                    ),
+                    startAngle = 0f,
+                    sweepAngle = 360f,
+                    useCenter = false,
+                    topLeft = Offset(center.x - r, center.y - r),
+                    size = Size(r * 2, r * 2),
+                    style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round),
+                )
+            }
+
+            // Signals travelling the ring: three, at three speeds.
+            listOf(1f, 2f, 3f).forEachIndexed { i, speed ->
+                val a = ((signal * speed + i / 3f) % 1f) * 2 * PI - PI / 2
                 val p = Offset(center.x + r * cos(a).toFloat(), center.y + r * sin(a).toFloat())
-                drawCircle(glow(Cyan, 0.45f, p, halo), halo, p)
-                drawCircle(Cyan, 4.dp.toPx(), p)
-                drawCircle(CyanCore, 1.8.dp.toPx(), p)
+                drawCircle(glow(CyanCore, 0.5f, p, 6.dp.toPx()), 6.dp.toPx(), p)
+                drawCircle(CyanCore, 1.6.dp.toPx(), p)
+            }
+
+            // The twelve testers. Each lights as the scanner reaches it and
+            // fades over the next quarter turn.
+            repeat(12) { k ->
+                val deg = k * 30f
+                val a = (deg - 90) * PI / 180
+                val p = Offset(center.x + r * cos(a).toFloat(), center.y + r * sin(a).toFloat())
+                val behind = ((sweep - deg) % 360f + 360f) % 360f
+                val lit = (1f - behind / 90f).coerceIn(0f, 1f)
+                drawCircle(glow(Cyan, 0.25f + 0.45f * lit, p, halo * (1f + 0.5f * lit)), halo * 1.5f, p)
+                drawCircle(Cyan.copy(alpha = 0.55f + 0.45f * lit), (3.2f + 1.6f * lit).dp.toPx(), p)
+                drawCircle(CyanCore, 1.6.dp.toPx(), p)
             }
         }
         // The splash icon is the mark on transparent, cut from the icon master.

@@ -1150,4 +1150,11 @@
         <item quantity="many">+%1$d DevCoins de retour dans votre portefeuille</item>
         <item quantity="other">+%1$d DevCoins de retour dans votre portefeuille</item>
     </plurals>
+
+    <!-- Legal -->
+    <string name="settings_legal">Mentions légales</string>
+    <string name="legal_privacy">Politique de confidentialité</string>
+    <string name="legal_terms">Conditions d\'utilisation</string>
+    <string name="legal_refund">Politique de remboursement</string>
+    <string name="signin_legal">En vous connectant, vous acceptez nos %1$s et notre %2$s</string>
 </resources>

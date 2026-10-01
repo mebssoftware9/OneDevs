@@ -1150,4 +1150,11 @@
         <item quantity="many">+%1$d DevCoins de vuelta en tu billetera</item>
         <item quantity="other">+%1$d DevCoins de vuelta en tu billetera</item>
     </plurals>
+
+    <!-- Legal -->
+    <string name="settings_legal">Legal</string>
+    <string name="legal_privacy">Política de privacidad</string>
+    <string name="legal_terms">Términos del servicio</string>
+    <string name="legal_refund">Política de reembolsos</string>
+    <string name="signin_legal">Al iniciar sesión, aceptas nuestros %1$s y nuestra %2$s</string>
 </resources>

@@ -61,6 +61,7 @@ import com.devbangs.onedevs.ui.profile.AccountCard
 import com.devbangs.onedevs.ui.settings.AboutGroup
 import com.devbangs.onedevs.ui.settings.AppSettingsGroup
 import com.devbangs.onedevs.ui.settings.DeviceGroup
+import com.devbangs.onedevs.ui.settings.LegalGroup
 import com.devbangs.onedevs.ui.settings.ProfileHeader
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 
@@ -347,6 +348,7 @@ fun ProfileScreen(onPlans: () -> Unit, modifier: Modifier = Modifier) {
         com.devbangs.onedevs.ui.plans.PlanPromo(onPlans = onPlans)
         AppSettingsGroup()
         DeviceGroup()
+        LegalGroup()
         AboutGroup()
     }
 }

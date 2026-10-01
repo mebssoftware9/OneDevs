@@ -1140,4 +1140,11 @@
         <item quantity="one">+%1$d DevCoin back in your wallet</item>
         <item quantity="other">+%1$d DevCoins back in your wallet</item>
     </plurals>
+
+    <!-- Legal -->
+    <string name="settings_legal">Legal</string>
+    <string name="legal_privacy">Privacy Policy</string>
+    <string name="legal_terms">Terms of Service</string>
+    <string name="legal_refund">Refund Policy</string>
+    <string name="signin_legal">By signing in, you agree to our %1$s &amp; %2$s</string>
 </resources>
