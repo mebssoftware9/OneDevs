@@ -1,18 +1,19 @@
--- The board economy end to end: grant, listing cost, test reward, and the
--- rules that stop each being taken twice.
---
--- One DO block that raises at the end, so it rolls itself back and can be run
--- against the live database as often as you like.
+-- The Board's economy end to end, as it works since 0007: listing is free,
+-- each test is paid from the developer's balance when it is done, and the
+-- reward is held while the tester has the app open. Rolled back at the end.
+
+begin;
 
 do $$
 declare
-    devA uuid := 'aaaaaaaa-0000-0000-0000-00000000000a';
-    devB uuid := 'bbbbbbbb-0000-0000-0000-00000000000b';
-    tester uuid := 'cccccccc-0000-0000-0000-00000000000c';
-    v_listing uuid := 'dddddddd-0000-0000-0000-00000000000d';
-    v int;
+    devA constant uuid := 'aaaaaaaa-1111-0000-0000-000000000001';
+    devB constant uuid := 'bbbbbbbb-1111-0000-0000-000000000002';
+    tester constant uuid := 'cccccccc-1111-0000-0000-000000000003';
+    v_listing constant uuid := 'dddddddd-1111-0000-0000-000000000004';
+    v_dear constant uuid := 'eeeeeeee-1111-0000-0000-000000000005';
     r jsonb;
-    ok boolean;
+    v_session uuid;
+    v int;
     minted int;
     total int;
 begin
@@ -31,81 +32,70 @@ begin
     v := public.balance_of(devA);
     if v <> 75 then raise exception 'FAIL welcome: got %, expected 75', v; end if;
 
-    -- ---- listing costs 75 and the escrow leaves the developer
-    perform set_config('request.jwt.claims',
-        json_build_object('sub', devA)::text, true);
-
+    -- ---- listing is free: the developer pays per test, not up front
+    perform set_config('request.jwt.claims', json_build_object('sub', devA)::text, true);
     insert into public.listings (id, owner, package_name, title, category, channel)
     values (v_listing, devA, 'com.a.app', 'A app', 'Tools', 'testing');
-
     v := public.balance_of(devA);
-    if v <> 0 then raise exception 'FAIL listing cost: left with %, expected 0', v; end if;
-    select escrowed into v from public.listings where id = v_listing;
-    if v <> 75 then raise exception 'FAIL escrow: held %, expected 75', v; end if;
+    if v <> 75 then raise exception 'FAIL listing: charged up front, balance %', v; end if;
 
-    -- ---- a second listing is refused: there is nothing left to fund it
-    ok := false;
-    begin
-        insert into public.listings (owner, package_name, title, category, channel)
-        values (devA, 'com.a.second', 'Second', 'Tools', 'testing');
-    exception when others then
-        ok := sqlerrm like '%not enough DevCoins%';
-    end;
-    if not ok then raise exception 'FAIL: a second listing was allowed for free'; end if;
-
-    -- ---- editing must not charge again (the upsert path the client uses)
-    insert into public.listings (id, owner, package_name, title, category, channel)
-    values (v_listing, devA, 'com.a.app', 'A app renamed', 'Tools', 'testing')
-    on conflict (id) do update set title = excluded.title;
-
-    v := public.balance_of(devA);
-    if v <> 0 then raise exception 'FAIL: editing charged again, balance %', v; end if;
-
-    -- ---- a developer cannot test their own app
-    ok := false;
-    begin
-        perform public.claim_test(v_listing, 45, 'device-owner-01');
-    exception when others then
-        ok := sqlerrm like '%own app%';
-    end;
-    if not ok then raise exception 'FAIL: the owner claimed their own listing'; end if;
-
-    -- ---- a tester claims once, and is paid 25
-    perform set_config('request.jwt.claims',
-        json_build_object('sub', tester)::text, true);
-
-    r := public.claim_test(v_listing, 45, 'device-tester-01');
-    if not (r->>'claimed')::boolean then
-        raise exception 'FAIL: first claim refused: %', r;
+    -- ---- a test holds the reward without moving it
+    perform set_config('request.jwt.claims', json_build_object('sub', tester)::text, true);
+    r := public.begin_test(v_listing, 'device-tester-0001');
+    if (r->>'ok')::boolean is not true or (r->>'reward')::int <> 25 then
+        raise exception 'FAIL begin: %', r;
+    end if;
+    v_session := (r->>'session')::uuid;
+    if public.balance_of(devA) <> 75 or public.available_of(devA) <> 50 then
+        raise exception 'FAIL hold: balance %, available %', public.balance_of(devA), public.available_of(devA);
     end if;
 
-    v := public.balance_of(tester);
-    if v <> 100 then raise exception 'FAIL reward: tester has %, expected 100', v; end if;
-
-    -- ---- and claiming again earns nothing, without erroring
-    r := public.claim_test(v_listing, 45, 'device-tester-01');
-    if (r->>'claimed')::boolean then raise exception 'FAIL: paid twice for one test'; end if;
-    if r->>'reason' <> 'already' then
-        raise exception 'FAIL: second claim said %, expected already', r->>'reason';
+    -- ---- the server's clock decides 32 seconds, not the phone's
+    r := public.finish_test(v_session, 45);
+    if (r->>'paid')::boolean or r->>'reason' <> 'too_short' then
+        raise exception 'FAIL: paid before 32 seconds had passed: %', r;
     end if;
 
-    v := public.balance_of(tester);
-    if v <> 100 then raise exception 'FAIL: balance moved on a repeat claim: %', v; end if;
+    update public.test_sessions set started_at = now() - interval '40 seconds' where id = v_session;
+    r := public.finish_test(v_session, 45);
+    if (r->>'paid')::boolean is not true or (r->>'coins')::int <> 25 then
+        raise exception 'FAIL finish: %', r;
+    end if;
+    if public.balance_of(devA) <> 50 or public.balance_of(tester) <> 100 then
+        raise exception 'FAIL payment: developer %, tester %', public.balance_of(devA), public.balance_of(tester);
+    end if;
 
-    -- ---- 32 seconds is the floor
-    perform set_config('request.jwt.claims',
-        json_build_object('sub', devB)::text, true);
-    r := public.claim_test(v_listing, 31, 'device-devb-0001');
-    if (r->>'claimed')::boolean then raise exception 'FAIL: 31 seconds was paid'; end if;
+    -- ---- asking again is answered, not paid again
+    r := public.finish_test(v_session, 45);
+    if (r->>'repeat')::boolean is not true or public.balance_of(tester) <> 100 then
+        raise exception 'FAIL repeat: %, tester %', r, public.balance_of(tester);
+    end if;
 
-    -- ---- nothing was created outside the grants
-    select coalesce(sum(delta), 0) into minted
-        from public.coin_entries where reason = 'grant';
+    -- ---- nobody tests their own app
+    perform set_config('request.jwt.claims', json_build_object('sub', devA)::text, true);
+    r := public.begin_test(v_listing, 'device-owner-0001');
+    if r->>'reason' <> 'own_app' then raise exception 'FAIL own app: %', r; end if;
+
+    -- ---- one phone is one tester, whichever account it signs in with
+    perform set_config('request.jwt.claims', json_build_object('sub', devB)::text, true);
+    r := public.begin_test(v_listing, 'device-tester-0001');
+    if r->>'reason' <> 'device_used' then raise exception 'FAIL same phone: %', r; end if;
+
+    -- ---- a reward the developer cannot cover is not offered
+    insert into public.listings (id, owner, package_name, title, category, channel, reward)
+    values (v_dear, devB, 'com.b.app', 'B app', 'Tools', 'testing', 100);
+    perform set_config('request.jwt.claims', json_build_object('sub', tester)::text, true);
+    r := public.begin_test(v_dear, 'device-tester-0001');
+    if r->>'reason' <> 'unfunded' then raise exception 'FAIL unfunded: %', r; end if;
+
+    -- ---- and nothing was created or destroyed along the way
+    select coalesce(sum(delta), 0) into minted from public.coin_entries where reason = 'grant';
     select coalesce(sum(delta), 0) into total from public.coin_entries;
-    if minted <> 225 then raise exception 'FAIL: granted %, expected 225', minted; end if;
     if minted <> total then
-        raise exception 'FAIL: supply leaked -- granted %, circulating %', minted, total;
+        raise exception 'FAIL: supply leaked -- granted %, in circulation %', minted, total;
     end if;
 
-    raise exception 'BOARD ECONOMY OK -- all assertions passed, nothing kept';
+    raise notice 'board economy: all checks passed';
 end $$;
+
+rollback;

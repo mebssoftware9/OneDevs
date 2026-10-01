@@ -42,11 +42,101 @@ begin
     select count(*) into n from public.coin_balance;
     if n <> 1 then raise exception 'FAIL: coin_balance returned % rows, expected 1', n; end if;
     select balance into v from public.coin_balance;
-    if v <> 700 then raise exception 'FAIL: balance reads %, expected 700', v; end if;
+    -- 75 from the welcome grant every account gets, 700 granted above
+    if v <> 775 then raise exception 'FAIL: balance reads %, expected 775', v; end if;
 
     -- and the ledger shows only A's entries
     select count(*) into n from public.coin_entries;
-    if n <> 1 then raise exception 'FAIL: A can see % ledger entries, expected 1', n; end if;
+    if n <> 2 then raise exception 'FAIL: A can see % ledger entries, expected 2', n; end if;
+
+    -- nor read B's balance by passing B's id, which the Board shows
+    begin
+        perform public.balance_of('bbbbbbbb-0000-0000-0000-000000000002');
+        raise exception 'FAIL: A read another account''s balance';
+    exception when insufficient_privilege then
+        null;
+    end;
+
+    -- nor reach the campaign missions 0016 replaced, which paid on reported seconds
+    begin
+        perform public.record_day(gen_random_uuid(), 45);
+        raise exception 'FAIL: a client reached record_day';
+    exception when insufficient_privilege then
+        null;
+    end;
+
+    -- the app's own save still works: an upsert on id with exactly its columns
+    insert into public.listings (id, owner, package_name, title, category, channel, size_bytes,
+                                 test_note, play_url, icon_url, public_listing, checked_at)
+    values ('aaaaaaaa-5555-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001',
+            'com.a.second', 'A second', 'Tools', 'testing', 1000, 'Open it once a day',
+            'https://play.google.com/apps/testing/com.a.second',
+            'https://abcdefghijklmnopqrst.supabase.co/storage/v1/object/public/icons/'
+                || 'aaaaaaaa-0000-0000-0000-000000000001/aaaaaaaa-5555-0000-0000-000000000001.png',
+            true, now())
+    on conflict (id) do update set
+        id = excluded.id, owner = excluded.owner, package_name = excluded.package_name,
+        title = excluded.title, category = excluded.category, channel = excluded.channel,
+        size_bytes = excluded.size_bytes, test_note = excluded.test_note,
+        play_url = excluded.play_url, icon_url = excluded.icon_url,
+        public_listing = excluded.public_listing, checked_at = excluded.checked_at;
+
+    -- but not the Board's order, nor the price of a test
+    begin
+        update public.listings set created_at = now() + interval '10 years'
+        where owner = 'aaaaaaaa-0000-0000-0000-000000000001';
+        raise exception 'FAIL: A moved its listing up the Board by dating it ahead';
+    exception when insufficient_privilege then
+        null;
+    end;
+    begin
+        update public.listings set reward = 0 where owner = 'aaaaaaaa-0000-0000-0000-000000000001';
+        raise exception 'FAIL: A set the price of a test';
+    exception when insufficient_privilege then
+        null;
+    end;
+
+    -- a tester is only ever sent to Play, and an icon only comes from its owner's folder
+    begin
+        update public.listings set play_url = 'https://example.com/install.apk'
+        where owner = 'aaaaaaaa-0000-0000-0000-000000000001';
+        raise exception 'FAIL: a listing points testers away from Play';
+    exception when check_violation then
+        null;
+    end;
+    begin
+        update public.listings set icon_url = 'https://example.com/huge.png'
+        where owner = 'aaaaaaaa-0000-0000-0000-000000000001';
+        raise exception 'FAIL: a listing icon is fetched from anywhere';
+    exception when check_violation then
+        null;
+    end;
+    begin
+        update public.listings
+        set icon_url = 'https://abcdefghijklmnopqrst.supabase.co/storage/v1/object/public/icons/'
+                       || 'bbbbbbbb-0000-0000-0000-000000000002/x.png'
+        where owner = 'aaaaaaaa-0000-0000-0000-000000000001';
+        raise exception 'FAIL: a listing uses an icon from someone else''s folder';
+    exception when check_violation then
+        null;
+    end;
+
+    -- profiles are the database's to write, and when someone was last seen is theirs
+    begin
+        update public.profiles set display_name = 'OneDevs Support'
+        where id = 'aaaaaaaa-0000-0000-0000-000000000001';
+        raise exception 'FAIL: A renamed itself';
+    exception when insufficient_privilege then
+        null;
+    end;
+    begin
+        perform last_seen from public.profiles limit 1;
+        raise exception 'FAIL: A read when others were last seen';
+    exception when insufficient_privilege then
+        null;
+    end;
+    select count(*) into n from public.coin_balance;
+    if n <> 1 then raise exception 'FAIL: coin_balance broke without profiles.last_seen'; end if;
 
     -- A cannot plant a listing under B's name
     begin
@@ -75,7 +165,7 @@ begin
         null;
     end;
 
-    raise exception 'ACCESS OK -- all assertions passed, nothing kept';
+    raise notice 'access: all checks passed';
 end $$;
 
 rollback;
