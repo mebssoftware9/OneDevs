@@ -17,7 +17,8 @@ interface ServiceAccount {
   token_uri?: string;
 }
 
-let cached: { token: string; until: number } | null = null;
+// One access token per scope: Android Publisher for purchases, Play Integrity for verdicts.
+const cached = new Map<string, { token: string; until: number }>();
 
 function b64url(bytes: Uint8Array | string): string {
   const raw = typeof bytes === "string" ? new TextEncoder().encode(bytes) : bytes;
@@ -35,11 +36,11 @@ function pemToDer(pem: string): Uint8Array<ArrayBuffer> {
 }
 
 /** A signed JWT asking Google for an access token. Exported for tests. */
-export async function signedAssertion(sa: ServiceAccount, now = Math.floor(Date.now() / 1000)) {
+export async function signedAssertion(sa: ServiceAccount, now = Math.floor(Date.now() / 1000), scope = SCOPE) {
   const header = b64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
   const claims = b64url(JSON.stringify({
     iss: sa.client_email,
-    scope: SCOPE,
+    scope,
     aud: sa.token_uri ?? "https://oauth2.googleapis.com/token",
     iat: now,
     exp: now + 3600,
@@ -55,8 +56,9 @@ export async function signedAssertion(sa: ServiceAccount, now = Math.floor(Date.
   return `${header}.${claims}.${b64url(new Uint8Array(sig))}`;
 }
 
-async function accessToken(): Promise<string> {
-  if (cached && cached.until > Date.now() + 60_000) return cached.token;
+export async function accessToken(scope = SCOPE): Promise<string> {
+  const hit = cached.get(scope);
+  if (hit && hit.until > Date.now() + 60_000) return hit.token;
   const raw = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
   if (!raw) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON is not set");
   const sa = JSON.parse(raw) as ServiceAccount;
@@ -65,13 +67,13 @@ async function accessToken(): Promise<string> {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-      assertion: await signedAssertion(sa),
+      assertion: await signedAssertion(sa, undefined, scope),
     }),
   });
   if (!res.ok) throw new Error(`Google token refused: ${res.status} ${await res.text()}`);
   const body = await res.json();
-  cached = { token: body.access_token, until: Date.now() + body.expires_in * 1000 };
-  return cached.token;
+  cached.set(scope, { token: body.access_token, until: Date.now() + body.expires_in * 1000 });
+  return body.access_token;
 }
 
 async function google(path: string, method = "GET"): Promise<{ status: number; body: any }> {
