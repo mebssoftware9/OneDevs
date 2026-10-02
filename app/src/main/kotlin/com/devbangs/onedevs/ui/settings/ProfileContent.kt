@@ -97,7 +97,6 @@ fun AppSettingsGroup(modifier: Modifier = Modifier) {
             expanded = open == "language",
             onClick = { open = if (open == "language") null else "language" },
             icon = R.drawable.ic_translate,
-            accent = oneDevsColors.testing,
             detail = {
                 AppLanguage.entries.forEach { choice ->
                     SettingsChoice(
@@ -122,14 +121,12 @@ fun AppSettingsGroup(modifier: Modifier = Modifier) {
                 }
             },
         )
-        SettingsDivider()
         SettingsRow(
             label = stringResource(R.string.settings_theme),
             value = stringResource(ThemeStore.current.label),
             expanded = open == "theme",
             onClick = { open = if (open == "theme") null else "theme" },
-            icon = R.drawable.ic_circle_half,
-            accent = oneDevsColors.mission,
+            icon = R.drawable.ic_moon,
             detail = {
                 AppTheme.entries.forEach { choice ->
                     SettingsChoice(
@@ -140,7 +137,6 @@ fun AppSettingsGroup(modifier: Modifier = Modifier) {
                 }
             },
         )
-        SettingsDivider()
         // The system owns notification settings, and it owns them better: per
         // channel, with Do Not Disturb and importance in one place. Rebuilding
         // that here would be a second set of switches that can disagree with
@@ -149,7 +145,6 @@ fun AppSettingsGroup(modifier: Modifier = Modifier) {
             label = stringResource(R.string.settings_notifications),
             onClick = { openNotificationSettings(context) },
             icon = R.drawable.ic_bell,
-            accent = oneDevsColors.caution,
         )
     }
 }
@@ -189,23 +184,18 @@ fun DeviceGroup(modifier: Modifier = Modifier) {
             value = "${Build.MANUFACTURER} ${Build.MODEL}",
             readOnly = true,
             icon = R.drawable.ic_device_mobile,
-            accent = oneDevsColors.live,
         )
-        SettingsDivider()
         SettingsRow(
             label = stringResource(R.string.device_android),
             value = "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})",
             readOnly = true,
             icon = R.drawable.ic_android_logo,
-            accent = oneDevsColors.community,
         )
-        SettingsDivider()
         SettingsRow(
             label = stringResource(R.string.device_abi),
             value = Build.SUPPORTED_ABIS.firstOrNull().orEmpty(),
             readOnly = true,
             icon = R.drawable.ic_cpu,
-            accent = oneDevsColors.feedback,
         )
     }
 }
@@ -233,15 +223,12 @@ fun AboutGroup(modifier: Modifier = Modifier) {
             value = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
             readOnly = true,
             icon = R.drawable.ic_info,
-            accent = oneDevsColors.testing,
         )
-        SettingsDivider()
         SettingsRow(
             label = stringResource(R.string.about_licenses),
             expanded = open,
             onClick = { open = !open },
             icon = R.drawable.ic_scroll,
-            accent = oneDevsColors.mission,
             detail = {
                 Text(
                     text = notices,

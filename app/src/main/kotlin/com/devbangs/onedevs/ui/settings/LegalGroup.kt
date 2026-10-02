@@ -5,7 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import com.devbangs.onedevs.R
-import com.devbangs.onedevs.ui.theme.oneDevsColors
 
 /** Where OneDevs' policies live. The same pages the Play listing links to. */
 object LegalLinks {
@@ -23,21 +22,16 @@ fun LegalGroup(modifier: Modifier = Modifier) {
             label = stringResource(R.string.legal_privacy),
             onClick = { uri.openUri(LegalLinks.PRIVACY) },
             icon = R.drawable.ic_shield_check,
-            accent = oneDevsColors.live,
         )
-        SettingsDivider()
         SettingsRow(
             label = stringResource(R.string.legal_terms),
             onClick = { uri.openUri(LegalLinks.TERMS) },
-            icon = R.drawable.ic_handshake,
-            accent = oneDevsColors.testing,
+            icon = R.drawable.ic_file_text,
         )
-        SettingsDivider()
         SettingsRow(
             label = stringResource(R.string.legal_refund),
             onClick = { uri.openUri(LegalLinks.REFUND) },
-            icon = R.drawable.ic_coins,
-            accent = oneDevsColors.caution,
+            icon = R.drawable.ic_receipt,
         )
     }
 }

@@ -145,7 +145,11 @@ fun OneDevsApp() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val current = backStackEntry?.destination
     val scheme = MaterialTheme.colorScheme
-    val surface = scheme.surface
+    val onProfile = current?.hierarchy?.any { it.hasRoute(Profile::class) } == true
+    val surface by androidx.compose.animation.animateColorAsState(
+        targetValue = if (onProfile) com.devbangs.onedevs.ui.settings.settingsPage() else scheme.surface,
+        label = "page",
+    )
 
     // Which tab the current destination belongs to, or null on the wallet.
     // Nothing is faked when it is null: lighting a tab the user is not on is a

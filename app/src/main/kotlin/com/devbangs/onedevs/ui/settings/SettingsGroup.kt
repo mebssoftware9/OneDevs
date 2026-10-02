@@ -2,7 +2,6 @@ package com.devbangs.onedevs.ui.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,20 +22,38 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.devbangs.onedevs.R
-import com.devbangs.onedevs.ui.theme.Accent
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 
-/** Where a row's words start: past the 16dp edge, the 30dp mark and the 12dp gap. */
-private val RowTextStart = 58.dp
+/** Where a row's words start: past the 18dp edge, the 22dp icon and the 16dp gap. */
+private val RowTextStart = 56.dp
+
+private val CardShape = RoundedCornerShape(20.dp)
+
+@Composable
+private fun night(): Boolean = MaterialTheme.colorScheme.surface.luminance() < 0.5f
 
 /**
- * A titled group of settings rows, drawn as one hairline card.
+ * The page settings sit on: grey by day, so white cards stand off it without
+ * a line drawn round them; black by night, under cards a step lighter.
+ */
+@Composable
+fun settingsPage(): Color =
+    if (night()) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainerHigh
+
+/** The card a settings group, or the account above them, is drawn on. */
+@Composable
+fun settingsCard(): Color =
+    if (night()) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLowest
+
+/**
+ * A titled group of settings rows, drawn as one card on the settings page.
  *
  * Grouping is the whole point of a settings screen: twenty rows in one list is
  * a list, and the same twenty under four headings is a place you can find
@@ -61,8 +77,8 @@ fun SettingsGroup(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(18.dp))
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(18.dp)),
+                .clip(CardShape)
+                .background(settingsCard()),
             content = content,
         )
     }
@@ -71,8 +87,8 @@ fun SettingsGroup(
 /**
  * One row. [value] is what the setting currently is, shown on the right in the
  * brand colour when it can be changed and in the muted one when it is simply a
- * fact about the device. [icon] sits in a small tile of its [accent], so each
- * row can be found by its mark before its words are read.
+ * fact about the device. [icon] is a Phosphor Bold mark in the muted ink,
+ * bare: the words carry the row, and colour is kept for what changes.
  */
 @Composable
 fun SettingsRow(
@@ -83,7 +99,6 @@ fun SettingsRow(
     expanded: Boolean = false,
     onClick: (() -> Unit)? = null,
     icon: Int? = null,
-    accent: Accent? = null,
     detail: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -93,29 +108,20 @@ fun SettingsRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 18.dp, vertical = 15.dp),
         ) {
             if (icon != null) {
-                val tone = accent ?: oneDevsColors.testing
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clip(RoundedCornerShape(9.dp))
-                        .background(tone.tint),
-                ) {
-                    Icon(
-                        painter = painterResource(icon),
-                        contentDescription = null,
-                        tint = tone.solid,
-                        modifier = Modifier.size(17.dp),
-                    )
-                }
-                Spacer(Modifier.width(12.dp))
+                Icon(
+                    painter = painterResource(icon),
+                    contentDescription = null,
+                    tint = scheme.onSurfaceVariant,
+                    modifier = Modifier.size(22.dp),
+                )
+                Spacer(Modifier.width(16.dp))
             }
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 color = scheme.onSurface,
                 modifier = Modifier.weight(1f),
             )
@@ -144,21 +150,6 @@ fun SettingsRow(
             }
         }
     }
-}
-
-/**
- * A hairline between rows, inset to where the words start so it reads as a
- * separator and not a border.
- */
-@Composable
-fun SettingsDivider(inset: Dp = RowTextStart) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(start = inset)
-            .height(1.dp)
-            .background(MaterialTheme.colorScheme.outlineVariant),
-    )
 }
 
 /**

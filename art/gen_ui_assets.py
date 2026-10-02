@@ -57,7 +57,8 @@ ICONS = {
     # shape holds together on a gradient where an outline thins out.
     "sparkle": ("fill",), "crown": ("fill",),
     # Profile: one mark per settings row.
-    "translate": ("bold",), "circle-half": ("bold",), "bell": ("bold",),
+    "translate": ("bold",), "moon": ("bold",), "bell": ("bold",),
+    "file-text": ("bold",), "receipt": ("bold",),
     "android-logo": ("bold",), "cpu": ("bold",), "info": ("bold",), "scroll": ("bold",),
 }
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
