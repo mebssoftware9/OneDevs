@@ -2,6 +2,7 @@ package com.devbangs.onedevs.ui.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,8 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,24 +35,8 @@ private val RowTextStart = 56.dp
 
 private val CardShape = RoundedCornerShape(20.dp)
 
-@Composable
-private fun night(): Boolean = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-
 /**
- * The page settings sit on: grey by day, so white cards stand off it without
- * a line drawn round them; black by night, under cards a step lighter.
- */
-@Composable
-fun settingsPage(): Color =
-    if (night()) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainerHigh
-
-/** The card a settings group, or the account above them, is drawn on. */
-@Composable
-fun settingsCard(): Color =
-    if (night()) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLowest
-
-/**
- * A titled group of settings rows, drawn as one card on the settings page.
+ * A titled group of settings rows, drawn as one hairline card on the page.
  *
  * Grouping is the whole point of a settings screen: twenty rows in one list is
  * a list, and the same twenty under four headings is a place you can find
@@ -78,7 +61,7 @@ fun SettingsGroup(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(CardShape)
-                .background(settingsCard()),
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CardShape),
             content = content,
         )
     }
