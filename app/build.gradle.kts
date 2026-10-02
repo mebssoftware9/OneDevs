@@ -39,6 +39,9 @@ android {
             "GOOGLE_WEB_CLIENT_ID",
             "\"" + secret("GOOGLE_WEB_CLIENT_ID") + "\"",
         )
+        // The Google Cloud project linked under Play Console > App integrity.
+        // Not a secret: it names the project and grants nothing.
+        buildConfigField("long", "PLAY_INTEGRITY_PROJECT", "343705040300L")
     }
 
     bundle {
@@ -145,6 +148,8 @@ dependencies {
     // One pooled HTTP/2 client for every call to Supabase; see Http.kt.
     implementation(libs.okhttp)
     implementation(libs.play.billing)
+    // Google Play's word that this is the real app on a genuine phone; see PlayIntegrityAttestor.
+    implementation(libs.play.integrity)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
     implementation(libs.androidx.lifecycle.runtime.compose)

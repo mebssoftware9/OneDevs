@@ -8,6 +8,9 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 @kotlinx.serialization.Serializable
 internal data class BalanceRow(val balance: Int)
@@ -43,6 +46,23 @@ internal val BackendJson = Json {
     encodeDefaults = true
 }
 
+/**
+ * Google Play's word that this is the real app on a genuine phone. The
+ * server, not this interface, decides what an unverified session may do.
+ */
+interface Attestor {
+    /** Gets Google Play ready to answer quickly; harmless to call again. */
+    suspend fun prepare()
+
+    /** An integrity token bound to [requestHash], or null if Google Play cannot give one. */
+    suspend fun token(requestHash: String): String?
+}
+
+/** SHA-256 of a string as lowercase hex: how a session's access token is named to Google. */
+internal fun sha256Hex(s: String): String =
+    java.security.MessageDigest.getInstance("SHA-256").digest(s.toByteArray())
+        .joinToString("") { (it.toInt() and 0xff).toString(16).padStart(2, '0') }
+
 /** Where the signed-in session lives between calls. */
 interface SessionHolder {
     suspend fun current(): Session?
@@ -60,6 +80,7 @@ class Backend(
     private val url: String,
     private val key: String,
     private val sessions: SessionHolder,
+    private val attestor: Attestor? = null,
 ) {
     /**
      * Emitted when a request took long enough that someone noticed. Measured
@@ -71,6 +92,11 @@ class Backend(
 
     /** One refresh at a time, however many calls discover the token is stale. */
     private val refreshing = Mutex()
+
+    /** One proof at a time, and which access token each kind of proof was last for. */
+    private val attesting = Mutex()
+    @Volatile private var attestedFor: String? = null
+    @Volatile private var retriedFor: String? = null
 
     val configured: Boolean get() = url.isNotBlank() && key.isNotBlank()
 
@@ -84,6 +110,7 @@ class Backend(
     suspend fun warmUp() {
         if (!configured) return
         quietly { httpRequest(url = "$url/auth/v1/health", headers = mapOf("apikey" to key)) }
+        attestor?.prepare()
     }
 
     suspend fun signInWithGoogle(
@@ -254,12 +281,17 @@ class Backend(
         if (session.needsRefresh(System.currentTimeMillis())) {
             session = (renew(session) as? Renewal.Renewed)?.session ?: session
         }
+        attestOnce(session)
 
         val first = send(path, method, body, session, extra)
-        if (first.code != 401) return first
+        if (first.code != 401) return throughGate(path, method, body, session, extra, first)
 
         return when (val renewal = renew(session)) {
-            is Renewal.Renewed -> send(path, method, body, renewal.session, extra)
+            is Renewal.Renewed -> {
+                attestOnce(renewal.session)
+                val second = send(path, method, body, renewal.session, extra)
+                throughGate(path, method, body, renewal.session, extra, second)
+            }
             // The auth server itself said no: the refresh token is spent, and
             // signed out is the honest state.
             Renewal.Refused -> {
@@ -270,6 +302,70 @@ class Backend(
             // refresh would lose their session to a bad signal; keep it, and
             // report the request as unreachable so it is tried again.
             Renewal.Unreachable -> HttpResult(0, "could not refresh the session")
+        }
+    }
+
+    /**
+     * Proves this session to the server, once per access token: Google Play
+     * vouches for the app and the phone, bound to the hash of this exact
+     * token, and the attest function records the verdict against it.
+     *
+     * Once per token whatever the answer, so a build Google will not vouch
+     * for asks once an hour, not on every call.
+     */
+    private suspend fun attestOnce(session: Session) {
+        if (attestor == null) return
+        val hash = sha256Hex(session.accessToken)
+        if (attestedFor == hash) return
+        attesting.withLock {
+            if (attestedFor != hash) {
+                attestedFor = hash
+                attestNow(session, hash)
+            }
+        }
+    }
+
+    /**
+     * The gate refused a request because this session has no verdict: prove
+     * it once more and ask once more. Once per token, so a session Google
+     * will not vouch for is told no without the app asking forever.
+     */
+    private suspend fun throughGate(
+        path: String,
+        method: String,
+        body: String?,
+        session: Session,
+        extra: Map<String, String>,
+        result: HttpResult,
+    ): HttpResult {
+        if (attestor == null || result.code != 403 || !result.body.contains("\"unverified\"")) return result
+        val hash = sha256Hex(session.accessToken)
+        val verified = attesting.withLock {
+            if (retriedFor == hash) return@withLock false
+            retriedFor = hash
+            attestedFor = hash
+            attestNow(session, hash)
+        }
+        return if (verified) send(path, method, body, session, extra) else result
+    }
+
+    /** Asks Google Play for a token and the attest function for a verdict. True when verified. */
+    private suspend fun attestNow(session: Session, hash: String): Boolean {
+        val token = attestor?.token(hash) ?: return false
+        val result = sendNow(
+            path = "/functions/v1/attest",
+            method = "POST",
+            body = kotlinx.serialization.json.buildJsonObject { put("token", JsonPrimitive(token)) }.toString(),
+            session = session,
+            extra = emptyMap(),
+        )
+        if (!result.ok) return false
+        return try {
+            BackendJson.parseToJsonElement(result.body).jsonObject["verified"]?.jsonPrimitive?.booleanOrNull == true
+        } catch (e: kotlinx.serialization.SerializationException) {
+            false
+        } catch (e: IllegalArgumentException) {
+            false
         }
     }
 

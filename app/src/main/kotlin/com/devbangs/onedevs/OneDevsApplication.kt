@@ -116,6 +116,10 @@ class OneDevsApplication : Application() {
             url = BuildConfig.SUPABASE_URL,
             key = BuildConfig.SUPABASE_KEY,
             sessions = sessions,
+            attestor = com.devbangs.onedevs.data.integrity.PlayIntegrityAttestor(
+                context = this,
+                cloudProject = BuildConfig.PLAY_INTEGRITY_PROJECT,
+            ),
         )
     }
 
