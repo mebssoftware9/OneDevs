@@ -17,8 +17,8 @@ okhttp = "5.5.0"
 billing = "9.1.0"
 playIntegrity = "1.6.0"
 googleid = "1.2.1"
-playServicesAds = "24.4.0"
-ump = "3.2.0"
+playServicesAds = "25.5.0"
+ump = "4.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
