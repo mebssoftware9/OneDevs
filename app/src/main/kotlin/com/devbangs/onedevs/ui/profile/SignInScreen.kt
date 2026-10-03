@@ -64,6 +64,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import com.devbangs.onedevs.BuildConfig
@@ -135,11 +137,13 @@ fun SignInScreen(modifier: Modifier = Modifier) {
 
     LightBarIcons()
     BoxWithConstraints(modifier.fillMaxSize().drawBehind { brandSky() }) {
-        // The sky runs under both bars; the content stays between them, a
-        // little above the middle, with the legal line at the foot.
+        // The sky runs under both bars; the content stays between them. The
+        // ring grows with the screen, and what height is left is shared out
+        // between the three parts rather than pooling in one empty band.
+        val ring = (maxHeight * 0.3f).coerceIn(180.dp, 280.dp)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = SignInArrangement,
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
@@ -147,9 +151,8 @@ fun SignInScreen(modifier: Modifier = Modifier) {
                 .systemBarsPadding()
                 .padding(horizontal = 24.dp, vertical = 16.dp),
         ) {
-            Spacer(Modifier.height(0.dp))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                TesterRing()
+                TesterRing(ring)
 
                 Spacer(Modifier.height(18.dp))
                 Text(
@@ -160,8 +163,8 @@ fun SignInScreen(modifier: Modifier = Modifier) {
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                 )
-
-                Spacer(Modifier.height(28.dp))
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = stringResource(R.string.signin_headline),
                     style = MaterialTheme.typography.headlineSmall,
@@ -206,10 +209,29 @@ fun SignInScreen(modifier: Modifier = Modifier) {
                         textAlign = TextAlign.Center,
                     )
                 }
-                // Lifts the block above the middle of the screen.
-                Spacer(Modifier.height(56.dp))
             }
             LegalLine()
+        }
+    }
+}
+
+/**
+ * Where the spare height goes: before the ring, between the ring and the
+ * words, between the words and the legal line, and a little under it. Only
+ * what the content does not need is shared; a short screen scrolls instead.
+ */
+private object SignInArrangement : Arrangement.Vertical {
+    private val shares = floatArrayOf(0.8f, 0.7f, 1f, 0.3f)
+
+    override fun Density.arrange(totalSize: Int, sizes: IntArray, outPositions: IntArray) {
+        val free = (totalSize - sizes.sum()).coerceAtLeast(0).toFloat()
+        val weights = if (sizes.size + 1 == shares.size) shares else FloatArray(sizes.size + 1) { 1f }
+        val total = weights.sum()
+        var y = 0f
+        sizes.forEachIndexed { i, size ->
+            y += free * weights[i] / total
+            outPositions[i] = y.toInt()
+            y += size
         }
     }
 }
@@ -261,7 +283,7 @@ private fun glow(color: Color, alpha: Float, at: Offset, radius: Float) =
  * turns slowly the other way. Twelve, because Google asks for twelve.
  */
 @Composable
-private fun TesterRing() {
+private fun TesterRing(ringSize: Dp) {
     val time = rememberInfiniteTransition(label = "ring")
     val sweep by time.animateFloat(
         initialValue = 0f,
@@ -287,7 +309,7 @@ private fun TesterRing() {
         animationSpec = infiniteRepeatable(tween(2_400), RepeatMode.Reverse),
         label = "breath",
     )
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(200.dp)) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(ringSize)) {
         Canvas(Modifier.fillMaxSize()) {
             val r = size.minDimension / 2 - 16.dp.toPx()
             val outer = r + 11.dp.toPx()
@@ -362,7 +384,7 @@ private fun TesterRing() {
         Image(
             painter = painterResource(R.drawable.splash_icon),
             contentDescription = null,
-            modifier = Modifier.size(160.dp),
+            modifier = Modifier.size(ringSize * 0.8f),
         )
     }
 }

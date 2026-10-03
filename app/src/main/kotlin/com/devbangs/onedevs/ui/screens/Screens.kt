@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.R
@@ -112,6 +113,9 @@ private enum class BoardCategory(
  * one. There is no backend, and an invented board is worse than an empty one,
  * so BuildConfig.DEBUG decides rather than a constant anyone has to remember.
  */
+/** How often an open Board re-reads its live numbers. */
+private const val LIVE_POLL_MS = 30_000L
+
 @Composable
 fun BoardScreen(
     onOpen: (String) -> Unit,
@@ -137,6 +141,20 @@ fun BoardScreen(
     var tick by remember { mutableIntStateOf(0) }
     LaunchedEffect(tick) { app.board.refresh(deviceId(context)) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { tick++ }
+    // While the Board is on screen the live numbers keep moving: the server
+    // recounts them every minute, so a read every thirty seconds is never
+    // more than a minute and a half behind.
+    var visible by remember { mutableStateOf(false) }
+    LifecycleResumeEffect(Unit) {
+        visible = true
+        onPauseOrDispose { visible = false }
+    }
+    LaunchedEffect(visible) {
+        while (visible) {
+            kotlinx.coroutines.delay(LIVE_POLL_MS)
+            app.board.refresh(deviceId(context), maxAgeMs = LIVE_POLL_MS - 5_000L)
+        }
+    }
     // Nothing on screen and the read failed: try again shortly rather than
     // leaving the spinner up until the next resume.
     val failed by app.board.failed.collectAsState()

@@ -186,12 +186,14 @@ class PlanStore(
                 reply?.reason == "bad_package" -> return LabClaim.Allowed
             }
         }
-        // No answer. What this phone last heard decides.
+        // No answer. Only an app the server has already given this Lab is
+        // allowed without it: a new app is never let in on the phone's word,
+        // or a Lab that cannot reach the server would have no limit at all.
         val known = _plan.value ?: return LabClaim.Unknown
-        return if (known.labAllows(packageName)) {
-            LabClaim.Allowed
-        } else {
-            LabClaim.Upgrade(known.labKept, known.labLimit ?: 1)
+        return when {
+            known.labLimit == null || packageName in known.labKept -> LabClaim.Allowed
+            known.labKept.size >= (known.labLimit ?: 1) -> LabClaim.Upgrade(known.labKept, known.labLimit ?: 1)
+            else -> LabClaim.Unknown
         }
     }
 
