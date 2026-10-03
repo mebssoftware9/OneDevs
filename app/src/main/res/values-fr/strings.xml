@@ -159,11 +159,6 @@
         <item quantity="other">%1$,d développeurs actifs maintenant</item>
         <item quantity="many">%1$,d de développeurs actifs maintenant</item>
     </plurals>
-    <plurals name="board_reward">
-        <item quantity="one">%1$d DevCoin</item>
-        <item quantity="other">%1$d DevCoins</item>
-        <item quantity="many">%1$d de DevCoins</item>
-    </plurals>
     <plurals name="mission_co_testers">
         <item quantity="one">%1$d testeur pour l\'instant</item>
         <item quantity="other">%1$d testeurs pour l\'instant</item>
@@ -1202,4 +1197,23 @@
     <!-- Ads -->
     <string name="legal_privacy_choices">Choix de confidentialité</string>
     <string name="legal_privacy_choices_caption">Modifier votre accord sur les annonces</string>
+
+    <!-- Board card -->
+    <string name="board_card_earn">Gagnez +%1$d</string>
+    <string name="board_card_new">NOUVEAU</string>
+    <plurals name="board_card_progress">
+        <item quantity="one">%1$d testeur · encore %2$d</item>
+        <item quantity="many">%1$d testeurs · encore %2$d</item>
+        <item quantity="other">%1$d testeurs · encore %2$d</item>
+    </plurals>
+    <plurals name="board_card_reached">
+        <item quantity="one">%1$d testeur</item>
+        <item quantity="many">%1$d testeurs ✓</item>
+        <item quantity="other">%1$d testeurs ✓</item>
+    </plurals>
+    <plurals name="board_card_gives">
+        <item quantity="one">A testé %1$d app</item>
+        <item quantity="many">A testé %1$d apps</item>
+        <item quantity="other">A testé %1$d apps</item>
+    </plurals>
 </resources>

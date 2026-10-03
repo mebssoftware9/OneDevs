@@ -95,6 +95,10 @@ data class Listing(
      * cycle. Only the Board says so; a listing read anywhere else is false.
      */
     val spotlight: Boolean = false,
+    /** Board only: people who have tested the app so far; null elsewhere. */
+    val testers: Int? = null,
+    /** Board only: apps the developer has tested for others; null elsewhere. */
+    val ownerTested: Int? = null,
 )
 
 /** Everything the device has stored. A wrapper so the file has a growable root. */

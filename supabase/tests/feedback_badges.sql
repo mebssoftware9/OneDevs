@@ -67,6 +67,13 @@ begin
     perform set_config('request.jwt.claims', '{"sub":"05000000-0000-0000-0000-000000000005"}', true);
     if jsonb_array_length(public.feedback_for_listing(v_app)) <> 0 then raise exception 'FAIL stranger view'; end if;
 
+    -- The Board card's numbers: one tester so far, and a developer who has
+    -- tested nothing for anyone else yet.
+    if coalesce((select testers from public.board('testing', 'device-s-0001', 50) where id = v_app), -1) <> 1
+       or coalesce((select owner_tested from public.board('testing', 'device-s-0001', 50) where id = v_app), -1) <> 0 then
+        raise exception 'FAIL board card counts';
+    end if;
+
     -- D reviews.
     perform set_config('request.jwt.claims', '{"sub":"0d000000-0000-0000-0000-00000000000d"}', true);
     r := public.feedback_for_listing(v_app);

@@ -34,6 +34,10 @@ internal data class ListingRow(
     /** Only the Board sends these: the app is in a testing cycle's spotlight. */
     val spotlight: Boolean = false,
     @SerialName("spotlight_reward") val spotlightReward: Int? = null,
+    /** Board only: people who have tested the app so far. */
+    val testers: Int? = null,
+    /** Board only: apps the developer has tested for others. */
+    @SerialName("owner_tested") val ownerTested: Int? = null,
 )
 
 /**
@@ -61,6 +65,8 @@ internal fun ListingRow.toListing(): Listing = Listing(
     // A spotlighted test is paid by OneDevs, not the owner, and pays more.
     reward = spotlightReward ?: reward,
     spotlight = spotlight,
+    testers = testers,
+    ownerTested = ownerTested,
     optInLink = playUrl,
     testNote = testNote,
     iconUrl = iconUrl,
