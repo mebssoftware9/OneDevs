@@ -1205,4 +1205,13 @@
         <item quantity="one">Tested %1$d app</item>
         <item quantity="other">Tested %1$d apps</item>
     </plurals>
+    <string name="settings_data">Your data</string>
+    <string name="delete_account">Delete account</string>
+    <string name="delete_account_caption">Your account and everything in it</string>
+    <string name="delete_account_title">Delete your account?</string>
+    <string name="delete_account_body">This permanently deletes your OneDevs account: your profile, apps and icons, DevCoins, tests, missions, feedback, badges, plan and Lab records. Chat messages you sent in missions stay for the other members, without your name. It cannot be undone.\n\nA Premium or Pro subscription is not cancelled by this. Cancel it in Google Play, under Payments &amp; subscriptions.</string>
+    <string name="delete_account_failed">The account could not be deleted just now. Check your connection and try again.</string>
+    <string name="delete_account_confirm">Delete</string>
+    <string name="delete_account_working">Deleting…</string>
+    <string name="delete_account_cancel">Cancel</string>
 </resources>

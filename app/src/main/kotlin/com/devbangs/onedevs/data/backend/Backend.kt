@@ -243,6 +243,17 @@ class Backend(
     }
 
     /**
+     * Deletes the signed-in account and everything held about it, on the
+     * server; see supabase/functions/delete-account. The local session goes
+     * only once the server confirms, so a failure leaves nothing half done.
+     */
+    suspend fun deleteAccount(): Boolean {
+        val result = function("delete-account", JsonObject(emptyMap()))
+        if (result.ok) sessions.save(null)
+        return result.ok
+    }
+
+    /**
      * An Edge Function, signed in as the current user. Purchases are verified
      * here: the database will only grant a plan when a function running with
      * the service role asks it to, after Google has confirmed the payment.

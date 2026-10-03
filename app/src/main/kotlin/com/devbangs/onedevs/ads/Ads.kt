@@ -1,8 +1,8 @@
 package com.devbangs.onedevs.ads
 
 import android.app.Activity
-import android.os.SystemClock
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.devbangs.onedevs.BuildConfig
 import com.google.android.gms.ads.AdError
@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Consent first, then one app open ad when the app is opened.
+ * Consent first, then the launch ad, before the app opens.
  *
  * Google's User Messaging Platform is the consent manager: it knows where
  * the person is and which law applies -- GDPR in the EEA, the UK and
@@ -31,57 +31,63 @@ import kotlinx.coroutines.launch
  * AdMob's Privacy & messaging only there, and records the answer in the
  * IAB TCF and GPP strings the ad SDK reads. Everywhere else there is no form.
  *
- * The order is Google's: ask for the consent status on every launch, show
- * the form if it is required, and request an ad only when [canRequestAds]
- * says so. Privacy choices in Profile reopens the form wherever the law
- * gives the right to change an answer.
+ * The launch ad is the app's revenue, so the app waits for it. While [holding]
+ * is true the splash stays on screen (see MainActivity); it is released only
+ * when the ad has been shown and closed, or when there is no ad to show:
+ *  - the account has a paid plan, which removes ads;
+ *  - consent was not given where the law requires it, so no ad may be asked for;
+ *  - Google has no ad for this request (no fill, no network). One retry is
+ *    made first.
+ * [MAX_HOLD_MS] is only a guard against a request that never answers, so
+ * nobody is left looking at a splash forever; an ad that arrives after it is
+ * dropped rather than thrown over someone already using the app.
  *
- * The ad is shown once per launch of the app, after its first screen is on
- * display (MainActivity calls [onLaunch] only then, never over the splash),
- * and only:
- *  - when it is ready within [WINDOW_MS] of that -- an ad that arrives
- *    after the person has started using the app would interrupt them, so it
- *    is dropped instead;
- *  - when the consent form was not just on screen -- two full-screen things
- *    in a row on someone's first launch is one too many;
- *  - for an account without a paid plan.
- * Coming back from another app shows nothing.
+ * Privacy choices in Profile reopens the consent form wherever the law gives
+ * the right to change an answer.
  */
 object Ads {
-    /** How long after opening an ad may still appear. */
-    private const val WINDOW_MS = 5_000L
+    /** The longest the app waits on Google before opening without an ad. */
+    private const val MAX_HOLD_MS = 15_000L
 
     private val started = AtomicBoolean(false)
     @Volatile private var initialised = false
-    private val shown = AtomicBoolean(false)
-    @Volatile private var launchedAt = SystemClock.elapsedRealtime()
-    @Volatile private var formThisLaunch = false
+    @Volatile private var retried = false
+
+    private val _holding = MutableStateFlow(false)
+
+    /** True while the app is waiting for the launch ad; the splash stays up. */
+    val holding: StateFlow<Boolean> = _holding.asStateFlow()
 
     private val _privacyChoices = MutableStateFlow(false)
 
     /** Whether Profile must offer Privacy choices: the law here gives the right to revisit consent. */
     val privacyChoices: StateFlow<Boolean> = _privacyChoices.asStateFlow()
 
+    /** Called as the activity is created: an opening holds the app for its ad. */
+    fun hold(opened: Boolean) {
+        if (opened) {
+            retried = false
+            _holding.value = true
+        }
+    }
+
+    /** Opens the app without an ad. */
+    fun release() {
+        _holding.value = false
+    }
+
     /**
      * Checks consent, shows Google's form if the law needs it, then loads and
-     * shows the launch ad. [paid] answers whether this account has a plan
-     * that removes ads. [opened] is false when the activity is only being
-     * recreated -- a rotation, a language change -- which is not an opening.
+     * shows the launch ad. [paid] says whether this account's plan removes ads.
      */
-    fun onLaunch(activity: Activity, opened: Boolean, paid: () -> Boolean) {
-        if (opened) {
-            // A new opening, even in a process Android kept alive: the window
-            // and the once-per-opening rule start again.
-            launchedAt = SystemClock.elapsedRealtime()
-            shown.set(false)
-            formThisLaunch = false
-        }
+    fun onLaunch(activity: Activity, paid: () -> Boolean) {
+        if (paid()) release()
+        activity.window.decorView.postDelayed({ release() }, MAX_HOLD_MS)
         val consent = UserMessagingPlatform.getConsentInformation(activity)
         consent.requestConsentInfoUpdate(
             activity,
             ConsentRequestParameters.Builder().build(),
             {
-                if (consent.consentStatus == ConsentInformation.ConsentStatus.REQUIRED) formThisLaunch = true
                 UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) {
                     // An error here leaves consent as it was: ads follow
                     // whatever canRequestAds already says, never more.
@@ -90,8 +96,6 @@ object Ads {
             },
             { settle(activity, consent, paid) },
         )
-        // An answer from an earlier launch still holds while this one is asked.
-        if (consent.canRequestAds()) start(activity, paid)
     }
 
     /** Opens Google's form again, so a person can change what they agreed to. */
@@ -105,49 +109,75 @@ object Ads {
     private fun settle(activity: Activity, consent: ConsentInformation, paid: () -> Boolean) {
         _privacyChoices.value = consent.privacyOptionsRequirementStatus ==
             ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
-        if (consent.canRequestAds()) start(activity, paid)
+        if (consent.canRequestAds() && !paid()) start(activity) else release()
     }
 
-    private fun start(activity: Activity, paid: () -> Boolean) {
+    private fun start(activity: Activity) {
         if (!started.compareAndSet(false, true)) {
             // Already initialised in this process: this opening only loads.
-            if (initialised) load(activity, paid)
+            if (initialised) load(activity) else release()
             return
         }
         val context = activity.applicationContext
         CoroutineScope(Dispatchers.IO).launch {
             MobileAds.initialize(context) {
                 initialised = true
-                activity.runOnUiThread { load(activity, paid) }
+                activity.runOnUiThread { load(activity) }
             }
         }
     }
 
-    private fun load(activity: Activity, paid: () -> Boolean) {
-        if (formThisLaunch || paid() || late() || shown.get()) return
+    private fun load(activity: Activity) {
+        if (!_holding.value) return
         AppOpenAd.load(
             activity.applicationContext,
             BuildConfig.ADMOB_APP_OPEN_UNIT,
             AdRequest.Builder().build(),
             object : AppOpenAd.AppOpenAdLoadCallback() {
-                override fun onAdLoaded(ad: AppOpenAd) = show(activity, ad, paid)
+                override fun onAdLoaded(ad: AppOpenAd) = whenVisible(activity) { show(activity, ad) }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
-                    // No fill is ordinary: the app simply opens.
+                    if (!retried && _holding.value) {
+                        retried = true
+                        load(activity)
+                    } else {
+                        release()
+                    }
                 }
             },
         )
     }
 
-    private fun show(activity: Activity, ad: AppOpenAd, paid: () -> Boolean) {
-        val visible = (activity as? LifecycleOwner)?.lifecycle?.currentState
-            ?.isAtLeast(Lifecycle.State.RESUMED) == true
-        if (!visible || formThisLaunch || paid() || late() || !shown.compareAndSet(false, true)) return
+    /** Runs [block] once the activity is in front, or now if it already is. */
+    private fun whenVisible(activity: Activity, block: () -> Unit) {
+        val owner = activity as? LifecycleOwner ?: return block()
+        val lifecycle = owner.lifecycle
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return block()
+        if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
+        lifecycle.addObserver(object : LifecycleEventObserver {
+            override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                when (event) {
+                    Lifecycle.Event.ON_RESUME -> {
+                        lifecycle.removeObserver(this)
+                        block()
+                    }
+                    Lifecycle.Event.ON_DESTROY -> lifecycle.removeObserver(this)
+                    else -> Unit
+                }
+            }
+        })
+    }
+
+    private fun show(activity: Activity, ad: AppOpenAd) {
+        // Past the guard, the app has opened: an ad now would interrupt.
+        if (!_holding.value) return
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdFailedToShowFullScreenContent(error: AdError) = Unit
+            // The splash is released as the ad closes, so the app opens
+            // straight from the ad.
+            override fun onAdDismissedFullScreenContent() = release()
+
+            override fun onAdFailedToShowFullScreenContent(error: AdError) = release()
         }
         ad.show(activity)
     }
-
-    private fun late(): Boolean = SystemClock.elapsedRealtime() - launchedAt > WINDOW_MS
 }

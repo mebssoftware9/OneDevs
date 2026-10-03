@@ -159,6 +159,20 @@ class AccountState(
         scope.launch { refreshBalance() }
     }
 
+    /** Deletes the account on the server; true once it is gone and signed out here. */
+    suspend fun deleteAccount(): Boolean {
+        val deleted = try {
+            backend.deleteAccount()
+        } catch (e: IOException) {
+            false
+        }
+        if (deleted) {
+            _session.value = null
+            _balance.value = Balance.Unknown
+        }
+        return deleted
+    }
+
     fun signOut() {
         _session.value = null
         _balance.value = Balance.Unknown

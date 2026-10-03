@@ -372,6 +372,7 @@ fun ProfileScreen(onPlans: () -> Unit, modifier: Modifier = Modifier) {
         DeviceGroup()
         SupportGroup()
         LegalGroup()
+        com.devbangs.onedevs.ui.settings.DataGroup()
         AboutGroup()
     }
 }

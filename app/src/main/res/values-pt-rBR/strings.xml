@@ -1214,4 +1214,13 @@
         <item quantity="many">Testou %1$d apps</item>
         <item quantity="other">Testou %1$d apps</item>
     </plurals>
+    <string name="settings_data">Seus dados</string>
+    <string name="delete_account">Excluir conta</string>
+    <string name="delete_account_caption">Sua conta e tudo nela</string>
+    <string name="delete_account_title">Excluir sua conta?</string>
+    <string name="delete_account_body">Isso exclui para sempre sua conta OneDevs: perfil, apps e ícones, DevCoins, testes, missões, feedback, emblemas, plano e dados do Lab. As mensagens que você enviou em missões ficam para os outros membros, sem seu nome. Não pode ser desfeito.\n\nUma assinatura Premium ou Pro não é cancelada assim. Cancele no Google Play, em Pagamentos e assinaturas.</string>
+    <string name="delete_account_failed">Não foi possível excluir a conta agora. Verifique sua conexão e tente de novo.</string>
+    <string name="delete_account_confirm">Excluir</string>
+    <string name="delete_account_working">Excluindo…</string>
+    <string name="delete_account_cancel">Cancelar</string>
 </resources>

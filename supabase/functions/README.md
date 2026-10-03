@@ -57,7 +57,18 @@ Set in Supabase (Edge Functions → Secrets), never in the repo:
 ```bash
 npx supabase functions deploy play-purchases
 npx supabase functions deploy play-rtdn --no-verify-jwt
+npx supabase functions deploy delete-account
 ```
+
+## Account deletion
+
+`delete-account` deletes the signed-in caller's account: their icons in
+storage first, then their sign-in through the auth admin API. Every table
+that belongs to an account cascades from it; mission chat lines stay for the
+other members with no author. The app calls it from Profile → Your data →
+Delete account. The public page Google Play links to, for people without the
+app, is `legal/delete-account.html`, served at
+`https://mebs.app/delete/onedevs`.
 
 ## Testing purchases
 

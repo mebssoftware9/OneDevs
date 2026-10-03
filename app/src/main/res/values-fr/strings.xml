@@ -1216,4 +1216,13 @@
         <item quantity="many">A testé %1$d apps</item>
         <item quantity="other">A testé %1$d apps</item>
     </plurals>
+    <string name="settings_data">Vos données</string>
+    <string name="delete_account">Supprimer le compte</string>
+    <string name="delete_account_caption">Votre compte et tout son contenu</string>
+    <string name="delete_account_title">Supprimer votre compte ?</string>
+    <string name="delete_account_body">Cela supprime définitivement votre compte OneDevs : profil, applis et icônes, DevCoins, tests, missions, retours, badges, forfait et données du Lab. Les messages envoyés dans les missions restent pour les autres membres, sans votre nom. Action irréversible.\n\nUn abonnement Premium ou Pro n\'est pas annulé ainsi. Annulez-le dans Google Play, sous Paiements et abonnements.</string>
+    <string name="delete_account_failed">Le compte n\'a pas pu être supprimé. Vérifiez votre connexion et réessayez.</string>
+    <string name="delete_account_confirm">Supprimer</string>
+    <string name="delete_account_working">Suppression…</string>
+    <string name="delete_account_cancel">Annuler</string>
 </resources>
