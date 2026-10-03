@@ -48,7 +48,13 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="false"
         android:theme="@style/Theme.OneDevs">
+
+        <!-- No predictive back. With it on (the default from Android 16), a
+             back swipe shrinks the current screen into a rounded card that
+             is cut off at its corners before it goes. Back now changes the
+             screen at once, the same as every tap in the app. -->
 
         <!-- AdMob: Google's test app in debug, OneDevs' own in release; see
              app/build.gradle.kts. -->

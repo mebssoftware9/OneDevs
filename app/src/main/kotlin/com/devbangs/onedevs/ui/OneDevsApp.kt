@@ -303,6 +303,9 @@ fun OneDevsApp() {
                 exitTransition = NavExit,
                 popEnterTransition = NavPopEnter,
                 popExitTransition = NavPopExit,
+                // The library's default resizes the host between screens and
+                // clips whatever is outside the size it is passing through.
+                sizeTransform = null,
             ) {
                 screen<Board> {
                     BoardScreen(onOpen = { id -> navController.navigate(AppDetails(id)) })
