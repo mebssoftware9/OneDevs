@@ -9,9 +9,16 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
+import com.devbangs.onedevs.ads.Ads
+import com.devbangs.onedevs.data.plans.Tier
 import com.devbangs.onedevs.settings.AppLocale
 import com.devbangs.onedevs.ui.OneDevsApp
 import com.devbangs.onedevs.ui.theme.OneDevsTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 class MainActivity : ComponentActivity() {
 
@@ -50,9 +57,34 @@ class MainActivity : ComponentActivity() {
         // Every launch: consent can expire and the rules change. Shows
         // Google's form only where the law asks for one, then the launch ad
         // for accounts without a paid plan; see ads/Ads.kt.
+        //
+        // Not over the splash: only once the app is open. The splash leaves
+        // when the session is known; a signed-in account's plan is then
+        // waited for, so a paid account never sees an ad because its plan
+        // had not loaded yet; and the first screen gets a moment on display
+        // before anything covers it.
         val plans = (application as OneDevsApplication).plans
-        com.devbangs.onedevs.ads.Ads.onLaunch(this, opened = savedInstanceState == null) {
-            plans.plan.value?.tier?.let { it != com.devbangs.onedevs.data.plans.Tier.Community } == true
+        val opened = savedInstanceState == null
+        lifecycleScope.launch {
+            account.ready.first { it }
+            if (account.session.value != null) {
+                withTimeoutOrNull(PLAN_WAIT_MS) { plans.plan.first { it != null } }
+            }
+            delay(SETTLE_MS)
+            Ads.onLaunch(this@MainActivity, opened) {
+                val tier = plans.plan.value?.tier
+                // Signed in with no answer about the plan: no ad, rather than
+                // risk showing one to someone who paid to be rid of them.
+                account.session.value != null && tier != Tier.Community
+            }
         }
+    }
+
+    private companion object {
+        /** Longest wait for a signed-in account's plan before deciding about an ad. */
+        const val PLAN_WAIT_MS = 4_000L
+
+        /** How long the first screen is on display before the launch ad may cover it. */
+        const val SETTLE_MS = 700L
     }
 }

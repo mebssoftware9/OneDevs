@@ -36,8 +36,10 @@ import kotlinx.coroutines.launch
  * says so. Privacy choices in Profile reopens the form wherever the law
  * gives the right to change an answer.
  *
- * The ad is shown once per launch of the app, over its opening, and only:
- *  - when it is ready within [WINDOW_MS] of the launch -- an ad that arrives
+ * The ad is shown once per launch of the app, after its first screen is on
+ * display (MainActivity calls [onLaunch] only then, never over the splash),
+ * and only:
+ *  - when it is ready within [WINDOW_MS] of that -- an ad that arrives
  *    after the person has started using the app would interrupt them, so it
  *    is dropped instead;
  *  - when the consent form was not just on screen -- two full-screen things
