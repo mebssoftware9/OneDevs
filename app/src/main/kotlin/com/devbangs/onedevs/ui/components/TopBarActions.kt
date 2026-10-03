@@ -23,6 +23,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -36,6 +38,10 @@ import com.devbangs.onedevs.ui.theme.oneDevsColors
 
 /** The chip's drawn height, set against the wordmark rather than picked. */
 private val ChipHeight = 38.dp
+
+// The same blue as the Earn tab on the Board cards.
+private val ChipTop = Color(0xFF2F6BFF)
+private val ChipBottom = Color(0xFF0B3BD1)
 
 /**
  * The size every bare glyph in the app is drawn at, top bar and navigation bar
@@ -68,12 +74,13 @@ fun DevCoinChip(
             .minimumInteractiveComponentSize()
             .height(ChipHeight)
             .clip(CircleShape)
-            .background(oneDevsColors.brandTint)
+            // Solid brand blue, so the chip holds its own on the page and the
+            // gold coin stands out on it. The pale tint it had faded into the
+            // page behind it.
+            .background(Brush.verticalGradient(listOf(ChipTop, ChipBottom)))
             .clickable(onClick = onClick)
             .padding(start = 5.dp, end = 13.dp),
     ) {
-        // No circular clip. The artwork is already a coin, and clipping it to a
-        // circle shaved the raised rim off its own edge.
         // No circular clip. The artwork is already a coin, and clipping it to a
         // circle shaved the raised rim off its own edge.
         Image(
@@ -88,7 +95,7 @@ fun DevCoinChip(
             when (balance) {
                 // Still asking. A spinner is a promise that something is
                 // happening, and here it is one the app can keep.
-                Balance.Unknown, Balance.Loading -> Waiting(size = 13.dp, stroke = 2.dp)
+                Balance.Unknown, Balance.Loading -> Waiting(size = 13.dp, stroke = 2.dp, color = Color.White)
 
                 is Balance.Known -> {
                     // Counts to the new number instead of replacing the old
@@ -101,8 +108,8 @@ fun DevCoinChip(
                     Text(
                         text = shown.toString(),
                         style = MaterialTheme.typography.labelLarge.copy(lineHeight = 16.sp),
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
                     )
                 }
 
@@ -112,13 +119,13 @@ fun DevCoinChip(
                     text = "\u2014",
                     style = MaterialTheme.typography.labelLarge.copy(lineHeight = 16.sp),
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.White,
                 )
             }
             Text(
                 text = stringResource(R.string.devcoin_label),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, lineHeight = 12.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.8f),
             )
         }
     }
