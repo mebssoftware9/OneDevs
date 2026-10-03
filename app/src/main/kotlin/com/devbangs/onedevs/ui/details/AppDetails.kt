@@ -65,6 +65,7 @@ import com.devbangs.onedevs.data.play.PlayListings
 import com.devbangs.onedevs.ui.board.openPlayListing
 import com.devbangs.onedevs.ui.components.BrandedLoading
 import com.devbangs.onedevs.ui.components.DevBotMark
+import com.devbangs.onedevs.ui.theme.oneDevsColors
 import com.devbangs.onedevs.ui.components.rememberListingIcon
 import java.text.DateFormat
 import java.util.Date
@@ -84,6 +85,7 @@ fun AppDetailsScreen(
     onBack: () -> Unit,
     onEdit: (Listing) -> Unit,
     modifier: Modifier = Modifier,
+    onAddToOtherBoard: (Listing) -> Unit = {},
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as OneDevsApplication
@@ -202,7 +204,28 @@ fun AppDetailsScreen(
         )
 
         if (mine) {
+            // Which board this app is on, and the other one a tap away: the
+            // same details, nothing typed twice.
+            val other = if (current.channel == Channel.Live) Channel.Testing else Channel.Live
+            val onOther = all.any {
+                it.id != current.id && it.channel == other &&
+                    it.packageName.equals(current.packageName, ignoreCase = true)
+            }
             Spacer(Modifier.height(18.dp))
+            SectionCard(title = stringResource(R.string.details_boards)) {
+                BoardLine(
+                    board = current.channel,
+                    here = true,
+                    onAdd = null,
+                )
+                BoardLine(
+                    board = other,
+                    here = onOther,
+                    onAdd = if (onOther || current.packageName.isBlank()) null else { { onAddToOtherBoard(current) } },
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
             SectionCard(title = stringResource(R.string.details_stats_title)) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -231,20 +254,17 @@ fun AppDetailsScreen(
         }
 
         Spacer(Modifier.height(12.dp))
-        SectionCard(title = stringResource(R.string.details_reports)) {
-            // Not behind a paywall. These are empty because nothing has been
-            // collected yet, and saying so is different from charging for it.
-            ReportRow(
-                icon = R.drawable.ic_chat_circle_dots,
-                title = stringResource(R.string.details_feedback),
-                body = stringResource(R.string.details_feedback_empty),
-            )
+        FeedbackSection(listingId = current.id, mine = mine)
+
+        if (mine && current.channel == Channel.Testing) {
             Spacer(Modifier.height(12.dp))
-            ReportRow(
-                icon = R.drawable.ic_clipboard_text,
-                title = stringResource(R.string.details_production),
-                body = stringResource(R.string.details_production_empty),
-            )
+            SectionCard(title = stringResource(R.string.details_reports)) {
+                ReportRow(
+                    icon = R.drawable.ic_clipboard_text,
+                    title = stringResource(R.string.details_production),
+                    body = stringResource(R.string.details_production_body),
+                )
+            }
         }
 
         if (mine && current.packageName.isNotBlank()) {
@@ -397,6 +417,45 @@ private fun AppIcon(listing: Listing, modifier: Modifier = Modifier) {
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(24.dp),
             )
+        }
+    }
+}
+
+/** One board: whether the app is on it, or a button to put it there. */
+@Composable
+private fun BoardLine(board: Channel, here: Boolean, onAdd: (() -> Unit)?) {
+    val scheme = MaterialTheme.colorScheme
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Icon(
+            painter = painterResource(if (here) R.drawable.ic_check else R.drawable.ic_lock),
+            contentDescription = null,
+            tint = if (here) oneDevsColors.live.solid else scheme.onSurfaceVariant,
+            modifier = Modifier.size(16.dp),
+        )
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = stringResource(
+                    if (board == Channel.Live) R.string.details_board_live else R.string.details_board_testing,
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = stringResource(if (here) R.string.details_on_board else R.string.details_not_on_board),
+                style = MaterialTheme.typography.labelSmall,
+                color = scheme.onSurfaceVariant,
+            )
+        }
+        if (onAdd != null) {
+            TextButton(onClick = onAdd) {
+                Text(
+                    text = stringResource(
+                        if (board == Channel.Live) R.string.details_add_to_live else R.string.details_add_to_testing,
+                    ),
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
         }
     }
 }

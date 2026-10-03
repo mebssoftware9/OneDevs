@@ -63,6 +63,7 @@ import com.devbangs.onedevs.ui.settings.AboutGroup
 import com.devbangs.onedevs.ui.settings.AppSettingsGroup
 import com.devbangs.onedevs.ui.settings.DeviceGroup
 import com.devbangs.onedevs.ui.settings.LegalGroup
+import com.devbangs.onedevs.ui.settings.SupportGroup
 import com.devbangs.onedevs.ui.settings.ProfileHeader
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 
@@ -366,6 +367,7 @@ fun ProfileScreen(onPlans: () -> Unit, modifier: Modifier = Modifier) {
         com.devbangs.onedevs.ui.plans.PlanPromo(onPlans = onPlans)
         AppSettingsGroup()
         DeviceGroup()
+        SupportGroup()
         LegalGroup()
         AboutGroup()
     }
@@ -382,13 +384,23 @@ fun LabScreen(onPlans: () -> Unit, modifier: Modifier = Modifier) {
  * this is worth their time should be able to see what is on offer before they
  * have an account.
  *
- * earned is empty because nothing computes it yet. It is a parameter of the
- * card rather than a constant inside it, so the day there are accounts this
- * screen passes a real set and nothing else changes.
+ * What is earned comes from the server, which works each badge out from the
+ * account's missions, reports, tests and verified phone. Read again each
+ * time the tab is shown, so a badge earned elsewhere appears here.
  */
 @Composable
 fun BadgeScreen(modifier: Modifier = Modifier) {
-    val earned = emptySet<Int>()
+    val app = LocalContext.current.applicationContext as OneDevsApplication
+    var states by remember { mutableStateOf<List<com.devbangs.onedevs.data.badges.BadgeState>>(emptyList()) }
+    var tick by remember { mutableIntStateOf(0) }
+    LaunchedEffect(tick) {
+        com.devbangs.onedevs.data.backend.quietly { app.badges.mine() }?.let { states = it }
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { tick++ }
+    val byKey = states.associateBy { it.key }
+    val specs = BadgeCatalogue.flatMap { it.badges }
+    val earned = specs.filter { byKey[it.key]?.earned == true }.map { it.name }.toSet()
+    val progress = specs.mapNotNull { spec -> byKey[spec.key]?.let { spec.name to (it.have to it.need) } }.toMap()
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = modifier
@@ -407,6 +419,6 @@ fun BadgeScreen(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
         )
-        BadgeCatalogue.forEach { group -> BadgeGroupCard(group, earned) }
+        BadgeCatalogue.forEach { group -> BadgeGroupCard(group, earned, progress = progress) }
     }
 }

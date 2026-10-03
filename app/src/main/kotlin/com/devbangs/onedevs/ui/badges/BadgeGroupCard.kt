@@ -53,6 +53,8 @@ internal fun BadgeGroupCard(
     group: BadgeGroup,
     earned: Set<Int>,
     modifier: Modifier = Modifier,
+    /** Progress toward each badge not yet earned, by its name: have to need. */
+    progress: Map<Int, Pair<Int, Int>> = emptyMap(),
 ) {
     val accent = group.accent(oneDevsColors)
     val held = group.badges.count { it.name in earned }
@@ -110,7 +112,7 @@ internal fun BadgeGroupCard(
             modifier = Modifier.fillMaxWidth(),
         ) {
             group.badges.forEach { badge ->
-                BadgeCell(badge, accent, badge.name in earned)
+                BadgeCell(badge, accent, badge.name in earned, progress[badge.name])
             }
         }
     }
@@ -122,7 +124,7 @@ internal fun BadgeGroupCard(
  * reads as the thing it will become rather than as a blank.
  */
 @Composable
-private fun BadgeCell(badge: BadgeSpec, accent: Accent, earned: Boolean) {
+private fun BadgeCell(badge: BadgeSpec, accent: Accent, earned: Boolean, progress: Pair<Int, Int>?) {
     val scheme = MaterialTheme.colorScheme
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -176,5 +178,15 @@ private fun BadgeCell(badge: BadgeSpec, accent: Accent, earned: Boolean) {
             color = scheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
+        // How far along, for one that is started but not earned.
+        if (!earned && progress != null && progress.first > 0) {
+            Text(
+                text = stringResource(R.string.badge_progress, progress.first, progress.second),
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, lineHeight = 12.sp),
+                fontWeight = FontWeight.SemiBold,
+                color = accent.solid,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }

@@ -25,7 +25,12 @@ import kotlinx.serialization.Serializable
  * thing that differs -- a testing listing needing its two opt-in links -- is a
  * branch inside it, not a second screen to keep in step with the first.
  */
-@Serializable data class AddListing(val live: Boolean, val id: String? = null)
+@Serializable data class AddListing(
+    val live: Boolean,
+    val id: String? = null,
+    /** A listing on the other board to start from: its details, a new record. */
+    val copyOf: String? = null,
+)
 
 /**
  * One filed app. Carries the id rather than the record: a route is a place, and

@@ -334,6 +334,14 @@ fun OneDevsApp() {
                                 ),
                             )
                         },
+                        onAddToOtherBoard = { listing ->
+                            navController.navigate(
+                                AddListing(
+                                    live = listing.channel != Channel.Live,
+                                    copyOf = listing.id,
+                                ),
+                            )
+                        },
                     )
                 }
                 composable<AddListing> { entry ->
@@ -341,6 +349,7 @@ fun OneDevsApp() {
                     AddListingScreen(
                         channel = if (board.live) Channel.Live else Channel.Testing,
                         listingId = board.id,
+                        copyOf = board.copyOf,
                         onDone = { navController.popBackStack() },
                     )
                 }

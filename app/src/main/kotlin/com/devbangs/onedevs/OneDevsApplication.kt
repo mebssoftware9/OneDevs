@@ -60,6 +60,8 @@ class OneDevsApplication : Application() {
         ClaimWorker.drain(this)
         // A testing cycle's reports arrive whether or not the app is open.
         InsightWorker.schedule(this)
+        // A member with apps left to test today hears about it once.
+        com.devbangs.onedevs.data.missions.MissionReminderWorker.schedule(this)
         // A claim waits for the account that earned it. Signing in is the
         // moment that account's claims can finally be asked about.
         scope.launch {
@@ -171,6 +173,14 @@ class OneDevsApplication : Application() {
 
     val ghostline: com.devbangs.onedevs.data.plans.GhostlineRepository by lazy {
         com.devbangs.onedevs.data.plans.GhostlineRepository(backend)
+    }
+
+    val feedback: com.devbangs.onedevs.data.feedback.FeedbackRepository by lazy {
+        com.devbangs.onedevs.data.feedback.FeedbackRepository(backend)
+    }
+
+    val badges: com.devbangs.onedevs.data.badges.BadgeRepository by lazy {
+        com.devbangs.onedevs.data.badges.BadgeRepository(backend)
     }
 
     /** Starting, checking and finishing tests: the questions that move DevCoins. */

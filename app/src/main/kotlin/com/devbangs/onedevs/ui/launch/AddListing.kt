@@ -184,14 +184,16 @@ class AddListingViewModel(
 
     /**
      * Fills the form from a listing already on file. Keeps its id, so saving
-     * replaces that record rather than filing a second copy of the same app.
+     * replaces that record rather than filing a second copy of the same app --
+     * unless [asCopy], which is the same app going on the other board: same
+     * details, a record of its own.
      */
-    fun load(context: Context, id: String) {
+    fun load(context: Context, id: String, asCopy: Boolean = false) {
         if (loaded) return
         loaded = true
         viewModelScope.launch {
             val existing = repository.find(id) ?: return@launch
-            draftId = existing.id
+            if (!asCopy) draftId = existing.id
             title = existing.title
             category = existing.category
             sizeMb = existing.sizeBytes?.let(::megabytesOf).orEmpty()
@@ -373,6 +375,7 @@ fun AddListingScreen(
     listingId: String?,
     onDone: () -> Unit,
     modifier: Modifier = Modifier,
+    copyOf: String? = null,
     viewModel: AddListingViewModel = viewModel(factory = AddListingViewModel.Factory),
 ) {
     // The route says which board you arrived for, not which one you leave by.
@@ -384,7 +387,12 @@ fun AddListingScreen(
     val testing = !live
     var linkHadFocus by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    LaunchedEffect(listingId) { listingId?.let { viewModel.load(context, it) } }
+    LaunchedEffect(listingId, copyOf) {
+        when {
+            listingId != null -> viewModel.load(context, listingId)
+            copyOf != null -> viewModel.load(context, copyOf, asCopy = true)
+        }
+    }
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
     ) { uri -> uri?.let { viewModel.setIcon(context, it) } }

@@ -11,7 +11,13 @@ import com.devbangs.onedevs.ui.theme.OneDevsColors
  * annotations would be the only thing this module pulls androidx.annotation in
  * for, and every one of these is read straight into a stringResource call.
  */
-internal data class BadgeSpec(val icon: Int, val name: Int, val requirement: Int)
+internal data class BadgeSpec(
+    /** The server's name for it, in my_badges(). */
+    val key: String,
+    val icon: Int,
+    val name: Int,
+    val requirement: Int,
+)
 
 /**
  * A group of badges that are earned by the same kind of work.
@@ -33,8 +39,8 @@ internal data class BadgeGroup(
  *
  * This is a catalogue, not state: it is the same for a developer who has earned
  * none of them and one who has earned all of them, so it lives here as data
- * rather than arriving from a server. What a given account has actually earned
- * is the set passed alongside it, which is empty until there are accounts.
+ * rather than arriving from a server. What a given account has earned, and how
+ * far it is toward the rest, comes from the server and is passed alongside it.
  *
  * One accent per group rather than one per badge. The mockups colour all
  * nineteen individually, which would mean nineteen hues in a palette built on
@@ -49,11 +55,11 @@ internal val BadgeCatalogue = listOf(
         tagline = R.string.badge_group_testing_tagline,
         accent = { it.testing },
         badges = listOf(
-            BadgeSpec(R.drawable.ic_seal_check, R.string.badge_first_test, R.string.badge_first_test_req),
-            BadgeSpec(R.drawable.ic_test_tube, R.string.badge_tester, R.string.badge_tester_req),
-            BadgeSpec(R.drawable.ic_flask, R.string.badge_dedicated, R.string.badge_dedicated_req),
-            BadgeSpec(R.drawable.ic_trophy, R.string.badge_veteran, R.string.badge_veteran_req),
-            BadgeSpec(R.drawable.ic_fire, R.string.badge_streak, R.string.badge_streak_req),
+            BadgeSpec("first_test", R.drawable.ic_seal_check, R.string.badge_first_test, R.string.badge_first_test_req),
+            BadgeSpec("tester", R.drawable.ic_test_tube, R.string.badge_tester, R.string.badge_tester_req),
+            BadgeSpec("dedicated", R.drawable.ic_flask, R.string.badge_dedicated, R.string.badge_dedicated_req),
+            BadgeSpec("veteran", R.drawable.ic_trophy, R.string.badge_veteran, R.string.badge_veteran_req),
+            BadgeSpec("streak", R.drawable.ic_fire, R.string.badge_streak, R.string.badge_streak_req),
         ),
     ),
     BadgeGroup(
@@ -62,9 +68,9 @@ internal val BadgeCatalogue = listOf(
         tagline = R.string.badge_group_feedback_tagline,
         accent = { it.feedback },
         badges = listOf(
-            BadgeSpec(R.drawable.ic_lightbulb, R.string.badge_useful, R.string.badge_useful_req),
-            BadgeSpec(R.drawable.ic_bug, R.string.badge_bug_hunter, R.string.badge_bug_hunter_req),
-            BadgeSpec(R.drawable.ic_target, R.string.badge_detail, R.string.badge_detail_req),
+            BadgeSpec("useful", R.drawable.ic_lightbulb, R.string.badge_useful, R.string.badge_useful_req),
+            BadgeSpec("bug_hunter", R.drawable.ic_bug, R.string.badge_bug_hunter, R.string.badge_bug_hunter_req),
+            BadgeSpec("detail", R.drawable.ic_target, R.string.badge_detail, R.string.badge_detail_req),
         ),
     ),
     BadgeGroup(
@@ -73,9 +79,9 @@ internal val BadgeCatalogue = listOf(
         tagline = R.string.badge_group_community_tagline,
         accent = { it.community },
         badges = listOf(
-            BadgeSpec(R.drawable.ic_handshake, R.string.badge_builder, R.string.badge_builder_req),
-            BadgeSpec(R.drawable.ic_users, R.string.badge_helper, R.string.badge_helper_req),
-            BadgeSpec(R.drawable.ic_star, R.string.badge_contributor, R.string.badge_contributor_req),
+            BadgeSpec("builder", R.drawable.ic_handshake, R.string.badge_builder, R.string.badge_builder_req),
+            BadgeSpec("helper", R.drawable.ic_users, R.string.badge_helper, R.string.badge_helper_req),
+            BadgeSpec("contributor", R.drawable.ic_star, R.string.badge_contributor, R.string.badge_contributor_req),
         ),
     ),
     BadgeGroup(
@@ -84,9 +90,9 @@ internal val BadgeCatalogue = listOf(
         tagline = R.string.badge_group_creator_tagline,
         accent = { it.mission },
         badges = listOf(
-            BadgeSpec(R.drawable.ic_rocket_launch, R.string.badge_creator, R.string.badge_creator_req),
-            BadgeSpec(R.drawable.ic_clipboard_text, R.string.badge_campaign, R.string.badge_campaign_req),
-            BadgeSpec(R.drawable.ic_trophy, R.string.badge_trusted_creator, R.string.badge_trusted_creator_req),
+            BadgeSpec("creator", R.drawable.ic_rocket_launch, R.string.badge_creator, R.string.badge_creator_req),
+            BadgeSpec("campaign", R.drawable.ic_clipboard_text, R.string.badge_campaign, R.string.badge_campaign_req),
+            BadgeSpec("trusted_creator", R.drawable.ic_trophy, R.string.badge_trusted_creator, R.string.badge_trusted_creator_req),
         ),
     ),
     BadgeGroup(
@@ -95,10 +101,10 @@ internal val BadgeCatalogue = listOf(
         tagline = R.string.badge_group_trust_tagline,
         accent = { it.live },
         badges = listOf(
-            BadgeSpec(R.drawable.ic_device_mobile, R.string.badge_device, R.string.badge_device_req),
-            BadgeSpec(R.drawable.ic_user_check, R.string.badge_account, R.string.badge_account_req),
-            BadgeSpec(R.drawable.ic_shield_check, R.string.badge_reliable, R.string.badge_reliable_req),
-            BadgeSpec(R.drawable.ic_lock_open, R.string.badge_eligible, R.string.badge_eligible_req),
+            BadgeSpec("device", R.drawable.ic_device_mobile, R.string.badge_device, R.string.badge_device_req),
+            BadgeSpec("account", R.drawable.ic_user_check, R.string.badge_account, R.string.badge_account_req),
+            BadgeSpec("reliable", R.drawable.ic_shield_check, R.string.badge_reliable, R.string.badge_reliable_req),
+            BadgeSpec("eligible", R.drawable.ic_lock_open, R.string.badge_eligible, R.string.badge_eligible_req),
         ),
     ),
 )
