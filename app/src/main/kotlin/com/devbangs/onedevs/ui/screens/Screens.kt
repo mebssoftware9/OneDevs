@@ -167,6 +167,9 @@ fun BoardScreen(
     }
 
     val shown = if (category == BoardCategory.Testing) testing else live
+    val plan by app.plans.plan.collectAsState()
+    val showAd = (plan?.tier ?: com.devbangs.onedevs.data.plans.Tier.Community) ==
+        com.devbangs.onedevs.data.plans.Tier.Community
 
     Column(modifier = modifier.fillMaxSize()) {
         LiveCard(
@@ -214,6 +217,11 @@ fun BoardScreen(
                         // from what the developer wrote, not from a Play page
                         // they were dropped on without being asked.
                         BoardRow(listing = listing, onClick = { onOpen(listing.id) })
+                    }
+                    // The one ad: after the apps, never between them, and
+                    // never for a paid plan.
+                    if (showAd) {
+                        item(key = "ad") { com.devbangs.onedevs.ads.NativeAdCard() }
                     }
                 }
             }

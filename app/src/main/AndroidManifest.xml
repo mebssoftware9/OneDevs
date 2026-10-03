@@ -50,6 +50,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OneDevs">
 
+        <!-- AdMob. The ID comes from secrets.properties, or Google's test app
+             when it is not set; see app/build.gradle.kts. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
+        <!-- Initialise and load ads off the main thread, so the first frame
+             never waits on the ad SDK. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.flag.OPTIMIZE_INITIALIZATION"
+            android:value="true" />
+        <meta-data
+            android:name="com.google.android.gms.ads.flag.OPTIMIZE_AD_LOADING"
+            android:value="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

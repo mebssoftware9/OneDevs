@@ -47,5 +47,8 @@ class MainActivity : ComponentActivity() {
                 OneDevsApp()
             }
         }
+        // Every launch: consent can expire and the rules change. Shows
+        // Google's form only where the law asks for one; see ads/Ads.kt.
+        com.devbangs.onedevs.ads.Ads.gatherConsent(this)
     }
 }

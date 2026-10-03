@@ -42,6 +42,13 @@ android {
         // The Google Cloud project linked under Play Console > App integrity.
         // Not a secret: it names the project and grants nothing.
         buildConfigField("long", "PLAY_INTEGRITY_PROJECT", "343705040300L")
+
+        // AdMob. Google's published test IDs until secrets.properties names
+        // the real ones: a build without them shows test ads in debug and no
+        // ads at all in release, and never serves a live ad to its developer.
+        manifestPlaceholders["admobAppId"] =
+            secret("ADMOB_APP_ID").ifBlank { "ca-app-pub-3940256099942544~3347511713" }
+        buildConfigField("String", "ADMOB_NATIVE_UNIT", "\"" + secret("ADMOB_NATIVE_UNIT") + "\"")
     }
 
     bundle {
@@ -150,6 +157,10 @@ dependencies {
     implementation(libs.play.billing)
     // Google Play's word that this is the real app on a genuine phone; see PlayIntegrityAttestor.
     implementation(libs.play.integrity)
+    // One native ad on the Board for Community accounts, and Google's consent
+    // form wherever the law asks for one; see ads/Ads.kt.
+    implementation(libs.play.services.ads)
+    implementation(libs.google.ump)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
     implementation(libs.androidx.lifecycle.runtime.compose)

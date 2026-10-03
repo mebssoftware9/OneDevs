@@ -1,6 +1,11 @@
 package com.devbangs.onedevs.ui.settings
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import com.devbangs.onedevs.ads.Ads
+import com.devbangs.onedevs.ui.plans.findActivity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -17,6 +22,8 @@ object LegalLinks {
 @Composable
 fun LegalGroup(modifier: Modifier = Modifier) {
     val uri = LocalUriHandler.current
+    val context = LocalContext.current
+    val privacyChoices by Ads.privacyChoices.collectAsState()
     SettingsGroup(title = stringResource(R.string.settings_legal), modifier = modifier) {
         SettingsRow(
             label = stringResource(R.string.legal_privacy),
@@ -33,5 +40,15 @@ fun LegalGroup(modifier: Modifier = Modifier) {
             onClick = { uri.openUri(LegalLinks.REFUND) },
             icon = R.drawable.ic_receipt,
         )
+        // Where the law gives the right to change ad consent (the EEA, the UK,
+        // Switzerland, US states with privacy laws), it is one tap away.
+        if (privacyChoices) {
+            SettingsRow(
+                label = stringResource(R.string.legal_privacy_choices),
+                caption = stringResource(R.string.legal_privacy_choices_caption),
+                onClick = { context.findActivity()?.let(Ads::showPrivacyChoices) },
+                icon = R.drawable.ic_lock,
+            )
+        }
     }
 }
