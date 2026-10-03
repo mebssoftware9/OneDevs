@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -168,17 +169,22 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
     var listing by remember { mutableStateOf(ListingDraft.load(context)) }
     var keywords by remember { mutableStateOf(ListingDraft.keywordText(context)) }
 
-    val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri == null) {
-            // Backed out of the picker before any APK was read: there is
-            // nothing for the tool to show, so go back to the list.
-            if (analysis == null) tool = null
-            return@rememberLauncherForActivityResult
-        }
+    // Reads an APK and, if the plan lets this Lab have it, makes it the
+    // current one. [restoring] is a file the Lab already had: one that can no
+    // longer be read, or that the plan no longer keeps, is forgotten quietly.
+    // [quiet] is the read the Lab does by itself on opening, which says
+    // nothing if the plan cannot be checked; a tool someone tapped does.
+    fun open(uri: android.net.Uri, restoring: String? = null, quiet: Boolean = false) {
         failure = null
         working = true
         scope.launch {
             val result = withContext(Dispatchers.IO) { ApkAnalyzer.analyze(context, uri) }
+            if (restoring != null && result.isFailure) {
+                com.devbangs.onedevs.lab.LabMemory.forget(context, restoring)
+                working = false
+                if (analysis == null) tool = null
+                return@launch
+            }
             // Which app this is decides whether a free Lab may show it, so
             // the claim is asked before anything of the report appears.
             val claim = result.getOrNull()?.let { app.plans.claimLabApp(it.report.packageName) }
@@ -187,15 +193,20 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
             result.onSuccess {
                 when (claim) {
                     is com.devbangs.onedevs.data.plans.LabClaim.Upgrade -> {
-                        full = claim
+                        if (restoring != null) {
+                            com.devbangs.onedevs.lab.LabMemory.forget(context, restoring)
+                        } else {
+                            full = claim
+                        }
                         if (analysis == null) tool = null
                     }
                     com.devbangs.onedevs.data.plans.LabClaim.Unknown -> {
-                        planUnknown = true
+                        if (!quiet) planUnknown = true
                         if (analysis == null) tool = null
                     }
                     else -> {
                         analysis = it
+                        com.devbangs.onedevs.lab.LabMemory.remember(context, it.report.packageName, uri)
                         // The earlier version was chosen against the old file.
                         installed = null
                         installedFailure = null
@@ -206,6 +217,28 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
                 tool = null
             }
         }
+    }
+
+    val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) {
+            // Backed out of the picker before any APK was read: there is
+            // nothing for the tool to show, so go back to the list.
+            if (analysis == null) tool = null
+            return@rememberLauncherForActivityResult
+        }
+        open(uri)
+    }
+
+    // The file the Lab had last time, read again rather than asked for.
+    // Returns false when there is none to read, so the caller asks instead.
+    fun reopen(quiet: Boolean = false): Boolean {
+        val pkg = com.devbangs.onedevs.lab.LabMemory.lastPackage(context) ?: return false
+        val uri = com.devbangs.onedevs.lab.LabMemory.fileFor(context, pkg) ?: return false
+        open(uri, restoring = pkg, quiet = quiet)
+        return true
+    }
+    LaunchedEffect(Unit) {
+        if (analysis == null && !working) reopen(quiet = true)
     }
     val pickInstalled = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
@@ -312,9 +345,17 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
                     color = oneDevsColors.critical.solid,
                 )
             }
+            val kept = plan?.labKept.orEmpty()
+            val limit = plan?.labLimit
             com.devbangs.onedevs.ui.plans.LabAppCard(
-                current = analysis?.report?.packageName ?: plan?.labApp,
+                current = analysis?.report?.packageName
+                    ?: com.devbangs.onedevs.lab.LabMemory.lastPackage(context)
+                    ?: plan?.labApp,
                 tier = plan?.tier ?: com.devbangs.onedevs.data.plans.Tier.Community,
+                // Every slot taken: the button is for a newer build of an app
+                // the Lab already keeps. A different app still goes through
+                // the claim, which answers with the upgrade sheet.
+                full = limit != null && kept.size >= limit,
                 onChange = { pick.launch(APK_TYPES) },
             )
         }
@@ -334,7 +375,11 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
                     onTool = { chosen ->
                         val next = ToolKind.of(chosen.name)
                         tool = next
-                        if (next?.input == ToolInput.Apk && analysis == null) pick.launch(APK_TYPES)
+                        // The current app's file if the Lab still has it;
+                        // the picker only when it has none.
+                        if (next?.input == ToolInput.Apk && analysis == null && !working && !reopen()) {
+                            pick.launch(APK_TYPES)
+                        }
                     },
                 )
             }

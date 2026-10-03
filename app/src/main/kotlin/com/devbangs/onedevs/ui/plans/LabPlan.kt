@@ -32,11 +32,12 @@ import com.devbangs.onedevs.ui.theme.oneDevsColors
 /**
  * Which app the Lab is working on, and the way to another one.
  *
- * On a free plan "Change app" still opens the picker: the answer to a second
- * app is the upgrade sheet, which says why, not a button that does nothing.
+ * When the plan's apps are all taken ([full]) the button offers a new build
+ * of a kept app instead of "Change": a different app is answered by the
+ * upgrade sheet, and the card should not suggest otherwise.
  */
 @Composable
-fun LabAppCard(current: String?, tier: Tier, onChange: () -> Unit) {
+fun LabAppCard(current: String?, tier: Tier, full: Boolean, onChange: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val accent = oneDevsColors.testing
     Row(
@@ -84,7 +85,13 @@ fun LabAppCard(current: String?, tier: Tier, onChange: () -> Unit) {
         }
         Spacer(Modifier.width(8.dp))
         Text(
-            text = stringResource(if (current == null) R.string.lab_app_choose else R.string.lab_app_change),
+            text = stringResource(
+                when {
+                    current == null -> R.string.lab_app_choose
+                    full -> R.string.lab_app_new_build
+                    else -> R.string.lab_app_change
+                },
+            ),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.SemiBold,
             color = accent.solid,

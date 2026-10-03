@@ -1019,6 +1019,7 @@
     <string name="lab_app_pro">Lab Pro, cualquier app</string>
     <string name="lab_app_choose">Elegir app</string>
     <string name="lab_app_change">Cambiar app</string>
+    <string name="lab_app_new_build">Nueva versión</string>
     <string name="lab_plan_offline">No se pudo comprobar tu plan. Conéctate y vuelve a elegir la app.</string>
     <string name="lab_upgrade_title">¿Analizar otra app?</string>
     <string name="lab_upgrade_body">Premium guarda 5 apps en el Lab. Pro las guarda todas.</string>
