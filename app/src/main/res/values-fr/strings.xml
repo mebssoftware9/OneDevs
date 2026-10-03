@@ -1156,9 +1156,9 @@
     <string name="details_board_testing">Tableau Testing</string>
     <string name="details_board_live">Apps en ligne</string>
     <string name="details_on_board">Votre app est sur ce tableau</string>
-    <string name="details_not_on_board">Pas encore sur ce tableau</string>
-    <string name="details_add_to_testing">Ajouter à Testing</string>
     <string name="details_add_to_live">Ajouter en ligne</string>
+    <string name="details_live_ready">Sur Google Play, il peut maintenant y entrer</string>
+    <string name="details_live_locked">Vous pourrez l\'ajouter ici une fois en ligne sur Google Play</string>
     <string name="details_production_body">Google demande au moins 12 testeurs inscrits pendant 14 jours d\'affilée avant de pouvoir demander l\'accès à la production. Les missions et les cycles de test y contribuent.</string>
     <string name="fb_title">Retours</string>
     <string name="fb_empty_owner">Aucun rapport pour l\'instant. Les testeurs qui ont utilisé votre app peuvent vous envoyer ici bugs et suggestions.</string>

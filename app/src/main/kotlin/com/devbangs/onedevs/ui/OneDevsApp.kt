@@ -39,7 +39,6 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
@@ -73,6 +72,7 @@ import com.devbangs.onedevs.ui.navigation.NavEnter
 import com.devbangs.onedevs.ui.navigation.NavExit
 import com.devbangs.onedevs.ui.navigation.NavPopEnter
 import com.devbangs.onedevs.ui.navigation.NavPopExit
+import com.devbangs.onedevs.ui.navigation.screen
 import com.devbangs.onedevs.ui.navigation.Profile
 import com.devbangs.onedevs.ui.navigation.TopLevel
 import com.devbangs.onedevs.ui.navigation.Wallet
@@ -304,23 +304,23 @@ fun OneDevsApp() {
                 popEnterTransition = NavPopEnter,
                 popExitTransition = NavPopExit,
             ) {
-                composable<Board> {
+                screen<Board> {
                     BoardScreen(onOpen = { id -> navController.navigate(AppDetails(id)) })
                 }
-                composable<Missions> {
+                screen<Missions> {
                     MissionsScreen(onOpen = { id -> navController.navigate(MissionDetails(id)) })
                 }
-                composable<MissionDetails> { entry ->
+                screen<MissionDetails> { entry ->
                     val id = entry.toRoute<MissionDetails>().id
                     MissionDetailsScreen(
                         missionId = id,
                         onCommand = { navController.navigate(MissionCommand(id)) },
                     )
                 }
-                composable<MissionCommand> { entry ->
+                screen<MissionCommand> { entry ->
                     MissionCommandScreen(missionId = entry.toRoute<MissionCommand>().id)
                 }
-                composable<Launches> {
+                screen<Launches> {
                     LaunchesScreen(
                         onAdd = { channel ->
                             navController.navigate(AddListing(live = channel == Channel.Live)) {
@@ -330,7 +330,7 @@ fun OneDevsApp() {
                         onOpen = { id -> navController.navigate(AppDetails(id)) },
                     )
                 }
-                composable<AppDetails> { entry ->
+                screen<AppDetails> { entry ->
                     val route = entry.toRoute<AppDetails>()
                     AppDetailsScreen(
                         listingId = route.id,
@@ -353,7 +353,7 @@ fun OneDevsApp() {
                         },
                     )
                 }
-                composable<AddListing> { entry ->
+                screen<AddListing> { entry ->
                     val board = entry.toRoute<AddListing>()
                     AddListingScreen(
                         channel = if (board.live) Channel.Live else Channel.Testing,
@@ -362,21 +362,21 @@ fun OneDevsApp() {
                         onDone = { navController.popBackStack() },
                     )
                 }
-                composable<Lab> {
+                screen<Lab> {
                     LabScreen(onPlans = { navController.navigate(Plans) { launchSingleTop = true } })
                 }
-                composable<Plans> {
+                screen<Plans> {
                     PlansScreen(onCycles = { navController.navigate(Cycles) { launchSingleTop = true } })
                 }
-                composable<Cycles> {
+                screen<Cycles> {
                     CyclesScreen(onPlans = { navController.navigate(Plans) { launchSingleTop = true } })
                 }
-                composable<Ghostline> { GhostlineScreen() }
-                composable<Badge> { BadgeScreen() }
-                composable<Profile> {
+                screen<Ghostline> { GhostlineScreen() }
+                screen<Badge> { BadgeScreen() }
+                screen<Profile> {
                     ProfileScreen(onPlans = { navController.navigate(Plans) { launchSingleTop = true } })
                 }
-                composable<Wallet> { WalletScreen() }
+                screen<Wallet> { WalletScreen() }
             }
         }
     }

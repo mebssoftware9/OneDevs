@@ -76,6 +76,8 @@ begin
 
     -- D reviews.
     perform set_config('request.jwt.claims', '{"sub":"0d000000-0000-0000-0000-00000000000d"}', true);
+    -- The owner's page counts the same tester the card does.
+    if (public.listing_stats(v_app)->>'testers')::int <> 1 then raise exception 'FAIL listing_stats testers'; end if;
     r := public.feedback_for_listing(v_app);
     if jsonb_array_length(r) <> 5 or r->0->>'author' is null then raise exception 'FAIL owner view: %', r; end if;
     r := public.feedback_review(v_idea, 'confirmed');

@@ -203,25 +203,30 @@ fun AppDetailsScreen(
         )
 
         if (mine) {
-            // Which board this app is on, and the other one a tap away: the
-            // same details, nothing typed twice.
-            val other = if (current.channel == Channel.Live) Channel.Testing else Channel.Live
-            val onOther = all.any {
-                it.id != current.id && it.channel == other &&
-                    it.packageName.equals(current.packageName, ignoreCase = true)
-            }
+            // Which board this app is on. Boards only go one way: a testing
+            // app can join Live Apps once Google Play lists it publicly, with
+            // the same details and nothing typed twice. A live app has no
+            // place on the Testing Board -- DevBot would refuse it -- so it
+            // is not offered.
             Spacer(Modifier.height(18.dp))
             SectionCard(title = stringResource(R.string.details_boards)) {
-                BoardLine(
-                    board = current.channel,
-                    here = true,
-                    onAdd = null,
-                )
-                BoardLine(
-                    board = other,
-                    here = onOther,
-                    onAdd = if (onOther || current.packageName.isBlank()) null else { { onAddToOtherBoard(current) } },
-                )
+                BoardLine(board = current.channel, state = BoardState.Here)
+                if (current.channel == Channel.Testing) {
+                    val onLive = all.any {
+                        it.id != current.id && it.channel == Channel.Live &&
+                            it.packageName.equals(current.packageName, ignoreCase = true)
+                    }
+                    val public = current.check.publicListing == true && current.packageName.isNotBlank()
+                    BoardLine(
+                        board = Channel.Live,
+                        state = when {
+                            onLive -> BoardState.Here
+                            public -> BoardState.Open
+                            else -> BoardState.Locked
+                        },
+                        onAdd = { onAddToOtherBoard(current) },
+                    )
+                }
             }
 
             Spacer(Modifier.height(12.dp))
@@ -420,10 +425,13 @@ private fun AppIcon(listing: Listing, modifier: Modifier = Modifier) {
     }
 }
 
-/** One board: whether the app is on it, or a button to put it there. */
+private enum class BoardState { Here, Open, Locked }
+
+/** One board: the app is on it, can be added to it, or must wait for Play. */
 @Composable
-private fun BoardLine(board: Channel, here: Boolean, onAdd: (() -> Unit)?) {
+private fun BoardLine(board: Channel, state: BoardState, onAdd: () -> Unit = {}) {
     val scheme = MaterialTheme.colorScheme
+    val here = state == BoardState.Here
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Icon(
             painter = painterResource(if (here) R.drawable.ic_check else R.drawable.ic_lock),
@@ -441,17 +449,21 @@ private fun BoardLine(board: Channel, here: Boolean, onAdd: (() -> Unit)?) {
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = stringResource(if (here) R.string.details_on_board else R.string.details_not_on_board),
+                text = stringResource(
+                    when (state) {
+                        BoardState.Here -> R.string.details_on_board
+                        BoardState.Open -> R.string.details_live_ready
+                        BoardState.Locked -> R.string.details_live_locked
+                    },
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = scheme.onSurfaceVariant,
             )
         }
-        if (onAdd != null) {
+        if (state == BoardState.Open) {
             TextButton(onClick = onAdd) {
                 Text(
-                    text = stringResource(
-                        if (board == Channel.Live) R.string.details_add_to_live else R.string.details_add_to_testing,
-                    ),
+                    text = stringResource(R.string.details_add_to_live),
                     fontWeight = FontWeight.SemiBold,
                 )
             }

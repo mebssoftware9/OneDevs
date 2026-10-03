@@ -1147,9 +1147,9 @@
     <string name="details_board_testing">Testing Board</string>
     <string name="details_board_live">Live Apps</string>
     <string name="details_on_board">Your app is on this board</string>
-    <string name="details_not_on_board">Not on this board yet</string>
-    <string name="details_add_to_testing">Add to Testing</string>
     <string name="details_add_to_live">Add to Live</string>
+    <string name="details_live_ready">On Google Play now, so it can join</string>
+    <string name="details_live_locked">You can add it here once it is live on Google Play</string>
     <string name="details_production_body">Google asks for at least 12 testers opted in for 14 days in a row before you can apply for production access. Missions and testing cycles count toward it.</string>
     <string name="fb_title">Feedback</string>
     <string name="fb_empty_owner">No reports yet. Testers who used your app can send you bugs and suggestions here.</string>

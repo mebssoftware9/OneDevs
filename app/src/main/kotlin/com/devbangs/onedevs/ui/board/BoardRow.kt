@@ -48,9 +48,10 @@ private const val TESTERS_NEEDED = 12
 /** An app counts as new on the Board for its first two days. */
 private const val NEW_FOR_MS = 48L * 60 * 60 * 1000
 
-private val CoinTop = Color(0xFFFFD45C)
-private val CoinBottom = Color(0xFFF2A516)
-private val CoinInk = Color(0xFF3B2500)
+// The tab is the brand's blue so the gold DevCoin stands out on it. Gold on
+// gold lost the coin, and amber already means "still needs testers" here.
+private val TabTop = Color(0xFF2F6BFF)
+private val TabBottom = Color(0xFF0B3BD1)
 
 /**
  * One app waiting for testers, on either board.
@@ -252,7 +253,7 @@ private fun Pill(text: String, fill: Color, ink: Color, icon: Int? = null) {
     }
 }
 
-/** What a test pays, as a gold tab folded over the card's corner. */
+/** What a test pays, as a blue tab folded over the card's corner, the coin in gold. */
 @Composable
 private fun CoinTab(coins: Int, modifier: Modifier = Modifier) {
     Row(
@@ -260,20 +261,20 @@ private fun CoinTab(coins: Int, modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.spacedBy(5.dp),
         modifier = modifier
             .clip(RoundedCornerShape(topEnd = 24.dp, bottomStart = 18.dp))
-            .background(Brush.verticalGradient(listOf(CoinTop, CoinBottom)))
+            .background(Brush.verticalGradient(listOf(TabTop, TabBottom)))
             .padding(start = 12.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
     ) {
         Text(
             text = stringResource(R.string.board_card_earn, coins),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
-            color = CoinInk,
+            color = Color.White,
         )
         Image(
             painter = painterResource(R.drawable.ic_devcoin),
             contentDescription = null,
             modifier = Modifier
-                .size(18.dp)
+                .size(20.dp)
                 .clip(CircleShape),
         )
     }
