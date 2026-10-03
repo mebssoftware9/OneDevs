@@ -19,7 +19,7 @@ import com.devbangs.onedevs.lab.verdict
 
 /** A button to the system page where the thing being tested is switched. */
 @Composable
-private fun OpenSettings(label: Int, action: String) {
+internal fun OpenSettings(label: Int, action: String) {
     val context = LocalContext.current
     Pill(stringResource(label)) {
         runCatching {

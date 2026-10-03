@@ -32,6 +32,8 @@ data class CodeShape(
     val sdks: Set<String> = emptySet(),
     /** [CodeMarkers] ids whose classes appear. */
     val markers: Set<String> = emptySet(),
+    /** [DeprecatedApis] ids the code refers to. */
+    val apis: Set<String> = emptySet(),
 ) {
     /** 0..100, or null with nothing to divide. */
     val obfuscatedPercent: Int? get() = if (classes == 0) null else obfuscated * 100 / classes
@@ -60,6 +62,7 @@ internal object DexCode {
         val packages: Map<String, Int>,
         val sdks: Set<String>,
         val markers: Set<String> = emptySet(),
+        val apis: Set<String> = emptySet(),
     )
 
     fun read(dex: ByteArray): One? {
@@ -102,7 +105,8 @@ internal object DexCode {
                 ?.let { sdks += it.id }
             CodeMarkers.all.forEach { (id, prefixes) -> if (prefixes.any { path.startsWith(it) }) markers += id }
         }
-        return One(marker(dex), classes, obfuscated, packages, sdks, markers)
+        val apis = DeprecatedApis.find(dex) { string(dex, it) }
+        return One(marker(dex), classes, obfuscated, packages, sdks, markers, apis)
     }
 
     fun merge(all: List<One>): Pair<CompilerMarker?, CodeShape> {
@@ -120,6 +124,7 @@ internal object DexCode {
                 .map { it.key to it.value },
             sdks = all.flatMapTo(HashSet()) { it.sdks },
             markers = all.flatMapTo(HashSet()) { it.markers },
+            apis = all.flatMapTo(HashSet()) { it.apis },
         )
     }
 

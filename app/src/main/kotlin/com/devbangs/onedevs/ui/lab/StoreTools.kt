@@ -145,7 +145,7 @@ private fun ImagePicker(label: Int, multiple: Boolean, onImages: (List<PickedIma
 }
 
 @Composable
-private fun Thumb(picked: PickedImage, modifier: Modifier = Modifier) {
+internal fun Thumb(picked: PickedImage, modifier: Modifier = Modifier) {
     val bitmap = picked.preview ?: return
     val image = remember(bitmap) { bitmap.asImageBitmap() }
     Image(
@@ -271,7 +271,7 @@ internal object ListingDraft {
 }
 
 @Composable
-private fun Field(
+internal fun Field(
     label: String,
     value: String,
     max: Int?,

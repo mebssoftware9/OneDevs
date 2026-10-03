@@ -96,6 +96,8 @@ data class ApkReport(
     val layouts: LayoutStats? = null,
     /** Resource files under a -night qualifier. */
     val nightResources: Int = 0,
+    /** The app's name as the launcher shows it. */
+    val label: String = "",
 ) {
     companion object {
         /**

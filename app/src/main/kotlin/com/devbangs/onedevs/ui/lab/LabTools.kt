@@ -47,8 +47,8 @@ import kotlinx.coroutines.withContext
  * the two together, so a tool marked available that nobody wired up fails the
  * build instead of sitting in the list as a row that does nothing.
  */
-/** What a tool reads: an APK, images from the phone, or the listing's text. */
-internal enum class ToolInput { Apk, Images, Text }
+/** What a tool reads: an APK, an app bundle, images from the phone, or the listing's text. */
+internal enum class ToolInput { Apk, Bundle, Images, Text }
 
 internal enum class ToolKind(val toolName: String, val input: ToolInput = ToolInput.Apk) {
     Analyzer("APK Analyzer"),
@@ -99,6 +99,17 @@ internal enum class ToolKind(val toolName: String, val input: ToolInput = ToolIn
     KeywordPlacement("Keyword Placement", ToolInput.Text),
     Metadata("Metadata Optimization", ToolInput.Text),
     AsoScore("ASO Score", ToolInput.Text),
+    Deprecated("Deprecated API Detection"),
+    Aab("AAB Analyzer", ToolInput.Bundle),
+    BundleValidation("App Bundle Validation", ToolInput.Bundle),
+    StorePreview("Play Store Preview", ToolInput.Text),
+    PrivacyPolicy("Privacy Policy Check"),
+    AppContent("App Content Check"),
+    ContentRating("Content Rating Check"),
+    Consistency("Listing Consistency Check"),
+    Network("Network Testing"),
+    Offline("Offline Testing"),
+    LowMemory("Low-Memory Testing"),
     ;
 
     companion object {
@@ -131,6 +142,9 @@ private val SpreadAtLeast8 = object : Arrangement.Vertical {
 
 /** What the picker offers. Some file managers only know an APK as bytes. */
 private val APK_TYPES = arrayOf("application/vnd.android.package-archive", "application/octet-stream", "*/*")
+
+/** An .aab has no registered type of its own; it arrives as bytes or as a ZIP. */
+private val AAB_TYPES = arrayOf("application/octet-stream", "application/zip", "*/*")
 
 /**
  * The Lab: seven layers of tools, and whichever tool is open.
@@ -168,6 +182,15 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
     var images by remember { mutableStateOf<Map<ToolKind, List<PickedImage>>>(emptyMap()) }
     var listing by remember { mutableStateOf(ListingDraft.load(context)) }
     var keywords by remember { mutableStateOf(ListingDraft.keywordText(context)) }
+    val onListing: (com.devbangs.onedevs.lab.Listing, String) -> Unit = { changed, text ->
+        listing = changed
+        keywords = text
+        ListingDraft.save(context, changed, text)
+    }
+    // The bundle tools read an .aab instead of the APK, under the same plan.
+    var bundle by remember { mutableStateOf<com.devbangs.onedevs.lab.BundleReport?>(null) }
+    var bundleWorking by remember { mutableStateOf(false) }
+    var bundleFailure by remember { mutableStateOf<String?>(null) }
 
     // Reads an APK and, if the plan lets this Lab have it, makes it the
     // current one. [restoring] is a file the Lab already had: one that can no
@@ -240,6 +263,26 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) {
         if (analysis == null && !working) reopen(quiet = true)
     }
+    val pickBundle = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        bundleFailure = null
+        bundleWorking = true
+        scope.launch {
+            val result = withContext(Dispatchers.IO) { com.devbangs.onedevs.lab.BundleFile.analyze(context, uri) }
+            val read = result.getOrNull()
+            // A bundle is an app like any other: the plan decides whether this
+            // Lab may look at it, by its package name.
+            val claim = read?.packageName?.takeIf { it.isNotEmpty() }?.let { app.plans.claimLabApp(it) }
+            bundleWorking = false
+            when {
+                read == null -> bundleFailure = result.exceptionOrNull()?.message
+                claim is com.devbangs.onedevs.data.plans.LabClaim.Upgrade -> full = claim
+                claim == com.devbangs.onedevs.data.plans.LabClaim.Unknown -> planUnknown = true
+                else -> bundle = read
+            }
+        }
+    }
+
     val pickInstalled = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
         installedFailure = null
@@ -269,6 +312,18 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
     ) {
         val current = analysis
         val kind = tool
+        if (kind != null && kind.input == ToolInput.Bundle) {
+            PlainFrame(title = kind.toolName, onClose = { tool = null }) {
+                BundleTool(
+                    kind = kind,
+                    bundle = bundle,
+                    working = bundleWorking,
+                    failure = bundleFailure,
+                    onPick = { pickBundle.launch(AAB_TYPES) },
+                )
+            }
+            return@Column
+        }
         if (kind != null && kind.input != ToolInput.Apk) {
             // Images and text are chosen inside the tool, so there is no APK
             // to wait for and no "Another APK" to offer.
@@ -280,12 +335,16 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
                         ToolKind.Screenshots -> ScreenshotsTool(images[kind].orEmpty(), onImages)
                         else -> StoreAssetsTool(images[kind].orEmpty(), onImages)
                     }
+                } else if (kind == ToolKind.StorePreview) {
+                    StorePreviewTool(
+                        listing = listing,
+                        icon = analysis?.icon,
+                        report = analysis?.report,
+                        screenshots = images[ToolKind.Screenshots].orEmpty(),
+                    )
+                    ListingInput(listing, keywords, onListing)
                 } else {
-                    ListingInput(listing, keywords) { changed, text ->
-                        listing = changed
-                        keywords = text
-                        ListingDraft.save(context, changed, text)
-                    }
+                    ListingInput(listing, keywords, onListing)
                     ListingTool(kind, listing)
                 }
             }
@@ -309,6 +368,9 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
                         installed = installed,
                         installedFailure = installedFailure,
                         onPickInstalled = { pickInstalled.launch(APK_TYPES) },
+                        listing = listing,
+                        keywords = keywords,
+                        onListing = onListing,
                     )
                 }
             }
@@ -380,6 +442,9 @@ fun LabHome(onPlans: () -> Unit, modifier: Modifier = Modifier) {
                         if (next?.input == ToolInput.Apk && analysis == null && !working && !reopen()) {
                             pick.launch(APK_TYPES)
                         }
+                        if (next?.input == ToolInput.Bundle && bundle == null && !bundleWorking) {
+                            pickBundle.launch(AAB_TYPES)
+                        }
                     },
                 )
             }
@@ -410,6 +475,9 @@ private fun ToolView(
     installed: ApkReport?,
     installedFailure: String?,
     onPickInstalled: () -> Unit,
+    listing: com.devbangs.onedevs.lab.Listing,
+    keywords: String,
+    onListing: (com.devbangs.onedevs.lab.Listing, String) -> Unit,
 ) {
     val r = analysis.report
     when (kind) {
@@ -450,6 +518,14 @@ private fun ToolView(
         ToolKind.Background -> BackgroundTool(r)
         ToolKind.Integrity -> IntegrityTool(r)
         ToolKind.DataSafety -> DataSafetyTool(r)
+        ToolKind.Deprecated -> DeprecatedTool(r)
+        ToolKind.PrivacyPolicy -> PrivacyPolicyTool(r)
+        ToolKind.AppContent -> AppContentTool(r)
+        ToolKind.ContentRating -> ContentRatingTool(r)
+        ToolKind.Consistency -> ConsistencyTool(r, listing, keywords, onListing)
+        ToolKind.Network -> NetworkTool(r)
+        ToolKind.Offline -> OfflineTool(r)
+        ToolKind.LowMemory -> LowMemoryTool(r)
         // Opened by LabHome in a plain frame: they read no APK.
         else -> Unit
     }

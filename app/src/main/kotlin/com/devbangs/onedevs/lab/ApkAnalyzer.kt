@@ -210,6 +210,7 @@ object ApkAnalyzer {
             nightResources = scan.entries.count { (name, _) ->
                 name.startsWith("res/") && name.substringAfter("res/").substringBefore('/').split('-').contains("night")
             },
+            label = runCatching { app.loadLabel(pm).toString() }.getOrDefault(""),
         )
         return Analysis(report, icon(pm, app))
     }
