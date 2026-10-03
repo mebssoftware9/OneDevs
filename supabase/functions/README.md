@@ -67,8 +67,9 @@ storage first, then their sign-in through the auth admin API. Every table
 that belongs to an account cascades from it; mission chat lines stay for the
 other members with no author. The app calls it from Profile → Your data →
 Delete account. The public page Google Play links to, for people without the
-app, is `legal/delete-account.html`, served at
-`https://mebs.app/delete/onedevs`.
+app, is `https://mebs.app/delete/onedevs`, from `lib/onedevs-legal.ts` in the
+mbanguraproject-ai/mebs site, alongside OneDevs' privacy, terms and refund
+pages.
 
 ## Testing purchases
 
