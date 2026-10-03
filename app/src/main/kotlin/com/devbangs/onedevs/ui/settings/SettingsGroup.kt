@@ -24,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.devbangs.onedevs.R
@@ -81,6 +83,8 @@ fun SettingsRow(
     expanded: Boolean = false,
     onClick: (() -> Unit)? = null,
     icon: Int? = null,
+    /** A second line under the label, for something too long to sit beside it. */
+    caption: String? = null,
     detail: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -101,17 +105,34 @@ fun SettingsRow(
                 )
                 Spacer(Modifier.width(16.dp))
             }
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLarge,
-                color = scheme.onSurface,
-                modifier = Modifier.weight(1f),
-            )
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = scheme.onSurface,
+                )
+                if (caption != null) {
+                    Text(
+                        text = caption,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = scheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
+            }
+            // The value never takes the label's room: it gets at most what is
+            // left beside it, on one line, and trims rather than wraps.
             if (value != null) {
                 Text(
                     text = value,
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (readOnly) scheme.onSurfaceVariant else scheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .padding(start = 12.dp),
                 )
             }
             if (onClick != null && !readOnly) {

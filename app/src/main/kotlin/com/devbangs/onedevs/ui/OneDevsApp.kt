@@ -69,6 +69,10 @@ import com.devbangs.onedevs.ui.plans.GhostlineScreen
 import com.devbangs.onedevs.ui.plans.PlansScreen
 import com.devbangs.onedevs.ui.navigation.MissionDetails
 import com.devbangs.onedevs.ui.navigation.Missions
+import com.devbangs.onedevs.ui.navigation.NavEnter
+import com.devbangs.onedevs.ui.navigation.NavExit
+import com.devbangs.onedevs.ui.navigation.NavPopEnter
+import com.devbangs.onedevs.ui.navigation.NavPopExit
 import com.devbangs.onedevs.ui.navigation.Profile
 import com.devbangs.onedevs.ui.navigation.TopLevel
 import com.devbangs.onedevs.ui.navigation.Wallet
@@ -295,6 +299,10 @@ fun OneDevsApp() {
                 navController = navController,
                 startDestination = Board,
                 modifier = Modifier.padding(innerPadding),
+                enterTransition = NavEnter,
+                exitTransition = NavExit,
+                popEnterTransition = NavPopEnter,
+                popExitTransition = NavPopExit,
             ) {
                 composable<Board> {
                     BoardScreen(onOpen = { id -> navController.navigate(AppDetails(id)) })

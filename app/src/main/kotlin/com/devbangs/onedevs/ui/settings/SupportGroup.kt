@@ -24,14 +24,13 @@ fun SupportGroup(modifier: Modifier = Modifier) {
     SettingsGroup(title = stringResource(R.string.settings_support), modifier = modifier) {
         SettingsRow(
             label = stringResource(R.string.support_contact),
-            value = Support.EMAIL,
+            caption = Support.EMAIL,
             onClick = { writeToSupport(context, subject) },
             icon = R.drawable.ic_envelope_simple,
         )
         SettingsRow(
             label = stringResource(R.string.support_studio),
-            value = stringResource(R.string.studio_name),
-            readOnly = true,
+            caption = stringResource(R.string.studio_name),
             icon = R.drawable.ic_buildings,
         )
     }
