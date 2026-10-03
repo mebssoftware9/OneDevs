@@ -1191,7 +1191,6 @@
     <string name="mission_remind_body">Left today: %1$d of %2$d. Doing your part every day brings your fee back.</string>
 
     <!-- Ads -->
-    <string name="ad_label">Ad</string>
     <string name="legal_privacy_choices">Privacy choices</string>
     <string name="legal_privacy_choices_caption">Change what you agreed to about ads</string>
 </resources>

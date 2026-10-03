@@ -50,8 +50,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OneDevs">
 
-        <!-- AdMob. The ID comes from secrets.properties, or Google's test app
-             when it is not set; see app/build.gradle.kts. -->
+        <!-- AdMob: Google's test app in debug, OneDevs' own in release; see
+             app/build.gradle.kts. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="${admobAppId}" />

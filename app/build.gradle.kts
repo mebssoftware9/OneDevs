@@ -42,13 +42,6 @@ android {
         // The Google Cloud project linked under Play Console > App integrity.
         // Not a secret: it names the project and grants nothing.
         buildConfigField("long", "PLAY_INTEGRITY_PROJECT", "343705040300L")
-
-        // AdMob. Google's published test IDs until secrets.properties names
-        // the real ones: a build without them shows test ads in debug and no
-        // ads at all in release, and never serves a live ad to its developer.
-        manifestPlaceholders["admobAppId"] =
-            secret("ADMOB_APP_ID").ifBlank { "ca-app-pub-3940256099942544~3347511713" }
-        buildConfigField("String", "ADMOB_NATIVE_UNIT", "\"" + secret("ADMOB_NATIVE_UNIT") + "\"")
     }
 
     bundle {
@@ -70,9 +63,18 @@ android {
             // a translator to find them for us. Debug only -- they are test
             // instruments, not languages.
             isPseudoLocalesEnabled = true
+
+            // AdMob: Google's published test app and app open unit. A debug
+            // build never requests a live ad, so testing never earns or risks
+            // anything on the real account.
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField("String", "ADMOB_APP_OPEN_UNIT", "\"ca-app-pub-3940256099942544/9257395921\"")
         }
 
         release {
+            // AdMob: OneDevs' own app and app open unit, release builds only.
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-9121922395304175~2304749572"
+            buildConfigField("String", "ADMOB_APP_OPEN_UNIT", "\"ca-app-pub-9121922395304175/3303894061\"")
             optimization {
                 enable = true
             }

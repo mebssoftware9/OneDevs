@@ -48,7 +48,11 @@ class MainActivity : ComponentActivity() {
             }
         }
         // Every launch: consent can expire and the rules change. Shows
-        // Google's form only where the law asks for one; see ads/Ads.kt.
-        com.devbangs.onedevs.ads.Ads.gatherConsent(this)
+        // Google's form only where the law asks for one, then the launch ad
+        // for accounts without a paid plan; see ads/Ads.kt.
+        val plans = (application as OneDevsApplication).plans
+        com.devbangs.onedevs.ads.Ads.onLaunch(this, opened = savedInstanceState == null) {
+            plans.plan.value?.tier?.let { it != com.devbangs.onedevs.data.plans.Tier.Community } == true
+        }
     }
 }

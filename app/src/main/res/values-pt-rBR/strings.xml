@@ -1198,7 +1198,6 @@
     <string name="mission_remind_body">Faltam hoje: %1$d de %2$d. Fazer sua parte todo dia devolve sua taxa.</string>
 
     <!-- Ads -->
-    <string name="ad_label">Anúncio</string>
     <string name="legal_privacy_choices">Opções de privacidade</string>
     <string name="legal_privacy_choices_caption">Mude o que você aceitou sobre anúncios</string>
 </resources>
