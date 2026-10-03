@@ -2,7 +2,6 @@ package com.devbangs.onedevs.ui.lab
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,7 +56,7 @@ fun LabLayerCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(18.dp)),
+            .background(oneDevsColors.card, RoundedCornerShape(18.dp)),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -151,7 +150,7 @@ fun LabLayerCard(
                                     if (ready) {
                                         Modifier.background(accent.solid)
                                     } else {
-                                        Modifier.border(1.dp, scheme.outlineVariant, CircleShape)
+                                        Modifier.background(oneDevsColors.well)
                                     },
                                 ),
                         )

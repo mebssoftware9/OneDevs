@@ -77,10 +77,10 @@ fun BoardRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .then(if (listing.spotlight) Modifier.background(spot.tint) else Modifier)
+            .clip(RoundedCornerShape(20.dp))
+            .background(if (listing.spotlight) spot.tint else oneDevsColors.card)
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp, horizontal = if (listing.spotlight) 10.dp else 4.dp),
+            .padding(12.dp),
     ) {
         Box(
             contentAlignment = Alignment.Center,

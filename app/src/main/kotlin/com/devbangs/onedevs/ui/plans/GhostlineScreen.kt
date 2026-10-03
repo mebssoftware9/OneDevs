@@ -2,7 +2,6 @@ package com.devbangs.onedevs.ui.plans
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -403,7 +402,7 @@ private fun Stat(
         verticalArrangement = Arrangement.spacedBy(6.dp),
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(16.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(16.dp))
             .padding(12.dp),
     ) {
         Text(text = value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -527,7 +526,7 @@ internal fun Section(title: String, content: @Composable () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(16.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(16.dp))
             .padding(16.dp),
     ) {
         Text(text = title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
@@ -552,7 +551,7 @@ private fun StartRun(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(20.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(20.dp))
             .padding(18.dp),
     ) {
         Text(
@@ -587,7 +586,7 @@ private fun StartRun(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .border(if (on) 2.dp else 1.dp, if (on) scheme.primary else scheme.outlineVariant, RoundedCornerShape(14.dp))
+                        .background(if (on) oneDevsColors.brandTint else oneDevsColors.well)
                         .clickable { chosen = id }
                         .padding(horizontal = 14.dp, vertical = 12.dp),
                 ) {
@@ -629,7 +628,7 @@ internal fun PastRun(run: GhostRun) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .padding(12.dp),
     ) {
         RunIcon(run, Modifier.size(36.dp))

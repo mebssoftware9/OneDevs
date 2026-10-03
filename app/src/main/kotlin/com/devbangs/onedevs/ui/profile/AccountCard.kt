@@ -1,8 +1,8 @@
 package com.devbangs.onedevs.ui.profile
 
+import com.devbangs.onedevs.ui.theme.oneDevsColors
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -89,12 +88,8 @@ fun AccountCard(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant,
-                shape = RoundedCornerShape(20.dp),
-            )
-            .clip(RoundedCornerShape(20.dp)),
+            .clip(RoundedCornerShape(22.dp))
+            .background(oneDevsColors.card),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -143,11 +138,16 @@ fun AccountCard(modifier: Modifier = Modifier) {
             }
         }
 
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
+        // The balance sits in a well inside the card: its own block, no rule
+        // drawn between the two.
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(18.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(oneDevsColors.well)
+                .padding(16.dp),
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(

@@ -1,6 +1,6 @@
 package com.devbangs.onedevs.ui.lab
 
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -84,7 +84,7 @@ private fun VersionRow(title: String, tags: List<String>, lines: List<String>, c
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, if (current) accent.solid else scheme.outlineVariant, RoundedCornerShape(12.dp))
+            .background(if (current) accent.tint else oneDevsColors.well, RoundedCornerShape(12.dp))
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

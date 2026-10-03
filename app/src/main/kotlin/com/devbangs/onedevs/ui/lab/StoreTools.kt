@@ -1,5 +1,7 @@
 package com.devbangs.onedevs.ui.lab
 
+import com.devbangs.onedevs.ui.theme.oneDevsColors
+import androidx.compose.foundation.background
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -8,7 +10,6 @@ import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -153,7 +154,7 @@ private fun Thumb(picked: PickedImage, modifier: Modifier = Modifier) {
         contentScale = ContentScale.Fit,
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(10.dp)),
+            .background(oneDevsColors.well),
     )
 }
 
@@ -290,9 +291,9 @@ private fun Field(
         supportingText = max?.let { { Text("$count / $it") } },
         shape = RoundedCornerShape(14.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surface,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            focusedContainerColor = oneDevsColors.card,
+            unfocusedContainerColor = oneDevsColors.card,
+            unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
         ),
         modifier = Modifier.fillMaxWidth(),
     )

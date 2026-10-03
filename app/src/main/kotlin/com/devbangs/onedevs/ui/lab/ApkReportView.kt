@@ -3,7 +3,6 @@ package com.devbangs.onedevs.ui.lab
 import android.content.ClipData
 import android.content.ClipboardManager
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -245,7 +244,7 @@ private fun Fingerprint(sha256: String) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .clickable {
                 context.getSystemService(ClipboardManager::class.java)
                     ?.setPrimaryClip(ClipData.newPlainText("SHA-256", sha256))
@@ -289,7 +288,7 @@ internal fun Facts(title: String, rows: List<Pair<String, String>>) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .padding(horizontal = 14.dp, vertical = 10.dp),
     ) {
         Text(

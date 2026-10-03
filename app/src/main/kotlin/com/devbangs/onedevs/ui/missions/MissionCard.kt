@@ -73,7 +73,6 @@ private val Ink = Color.White
 private val InkMuted = Color.White.copy(alpha = 0.72f)
 private val Wash = Color.White.copy(alpha = 0.16f)
 private val SlotEmpty = Color.White.copy(alpha = 0.10f)
-private val SlotEdge = Color.White.copy(alpha = 0.18f)
 private val Mine = Color.White.copy(alpha = 0.9f)
 
 /**
@@ -287,10 +286,14 @@ private fun SlotGrid(mission: Mission) {
                             .aspectRatio(1f)
                             .clip(RoundedCornerShape(8.dp))
                             .background(if (seat != null) Wash else SlotEmpty)
-                            .border(
-                                width = if (seat?.mine == true) 1.5.dp else 1.dp,
-                                color = if (seat?.mine == true) Mine else SlotEdge,
-                                shape = RoundedCornerShape(8.dp),
+                            // Only your own seat is ringed; the rest are told
+                            // apart by fill alone.
+                            .then(
+                                if (seat?.mine == true) {
+                                    Modifier.border(1.5.dp, Mine, RoundedCornerShape(8.dp))
+                                } else {
+                                    Modifier
+                                },
                             ),
                     ) {
                         if (seat != null) SeatIcon(seat)

@@ -30,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.devbangs.onedevs.ui.theme.oneDevsColors
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.data.listings.Listing
@@ -60,8 +61,10 @@ fun LaunchRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(oneDevsColors.card)
             .clickable(onClick = onOpen)
-            .padding(vertical = 10.dp),
+            .padding(12.dp),
     ) {
         if (icon != null) {
             Image(bitmap = icon, contentDescription = null, modifier = Modifier.size(44.dp).clip(shape))
@@ -71,7 +74,7 @@ fun LaunchRow(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(shape)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                    .background(oneDevsColors.well),
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_squares_four),

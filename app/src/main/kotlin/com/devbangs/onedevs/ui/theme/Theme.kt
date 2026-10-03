@@ -55,7 +55,26 @@ data class OneDevsColors(
     val caution: Accent,
     /** Something that will stop a release. */
     val critical: Accent,
+    /**
+     * The page everything sits on: a cool grey in light, true black in dark.
+     * Never the colour of a card, so every card stands off it.
+     */
+    val page: Color = PageLight,
+    /** Every card, group and panel: white in light, lifted charcoal in dark. */
+    val card: Color = CardLight,
+    /** A row or field set into a card: one step back from the card. */
+    val well: Color = WellLight,
 )
+
+// The elevation system: page, card, well. Hierarchy is carried by fill, not by
+// outlines -- a card is a different colour from the page, a row inside it a
+// different colour from the card, and nothing needs a hairline to be seen.
+private val PageLight = Color(0xFFF1F3F6)
+private val CardLight = Color(0xFFFFFFFF)
+private val WellLight = Color(0xFFF1F3F6)
+private val PageDark = Color(0xFF000000)
+private val CardDark = Color(0xFF16181C)
+private val WellDark = Color(0xFF22252B)
 
 val LocalOneDevsColors = staticCompositionLocalOf {
     OneDevsColors(
@@ -95,10 +114,32 @@ fun OneDevsTheme(
             community = if (darkTheme) accentCommunityDark else accentCommunityLight,
             caution = if (darkTheme) accentCautionDark else accentCautionLight,
             critical = if (darkTheme) accentCriticalDark else accentCriticalLight,
+            page = if (darkTheme) PageDark else PageLight,
+            card = if (darkTheme) CardDark else CardLight,
+            well = if (darkTheme) WellDark else WellLight,
         ),
     ) {
+        val scheme = if (darkTheme) darkScheme else lightScheme
         MaterialTheme(
-            colorScheme = if (darkTheme) darkScheme else lightScheme,
+            // The page is the background; surface stays the card's own white
+            // or black for the components that draw on it.
+            // The container greys step up from the card, so a chip, a note or
+            // a disabled button reads on a card and on the page alike.
+            colorScheme = if (darkTheme) {
+                scheme.copy(
+                    background = PageDark,
+                    surfaceContainer = Color(0xFF1C1F24),
+                    surfaceContainerHigh = Color(0xFF25282E),
+                    surfaceContainerHighest = Color(0xFF2D3138),
+                )
+            } else {
+                scheme.copy(
+                    background = PageLight,
+                    surfaceContainer = Color(0xFFEBEEF2),
+                    surfaceContainerHigh = Color(0xFFE4E8EE),
+                    surfaceContainerHighest = Color(0xFFDCE1E8),
+                )
+            },
             typography = OneDevsTypography,
             content = content,
         )

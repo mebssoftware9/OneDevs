@@ -1,7 +1,7 @@
 package com.devbangs.onedevs.ui.plans
 
 import android.text.format.DateUtils
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.devbangs.onedevs.OneDevsApplication
+import com.devbangs.onedevs.ui.theme.oneDevsColors
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.backend.quietly
 import com.devbangs.onedevs.data.listings.Channel
@@ -161,7 +162,7 @@ fun CyclesScreen(onPlans: () -> Unit, modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(20.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(20.dp))
+                    .background(oneDevsColors.card, RoundedCornerShape(20.dp))
                     .padding(18.dp),
             ) {
                 Text(
@@ -235,7 +236,7 @@ private fun StartCycle(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(20.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(20.dp))
             .padding(18.dp),
     ) {
         Text(
@@ -285,11 +286,7 @@ private fun StartCycle(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .border(
-                                if (on) 2.dp else 1.dp,
-                                if (on) scheme.primary else scheme.outlineVariant,
-                                RoundedCornerShape(14.dp),
-                            )
+                            .background(if (on) oneDevsColors.brandTint else oneDevsColors.well)
                             .clickable { chosen = id }
                             .padding(horizontal = 14.dp, vertical = 12.dp),
                     ) {
@@ -347,7 +344,7 @@ private fun InsightCard(insight: Insight, needed: Int, expanded: Boolean) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.well, RoundedCornerShape(14.dp))
             .clickable { open = !open }
             .padding(14.dp),
     ) {

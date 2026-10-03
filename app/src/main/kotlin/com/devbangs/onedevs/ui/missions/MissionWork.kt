@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -80,7 +79,7 @@ internal fun YourMission(mission: Mission) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(16.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(16.dp))
             .padding(16.dp),
     ) {
         Text(
@@ -136,7 +135,7 @@ private fun Step(text: String, done: Boolean) {
                     if (done) {
                         Modifier.background(oneDevsColors.live.solid)
                     } else {
-                        Modifier.border(1.5.dp, scheme.outline, CircleShape)
+                        Modifier.background(oneDevsColors.well)
                     },
                 ),
         ) {
@@ -167,7 +166,7 @@ internal fun TaskRow(seat: MissionSeat, done: Boolean, onOpen: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .clickable(onClick = onOpen)
             .padding(horizontal = 12.dp, vertical = 10.dp),
     ) {
@@ -199,7 +198,7 @@ internal fun TaskRow(seat: MissionSeat, done: Boolean, onOpen: () -> Unit) {
                     if (done) {
                         Modifier.background(oneDevsColors.live.solid)
                     } else {
-                        Modifier.border(1.5.dp, oneDevsColors.mission.solid, CircleShape)
+                        Modifier.background(oneDevsColors.mission.tint)
                     },
                 ),
         ) {
@@ -226,7 +225,7 @@ internal fun MemberProgress(mission: Mission) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(16.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(16.dp))
             .padding(16.dp),
     ) {
         Text(
@@ -415,7 +414,7 @@ internal fun DaysPerApp(mission: Mission) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(16.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(16.dp))
             .padding(16.dp),
     ) {
         Text(

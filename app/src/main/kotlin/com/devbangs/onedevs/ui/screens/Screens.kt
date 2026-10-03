@@ -204,7 +204,9 @@ fun BoardScreen(
                     ),
                 )
                 LazyColumn(
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    // Each row is a card; the gap between them is the page.
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 16.dp),
                     modifier = Modifier.weight(1f),
                 ) {
                     items(shown, key = { it.id }) { listing ->
@@ -343,6 +345,7 @@ fun LaunchesScreen(
             }
         } else {
             LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 16.dp),
                 modifier = Modifier.weight(1f),
             ) {

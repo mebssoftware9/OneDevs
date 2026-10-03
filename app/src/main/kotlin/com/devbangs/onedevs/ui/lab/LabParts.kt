@@ -3,7 +3,6 @@ package com.devbangs.onedevs.ui.lab
 import android.content.ClipData
 import android.content.ClipboardManager
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -230,7 +229,7 @@ internal fun CheckList(checks: List<Check>, sorted: Boolean = true) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .padding(14.dp),
     ) {
         (if (sorted) checks.urgentFirst() else checks).forEach { CheckRow(it) }
@@ -323,7 +322,7 @@ internal fun CodeBlock(title: String, code: String) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .padding(horizontal = 14.dp, vertical = 10.dp),
     ) {
         Row {
@@ -369,7 +368,7 @@ internal fun Copyable(label: String, value: String) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .clickable {
                 context.getSystemService(ClipboardManager::class.java)
                     ?.setPrimaryClip(ClipData.newPlainText(label, value))
@@ -412,7 +411,7 @@ internal fun ListCard(title: String, rows: List<Pair<String, String>>) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .padding(horizontal = 14.dp, vertical = 10.dp),
     ) {
         Text(
@@ -452,7 +451,7 @@ internal fun Empty(text: String) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .padding(14.dp),
     )
 }

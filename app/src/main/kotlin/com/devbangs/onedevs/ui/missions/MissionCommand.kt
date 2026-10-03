@@ -152,6 +152,11 @@ fun MissionCommandScreen(missionId: String, modifier: Modifier = Modifier) {
                 placeholder = { Text(stringResource(R.string.mission_command_hint)) },
                 shape = RoundedCornerShape(24.dp),
                 maxLines = 4,
+                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = oneDevsColors.card,
+                    unfocusedContainerColor = oneDevsColors.card,
+                    unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                ),
                 modifier = Modifier.weight(1f),
             )
             Spacer(Modifier.width(8.dp))

@@ -1,7 +1,6 @@
 package com.devbangs.onedevs.ui.missions
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -356,7 +355,7 @@ fun MissionDetailsScreen(missionId: String, onCommand: () -> Unit, modifier: Mod
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(CircleShape)
-                        .border(1.dp, oneDevsColors.critical.solid, CircleShape)
+                        .background(oneDevsColors.critical.tint)
                         .clickable(enabled = !leaving) {
                             leaving = true
                             leaveNote = null
@@ -508,7 +507,7 @@ private fun Rules(mission: Mission) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(16.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(16.dp))
             .padding(16.dp),
     ) {
         Section(stringResource(R.string.mission_rules_title))
@@ -549,11 +548,7 @@ private fun Choice(title: String, detail: String, selected: Boolean, onClick: ()
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(
-                width = if (selected) 2.dp else 1.dp,
-                color = if (selected) scheme.primary else scheme.outlineVariant,
-                shape = RoundedCornerShape(14.dp),
-            )
+            .background(if (selected) oneDevsColors.brandTint else oneDevsColors.card)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 12.dp),
     ) {

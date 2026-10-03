@@ -90,7 +90,7 @@ fun LabAppCard(current: String?, tier: Tier, onChange: () -> Unit) {
             color = accent.solid,
             modifier = Modifier
                 .clip(CircleShape)
-                .background(scheme.surface)
+                .background(oneDevsColors.card)
                 .clickable(onClick = onChange)
                 .padding(horizontal = 14.dp, vertical = 10.dp),
         )

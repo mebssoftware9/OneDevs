@@ -2,7 +2,6 @@ package com.devbangs.onedevs.ui.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,7 +60,7 @@ fun SettingsGroup(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(CardShape)
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CardShape),
+                .background(oneDevsColors.card, CardShape),
             content = content,
         )
     }

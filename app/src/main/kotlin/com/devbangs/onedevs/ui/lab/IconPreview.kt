@@ -1,9 +1,9 @@
 package com.devbangs.onedevs.ui.lab
 
+import com.devbangs.onedevs.ui.theme.oneDevsColors
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -143,7 +143,8 @@ private fun Layer(label: String, bitmap: Bitmap, tinted: Boolean = false) {
             colorFilter = if (tinted) ColorFilter.tint(scheme.onSurface) else null,
             modifier = Modifier
                 .size(64.dp)
-                .border(1.dp, scheme.outlineVariant, RoundedCornerShape(8.dp)),
+                .clip(RoundedCornerShape(8.dp))
+                .background(oneDevsColors.well),
         )
         Text(
             text = label,

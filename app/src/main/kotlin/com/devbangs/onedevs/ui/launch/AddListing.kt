@@ -18,7 +18,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -81,6 +80,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.devbangs.onedevs.OneDevsApplication
+import com.devbangs.onedevs.ui.theme.oneDevsColors
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.data.backend.AccountState
 import com.devbangs.onedevs.data.backend.Backend
@@ -644,9 +644,9 @@ private fun FormField(
         shape = RoundedCornerShape(14.dp),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surface,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            focusedContainerColor = oneDevsColors.card,
+            unfocusedContainerColor = oneDevsColors.card,
+            unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
             focusedBorderColor = MaterialTheme.colorScheme.primary,
         ),
         modifier = modifier.fillMaxWidth(),
@@ -666,7 +666,7 @@ private fun IconDropzone(
     onPick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val outline = MaterialTheme.colorScheme.outlineVariant
+    val outline = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)
     val shape = RoundedCornerShape(18.dp)
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
         Box(
@@ -674,7 +674,7 @@ private fun IconDropzone(
             modifier = Modifier
                 .size(72.dp)
                 .clip(shape)
-                .background(MaterialTheme.colorScheme.surface)
+                .background(oneDevsColors.card)
                 .clickable(onClick = onPick)
                 // Drawn after the fill, not before it. background() paints in
                 // modifier order, so an outline declared earlier is painted
@@ -682,7 +682,10 @@ private fun IconDropzone(
                 // reads as a deliberately borderless design rather than a bug.
                 .drawWithContent {
                     drawContent()
-                    val stroke = 1.dp.toPx()
+                    // Dashed while empty -- the one place an outline says
+                    // something: drop an icon here. Gone once there is one.
+                    if (image != null) return@drawWithContent
+                    val stroke = 1.5.dp.toPx()
                     drawRoundRect(
                         color = outline,
                         topLeft = Offset(stroke / 2, stroke / 2),
@@ -739,7 +742,7 @@ private fun GroupAddressCard(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .padding(start = 14.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -816,11 +819,8 @@ private fun CheckPanel(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = if (blocking) scheme.error.copy(alpha = 0.45f) else scheme.outlineVariant,
-                shape = RoundedCornerShape(14.dp),
-            )
+            .clip(RoundedCornerShape(14.dp))
+            .background(if (blocking) oneDevsColors.critical.tint else oneDevsColors.card)
             .padding(12.dp),
     ) {
         DevBotMark(size = 32.dp)

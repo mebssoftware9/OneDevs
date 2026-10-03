@@ -1,5 +1,15 @@
 package com.devbangs.onedevs.ui.board
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +38,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.devbangs.onedevs.R
-import com.devbangs.onedevs.ui.theme.oneDevsColors
 
 /**
  * How many developers are testing right now, and the shape of the last day.
@@ -45,67 +54,97 @@ fun LiveCard(
     trend: List<Float>,
     modifier: Modifier = Modifier,
 ) {
-    val scheme = MaterialTheme.colorScheme
-    val live = oneDevsColors.live
+    // The brand's own sky, the same in both themes: the one card on the Board
+    // that is about the platform rather than an app, so it should not look
+    // like the rows beneath it.
+    val shape = RoundedCornerShape(24.dp)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(oneDevsColors.brandTint)
-            .padding(16.dp),
-    ) {
-        Column(Modifier.weight(1f)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(if (active != null) live.tint else scheme.surfaceContainerHigh)
-                    .padding(horizontal = 8.dp, vertical = 3.dp),
-            ) {
-                Box(
-                    Modifier
-                        .size(6.dp)
-                        .clip(CircleShape)
-                        .background(if (active != null) live.solid else scheme.onSurfaceVariant),
-                )
-                Text(
-                    text = stringResource(
-                        if (active != null) R.string.board_live else R.string.board_offline,
+            .shadow(14.dp, shape, ambientColor = SkyGlow, spotColor = SkyGlow)
+            .clip(shape)
+            .background(Brush.linearGradient(listOf(SkyTop, SkyBottom)))
+            .drawBehind {
+                drawCircle(
+                    Brush.radialGradient(
+                        listOf(SkyGlow.copy(alpha = 0.55f), Color.Transparent),
+                        center = Offset(size.width, 0f),
+                        radius = size.width * 0.7f,
                     ),
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (active != null) live.solid else scheme.onSurfaceVariant,
+                    radius = size.width * 0.7f,
+                    center = Offset(size.width, 0f),
                 )
             }
+            .padding(horizontal = 18.dp, vertical = 16.dp),
+    ) {
+        Column(Modifier.weight(1f)) {
+            LivePill(active != null)
             Text(
                 text = active?.let { pluralStringResource(R.plurals.board_active_count, it, it) }
                     ?: stringResource(R.string.board_active_unknown),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = scheme.onSurface,
-                modifier = Modifier.padding(top = 6.dp),
+                color = Color.White,
+                modifier = Modifier.padding(top = 8.dp),
             )
             Text(
                 text = stringResource(R.string.board_active_sub),
                 style = MaterialTheme.typography.labelSmall,
-                color = scheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.72f),
             )
         }
         Column(horizontalAlignment = Alignment.End) {
             Sparkline(
                 trend = trend,
                 modifier = Modifier
-                    .width(112.dp)
-                    .height(46.dp),
+                    .width(118.dp)
+                    .height(50.dp),
             )
             Text(
                 text = stringResource(R.string.board_window),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                color = scheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.6f),
+                modifier = Modifier.padding(top = 4.dp),
             )
         }
+    }
+}
+
+private val SkyTop = Color(0xFF0A1C8F)
+private val SkyBottom = Color(0xFF04115E)
+private val SkyGlow = Color(0xFF1048FF)
+private val Signal = Color(0xFF5CF4FF)
+
+/** LIVE, with a dot that breathes while there is something live to report. */
+@Composable
+private fun LivePill(live: Boolean) {
+    val pulse by rememberInfiniteTransition(label = "live").animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "dot",
+    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(Color.White.copy(alpha = 0.14f))
+            .padding(horizontal = 9.dp, vertical = 4.dp),
+    ) {
+        Box(
+            Modifier
+                .size(7.dp)
+                .clip(CircleShape)
+                .background(if (live) Signal.copy(alpha = pulse) else Color.White.copy(alpha = 0.5f)),
+        )
+        Text(
+            text = stringResource(if (live) R.string.board_live else R.string.board_offline),
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+        )
     }
 }
 
@@ -120,8 +159,7 @@ fun LiveCard(
  */
 @Composable
 private fun Sparkline(trend: List<Float>, modifier: Modifier = Modifier) {
-    val line = if (trend.size >= 2) MaterialTheme.colorScheme.primary
-    else MaterialTheme.colorScheme.outlineVariant
+    val line = if (trend.size >= 2) Signal else Color.White.copy(alpha = 0.3f)
     Canvas(modifier) {
         val points = if (trend.size >= 2) trend else listOf(0.5f, 0.5f)
         val low = points.min()
@@ -132,6 +170,16 @@ private fun Sparkline(trend: List<Float>, modifier: Modifier = Modifier) {
             val x = stepX * index
             val y = size.height - ((value - low) / span) * size.height
             if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
+        }
+        if (points.size >= 2 && trend.size >= 2) {
+            // The area under the line, fading to nothing.
+            val area = androidx.compose.ui.graphics.Path().apply {
+                addPath(path)
+                lineTo(size.width, size.height)
+                lineTo(0f, size.height)
+                close()
+            }
+            drawPath(area, Brush.verticalGradient(listOf(line.copy(alpha = 0.35f), Color.Transparent)))
         }
         drawPath(path, color = line, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round))
         if (points.size >= 2) {

@@ -2,7 +2,6 @@ package com.devbangs.onedevs.ui.wallet
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -178,7 +177,7 @@ private fun Stat(label: String, value: Int?, modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxHeight()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .padding(vertical = 12.dp, horizontal = 6.dp),
     ) {
         Text(
@@ -269,7 +268,7 @@ private fun EntryRow(entry: WalletEntry) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(14.dp))
             .padding(14.dp),
     ) {
         Column(Modifier.weight(1f)) {

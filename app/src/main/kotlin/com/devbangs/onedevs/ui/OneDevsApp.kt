@@ -43,6 +43,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.devbangs.onedevs.ui.theme.oneDevsColors
 import com.devbangs.onedevs.OneDevsApplication
 import com.devbangs.onedevs.data.listings.Channel
 import com.devbangs.onedevs.ui.components.DevCoinChip
@@ -145,7 +146,10 @@ fun OneDevsApp() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val current = backStackEntry?.destination
     val scheme = MaterialTheme.colorScheme
-    val surface = scheme.surface
+    // The page under every screen and the top bar; the bottom bar is a card
+    // on it, so the two read as separate things without a line between them.
+    val surface = oneDevsColors.page
+    val bar = oneDevsColors.card
 
     // Which tab the current destination belongs to, or null on the wallet.
     // Nothing is faked when it is null: lighting a tab the user is not on is a
@@ -216,16 +220,13 @@ fun OneDevsApp() {
                 )
             }
         },
-        // One sheet from the status bar to below the gesture bar. NavigationBar
-        // paints its container outside its own inset padding, so holding every
-        // surface at colorScheme.surface — which the palette pins to pure white
-        // and true black — carries the same colour under the system bars with no
-        // seam. The generated scheme also sets surfaceTint to surface, which is
-        // what stops tonal elevation tinting the bar a shade off the page.
+        // The page runs from the status bar down; the navigation bar is the
+        // card colour, carried under the gesture bar with no seam because
+        // NavigationBar paints its container outside its inset padding.
         navigationSuiteColors = NavigationSuiteDefaults.colors(
-            navigationBarContainerColor = surface,
-            navigationRailContainerColor = surface,
-            navigationDrawerContainerColor = surface,
+            navigationBarContainerColor = bar,
+            navigationRailContainerColor = bar,
+            navigationDrawerContainerColor = bar,
         ),
         containerColor = surface,
     ) {

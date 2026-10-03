@@ -1,5 +1,12 @@
 package com.devbangs.onedevs.ui.components
 
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,66 +60,85 @@ fun ActionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // A card in its own colour, not a tint of it: the two ways to put an app
+    // up are the reason this screen exists, so they carry the most weight on
+    // it. The gradient deepens toward the foot, where the label sits.
+    val shape = RoundedCornerShape(24.dp)
+    val deep = lerp(accent.solid, Color.Black, 0.28f)
     Column(
         modifier = modifier
             .fillMaxHeight()
-            .clip(RoundedCornerShape(18.dp))
-            .background(accent.tint)
+            .shadow(12.dp, shape, ambientColor = accent.solid, spotColor = accent.solid)
+            .clip(shape)
+            .background(Brush.linearGradient(listOf(accent.solid, deep)))
+            .drawBehind {
+                // A soft light in the top corner, so the colour has depth.
+                drawCircle(
+                    Brush.radialGradient(
+                        listOf(Color.White.copy(alpha = 0.22f), Color.Transparent),
+                        center = Offset(size.width, 0f),
+                        radius = size.width * 0.8f,
+                    ),
+                    radius = size.width * 0.8f,
+                    center = Offset(size.width, 0f),
+                )
+            }
             .clickable(enabled = available, onClick = onClick)
-            .padding(12.dp),
+            .padding(14.dp),
     ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(38.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(accent.solid),
+                .size(42.dp)
+                .clip(RoundedCornerShape(13.dp))
+                .background(Color.White.copy(alpha = 0.2f)),
         ) {
             Icon(
                 painter = icon,
                 contentDescription = null,
                 tint = accent.onSolid,
-                modifier = Modifier.size(19.dp),
+                modifier = Modifier.size(21.dp),
             )
         }
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         Text(
             text = title,
-            style = MaterialTheme.typography.labelLarge.copy(lineHeight = 17.sp),
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.titleSmall.copy(lineHeight = 19.sp),
+            fontWeight = FontWeight.Bold,
+            color = accent.onSolid,
         )
-        Spacer(Modifier.height(5.dp))
+        Spacer(Modifier.height(6.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.18f))
+                .padding(horizontal = 8.dp, vertical = 3.dp),
         ) {
             if (!available) {
                 Icon(
                     painter = painterResource(R.drawable.ic_lock),
                     contentDescription = null,
-                    tint = accent.solid,
+                    tint = accent.onSolid,
                     modifier = Modifier.size(11.dp),
                 )
             }
             Text(
                 text = status,
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, lineHeight = 13.sp),
-                fontWeight = FontWeight.Medium,
-                color = accent.solid,
+                fontWeight = FontWeight.SemiBold,
+                color = accent.onSolid,
             )
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
         Text(
             text = body,
             style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, lineHeight = 15.sp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = accent.onSolid.copy(alpha = 0.86f),
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         Spacer(Modifier.weight(1f))
-        // No arrow disc. A 32dp circle was a quarter of the width of a card
-        // this size, spent saying "tappable" about a card that is entirely a
-        // button.
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -120,15 +146,30 @@ fun ActionCard(
             Icon(
                 painter = footerIcon,
                 contentDescription = null,
-                tint = accent.solid,
+                tint = accent.onSolid,
                 modifier = Modifier.size(14.dp),
             )
             Text(
                 text = footerLabel,
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                fontWeight = FontWeight.Medium,
-                color = accent.solid,
+                fontWeight = FontWeight.SemiBold,
+                color = accent.onSolid,
+                modifier = Modifier.weight(1f),
             )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(26.dp)
+                    .clip(CircleShape)
+                    .background(accent.onSolid),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_caret_right),
+                    contentDescription = null,
+                    tint = accent.solid,
+                    modifier = Modifier.size(13.dp),
+                )
+            }
         }
     }
 }

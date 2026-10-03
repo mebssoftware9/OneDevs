@@ -102,7 +102,7 @@ internal fun communityStyle(): TierStyle {
         ink = scheme.onSurface,
         muted = scheme.onSurfaceVariant,
         mark = live.solid,
-        wash = scheme.surface,
+        wash = oneDevsColors.card,
         accent = live.solid,
         onAccent = live.onSolid,
     )

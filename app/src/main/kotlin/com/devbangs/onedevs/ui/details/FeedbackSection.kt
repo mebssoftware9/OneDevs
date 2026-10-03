@@ -1,7 +1,6 @@
 package com.devbangs.onedevs.ui.details
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,7 +60,7 @@ internal fun FeedbackSection(listingId: String, mine: Boolean, modifier: Modifie
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+            .background(oneDevsColors.card, RoundedCornerShape(16.dp))
             .padding(14.dp),
     ) {
         Text(
@@ -139,6 +138,12 @@ private fun ReportForm(onSend: (bug: Boolean, body: String, done: (Int, Boolean)
         onValueChange = { if (it.length <= FeedbackRules.MAX) body = it },
         placeholder = { Text(stringResource(if (bug) R.string.fb_hint_bug else R.string.fb_hint_idea)) },
         minLines = 3,
+        shape = RoundedCornerShape(14.dp),
+        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = oneDevsColors.well,
+            unfocusedContainerColor = oneDevsColors.well,
+            unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+        ),
         modifier = Modifier.fillMaxWidth(),
     )
     Text(
@@ -205,7 +210,7 @@ private fun ReportCard(report: FeedbackReport, canReview: Boolean, onReview: (St
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(scheme.surfaceContainerLow)
+            .background(oneDevsColors.well)
             .padding(12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
