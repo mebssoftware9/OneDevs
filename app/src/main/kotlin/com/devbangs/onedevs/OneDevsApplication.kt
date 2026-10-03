@@ -55,8 +55,14 @@ class OneDevsApplication : Application() {
         scope.launch { backend.warmUp() }
         scope.launch { claims.load() }
         // A purchase whose confirmation was lost on a previous run is sent
-        // again now; Billing itself waits for someone to be signed in.
-        scope.launch { billing.restore() }
+        // again once someone is signed in: as soon as the stored session has
+        // loaded, and after every sign-in. Run at once it raced the session
+        // and, finding nobody signed in yet, did nothing.
+        scope.launch {
+            account.session.map { it?.userId }.distinctUntilChanged().filterNotNull().collect {
+                billing.restore()
+            }
+        }
         ClaimWorker.drain(this)
         // A testing cycle's reports arrive whether or not the app is open.
         InsightWorker.schedule(this)

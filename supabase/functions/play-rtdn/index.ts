@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
       // row are fallbacks. With none of them there is nothing to record.
       const product = facts?.products[0] ?? sub.subscriptionId ?? known?.product_id;
       if (!facts || !owner || !product) return json({ ok: true, ignored: "unknown" });
-      await rpc("subscription_update", {
+      const result = await rpc("subscription_update", {
         p_account: owner,
         p_token: sub.purchaseToken,
         p_product: product,
@@ -49,6 +49,13 @@ Deno.serve(async (req) => {
         p_order: facts.orderId,
         p_raw: facts.raw,
       });
+      // A purchase can reach the server only this way -- the app closed, or
+      // lost its connection, before it could verify. Google refunds a
+      // subscription nobody acknowledges within three days, so it is
+      // acknowledged here too, not only when the app calls play-purchases.
+      if (result?.ok && facts.state === "active" && !facts.acknowledged) {
+        await play.acknowledgeSubscription(product, sub.purchaseToken);
+      }
       return json({ ok: true });
     }
 

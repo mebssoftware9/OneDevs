@@ -1403,4 +1403,5 @@
     <string name="sp_no_shots">Screenshots chosen in Screenshot Preview appear here.</string>
     <string name="sp_no_icon">Open an APK in the Lab to show its icon.</string>
     <string name="sp_cut">Phones show the first lines of the description, then “About this app” opens the rest.</string>
+    <string name="tier_manage">Manage or cancel subscription</string>
 </resources>

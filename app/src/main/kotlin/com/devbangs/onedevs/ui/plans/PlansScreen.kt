@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -105,6 +106,18 @@ fun PlansScreen(onCycles: () -> Unit, modifier: Modifier = Modifier) {
                 enabled = true,
                 filled = true,
                 onClick = onCycles,
+            )
+            // Cancelling is one tap from where subscribing was, as Google
+            // asks: Play's own page for this subscription.
+            val uri = LocalUriHandler.current
+            ActionButton(
+                text = stringResource(R.string.tier_manage),
+                enabled = true,
+                filled = false,
+                onClick = {
+                    val sku = if (tier == Tier.Pro) Products.PRO else Products.PREMIUM
+                    uri.openUri("https://play.google.com/store/account/subscriptions?sku=$sku&package=${context.packageName}")
+                },
             )
         }
 

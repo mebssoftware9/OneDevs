@@ -1414,4 +1414,5 @@
     <string name="sp_no_shots">Las capturas elegidas en Screenshot Preview aparecen aquí.</string>
     <string name="sp_no_icon">Abre un APK en el Lab para mostrar su icono.</string>
     <string name="sp_cut">Los teléfonos muestran las primeras líneas de la descripción; «Información de la app» abre el resto.</string>
+    <string name="tier_manage">Gestionar o cancelar la suscripción</string>
 </resources>

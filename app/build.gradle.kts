@@ -15,6 +15,15 @@ val secrets = Properties().apply {
 
 fun secret(key: String): String = secrets.getProperty(key).orEmpty()
 
+// The upload key that signs release bundles for Play, from keystore.properties
+// beside secrets.properties (both gitignored, as is every .jks). Without the
+// file a release still builds, unsigned, and Play refuses it -- so the file
+// is the difference, not a flag.
+val keystore = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -55,6 +64,17 @@ android {
         }
     }
 
+    signingConfigs {
+        if (keystore.getProperty("storeFile") != null) {
+            create("upload") {
+                storeFile = rootProject.file(keystore.getProperty("storeFile"))
+                storePassword = keystore.getProperty("storePassword")
+                keyAlias = keystore.getProperty("keyAlias")
+                keyPassword = keystore.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             // en-XA accents every character and runs about 30% long; ar-XB
@@ -72,6 +92,7 @@ android {
         }
 
         release {
+            signingConfig = signingConfigs.findByName("upload")
             // AdMob: OneDevs' own app and app open unit, release builds only.
             manifestPlaceholders["admobAppId"] = "ca-app-pub-9121922395304175~2304749572"
             buildConfigField("String", "ADMOB_APP_OPEN_UNIT", "\"ca-app-pub-9121922395304175/3303894061\"")
