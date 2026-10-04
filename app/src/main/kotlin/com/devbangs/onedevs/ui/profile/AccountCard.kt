@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -78,6 +79,10 @@ fun AccountCard(modifier: Modifier = Modifier) {
 
     val session by app.account.session.collectAsState()
     val sharedBalance by app.account.balance.collectAsState()
+    // The apps this account has listed, from the same store Launches reads.
+    // A listing with no owner has not left this phone yet, so it is theirs.
+    val listings by app.listings.listings.collectAsState(emptyList())
+    val apps = listings.count { it.owner == null || it.owner == session?.userId }
 
     LaunchedEffect(session) {
         userId = session?.userId
@@ -127,10 +132,10 @@ fun AccountCard(modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = if (userId == null) {
-                        stringResource(R.string.account_sign_in_to_earn)
-                    } else {
-                        stringResource(R.string.account_no_apps)
+                    text = when {
+                        userId == null -> stringResource(R.string.account_sign_in_to_earn)
+                        apps == 0 -> stringResource(R.string.account_no_apps)
+                        else -> pluralStringResource(R.plurals.account_apps, apps, apps)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

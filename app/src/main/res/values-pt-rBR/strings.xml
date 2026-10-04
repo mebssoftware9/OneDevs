@@ -1419,4 +1419,9 @@
     <string name="group_dialog_body">Os desenvolvedores do OneDevs adicionam este grupo aos testes fechados no Play Console. Entre uma vez e você poderá instalar todos os apps do quadro que o usam, sem pedir a cada desenvolvedor que adicione seu e-mail.\n\nDesenvolvedores: adicionem onedevs-testers@googlegroups.com em Testadores do teste fechado, e todos os membros poderão testar o app.\n\nImportante: entre com a mesma conta do Google que você usa na Play Store neste celular. Se as contas forem diferentes, o Google Play mostra \"Item não encontrado\" ao abrir um link de teste.</string>
     <string name="group_understood">Entendi</string>
     <string name="group_not_now">Agora não</string>
+    <plurals name="account_apps">
+        <item quantity="one">%1$d app no OneDevs</item>
+        <item quantity="many">%1$d apps no OneDevs</item>
+        <item quantity="other">%1$d apps no OneDevs</item>
+    </plurals>
 </resources>

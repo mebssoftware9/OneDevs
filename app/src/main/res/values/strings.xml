@@ -1410,4 +1410,8 @@
     <string name="group_dialog_body">Developers on OneDevs add this group to their closed tests in Play Console. Join it once and you can install every app on the Board that uses it, without asking each developer to add your email.\n\nDevelopers: add onedevs-testers@googlegroups.com under Testers in your closed test, and every member can test your app.\n\nImportant: join with the same Google account you use in the Play Store on this phone. If the accounts differ, Google Play shows \"Item not found\" when you open a test link.</string>
     <string name="group_understood">Understood</string>
     <string name="group_not_now">Not now</string>
+    <plurals name="account_apps">
+        <item quantity="one">%1$d app on OneDevs</item>
+        <item quantity="other">%1$d apps on OneDevs</item>
+    </plurals>
 </resources>
