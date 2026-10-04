@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -158,6 +160,7 @@ fun MissionCard(
             )
             Spacer(Modifier.height(14.dp))
             SlotGrid(mission)
+            AlsoTesting(mission)
             if (showAction) {
                 Spacer(Modifier.height(16.dp))
                 Text(
@@ -303,6 +306,41 @@ private fun SlotGrid(mission: Mission) {
         }
     }
 }
+
+/**
+ * Apps on a testing cycle that this mission tests too. They sit outside the
+ * sixteen seats -- their developers did not join with a seat -- so the grid
+ * cannot show them, and without this line nobody could tell they were here
+ * until after joining.
+ */
+@Composable
+private fun AlsoTesting(mission: Mission) {
+    val extra = mission.seats.filter { it.seat < 1 }
+    if (extra.isEmpty()) return
+    Spacer(Modifier.height(12.dp))
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        extra.take(MAX_EXTRA_ICONS).forEach { seat ->
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .padding(end = 6.dp)
+                    .size(28.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Wash),
+            ) { SeatIcon(seat) }
+        }
+        Text(
+            text = stringResource(R.string.mission_also_testing, extra.joinToString(", ") { it.title }),
+            style = MaterialTheme.typography.labelSmall,
+            color = Ink,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(start = 2.dp),
+        )
+    }
+}
+
+private const val MAX_EXTRA_ICONS = 3
 
 /** The app in a seat: its icon, or its initial while the icon loads. */
 @Composable

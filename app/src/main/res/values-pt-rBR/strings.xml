@@ -1424,4 +1424,5 @@
         <item quantity="many">%1$d apps no OneDevs</item>
         <item quantity="other">%1$d apps no OneDevs</item>
     </plurals>
+    <string name="mission_also_testing">Também testados nesta missão: %1$s</string>
 </resources>
