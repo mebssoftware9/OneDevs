@@ -38,8 +38,8 @@ android {
         applicationId = "com.devbangs.onedevs"
         minSdk = 26
         targetSdk = 37
-        versionCode = 2
-        versionName = "0.1.1"
+        versionCode = 3
+        versionName = "0.1.2"
 
         buildConfigField("String", "SUPABASE_URL", "\"" + secret("SUPABASE_URL") + "\"")
         buildConfigField("String", "SUPABASE_KEY", "\"" + secret("SUPABASE_KEY") + "\"")
