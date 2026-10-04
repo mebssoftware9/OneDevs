@@ -3,13 +3,16 @@ package com.devbangs.onedevs.notifications
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.devbangs.onedevs.MainActivity
 import com.devbangs.onedevs.R
 
 /**
@@ -59,7 +62,16 @@ object DevBot {
             PackageManager.PERMISSION_GRANTED
         ) return
         ensureChannels(context)
+        // A tap opens the app where it was, or starts it.
+        val open = PendingIntent.getActivity(
+            context,
+            0,
+            Intent(context, MainActivity::class.java)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
         val notification = NotificationCompat.Builder(context, channel.id)
+            .setContentIntent(open)
             .setSmallIcon(R.drawable.ic_robot_fill)
             .setColor(ContextCompat.getColor(context, R.color.devbot_accent))
             .setContentTitle(title)

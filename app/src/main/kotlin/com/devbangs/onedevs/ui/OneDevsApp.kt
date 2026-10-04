@@ -145,6 +145,7 @@ fun OneDevsApp() {
         SignInScreen()
         return
     }
+    com.devbangs.onedevs.notifications.AskForNotifications()
 
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
