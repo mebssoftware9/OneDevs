@@ -66,6 +66,8 @@ class OneDevsApplication : Application() {
         ClaimWorker.drain(this)
         // A testing cycle's reports arrive whether or not the app is open.
         InsightWorker.schedule(this)
+        // New apps on the Board, once each, while the app is closed.
+        com.devbangs.onedevs.data.listings.NewAppsWorker.schedule(this)
         // A member with apps left to test today hears about it once.
         com.devbangs.onedevs.data.missions.MissionReminderWorker.schedule(this)
         // A claim waits for the account that earned it. Signing in is the

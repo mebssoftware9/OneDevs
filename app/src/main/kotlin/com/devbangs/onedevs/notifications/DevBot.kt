@@ -34,6 +34,7 @@ object DevBot {
         MISSIONS("missions", R.string.channel_missions, R.string.channel_missions_desc),
         LAUNCHES("launches", R.string.channel_launches, R.string.channel_launches_desc),
         DEVCOINS("devcoins", R.string.channel_devcoins, R.string.channel_devcoins_desc),
+        BOARD("board", R.string.channel_board, R.string.channel_board_desc),
     }
 
     fun ensureChannels(context: Context) {

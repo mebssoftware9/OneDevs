@@ -1427,4 +1427,16 @@
         <item quantity="other">%1$d applis sur OneDevs</item>
     </plurals>
     <string name="mission_also_testing">Aussi testées dans cette mission : %1$s</string>
+    <string name="board_spotlight_cta">Tester maintenant et gagner +%1$d</string>
+    <string name="channel_board">Nouvelles applis</string>
+    <string name="channel_board_desc">Nouvelles applis du tableau à tester contre des DevCoins</string>
+    <string name="new_app_title">Nouvelle appli à tester : %1$s</string>
+    <string name="new_app_spotlight_title">À l\'honneur : %1$s</string>
+    <string name="new_app_body">Testez-la sur le tableau pour gagner des DevCoins : +%1$d</string>
+    <string name="new_apps_body">Dont %1$s. Testez-les sur le tableau pour gagner des DevCoins.</string>
+    <plurals name="new_apps_title">
+        <item quantity="one">%1$d nouvelle appli à tester</item>
+        <item quantity="many">%1$d nouvelles applis à tester</item>
+        <item quantity="other">%1$d nouvelles applis à tester</item>
+    </plurals>
 </resources>

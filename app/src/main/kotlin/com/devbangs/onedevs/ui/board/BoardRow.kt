@@ -1,6 +1,14 @@
 package com.devbangs.onedevs.ui.board
 
 import android.text.format.Formatter
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,6 +61,18 @@ private const val NEW_FOR_MS = 48L * 60 * 60 * 1000
 private val TabTop = Color(0xFF2F6BFF)
 private val TabBottom = Color(0xFF0B3BD1)
 
+// The Spotlight card: a royal night sky with gold on it. It has to read as
+// the most valuable thing on the Board at a glance, because it is -- it pays
+// what OneDevs pays, not what a developer can spare.
+private val RoyalTop = Color(0xFF1B0F4F)
+private val RoyalMid = Color(0xFF34188A)
+private val RoyalBottom = Color(0xFF0A2A8E)
+private val GoldLight = Color(0xFFFFE08A)
+private val GoldDeep = Color(0xFFE9A824)
+private val GoldInk = Color(0xFF3B2500)
+private val MintOnDark = Color(0xFF7CF2C4)
+private val OnRoyal = Color(0xFFE9E6FF)
+
 /**
  * One app waiting for testers, on either board.
  *
@@ -73,10 +93,13 @@ fun BoardRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (listing.spotlight) {
+        SpotlightRow(listing, onClick, modifier)
+        return
+    }
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     val icon = rememberListingIcon(listing)
-    val spot = oneDevsColors.mission
     val shape = RoundedCornerShape(24.dp)
     val isNew = listing.createdAt > 0L && System.currentTimeMillis() - listing.createdAt < NEW_FOR_MS
 
@@ -84,7 +107,7 @@ fun BoardRow(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(if (listing.spotlight) spot.tint else oneDevsColors.card)
+            .background(oneDevsColors.card)
             .clickable(onClick = onClick),
     ) {
         Row(
@@ -125,14 +148,8 @@ fun BoardRow(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f, fill = false),
                     )
-                    when {
-                        listing.spotlight -> Pill(
-                            text = stringResource(R.string.board_spotlight),
-                            fill = spot.solid,
-                            ink = spot.onSolid,
-                            icon = R.drawable.ic_sparkle_fill,
-                        )
-                        isNew -> Pill(
+                    if (isNew) {
+                        Pill(
                             text = stringResource(R.string.board_card_new),
                             fill = oneDevsColors.caution.solid,
                             ink = oneDevsColors.caution.onSolid,
@@ -145,6 +162,155 @@ fun BoardRow(
             coins = listing.reward,
             modifier = Modifier.align(Alignment.TopEnd),
         )
+    }
+}
+
+/**
+ * A spotlighted app. Same facts as any row -- what it pays, how close it is to
+ * Google's twelve, what it is -- set on a royal gradient with gold, a soft
+ * light passing over it now and then, and a button that says what to do.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SpotlightRow(listing: Listing, onClick: () -> Unit, modifier: Modifier) {
+    val context = LocalContext.current
+    val icon = rememberListingIcon(listing)
+    val shape = RoundedCornerShape(26.dp)
+    val sweep by rememberInfiniteTransition(label = "spotlight").animateFloat(
+        initialValue = -0.6f,
+        targetValue = 1.6f,
+        animationSpec = infiniteRepeatable(tween(durationMillis = 2400, delayMillis = 2600, easing = LinearEasing)),
+        label = "sweep",
+    )
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(18.dp, shape, ambientColor = RoyalMid, spotColor = RoyalMid)
+            .clip(shape)
+            .background(Brush.linearGradient(listOf(RoyalTop, RoyalMid, RoyalBottom)))
+            .drawWithContent {
+                drawContent()
+                // A gold glow behind the corner the reward sits in.
+                drawRect(
+                    Brush.radialGradient(
+                        listOf(GoldLight.copy(alpha = 0.22f), Color.Transparent),
+                        center = Offset(size.width, 0f),
+                        radius = size.width * 0.7f,
+                    ),
+                )
+                // The light passing over: a narrow diagonal band.
+                val x = size.width * sweep
+                drawRect(
+                    Brush.linearGradient(
+                        0f to Color.Transparent,
+                        0.5f to Color.White.copy(alpha = 0.14f),
+                        1f to Color.Transparent,
+                        start = Offset(x - size.width * 0.25f, 0f),
+                        end = Offset(x + size.width * 0.05f, size.height),
+                    ),
+                )
+            }
+            .clickable(onClick = onClick),
+    ) {
+        Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_crown_fill),
+                    contentDescription = null,
+                    tint = GoldLight,
+                    modifier = Modifier.size(14.dp),
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = stringResource(R.string.board_spotlight).uppercase(),
+                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.6.sp),
+                    fontWeight = FontWeight.Bold,
+                    color = GoldLight,
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val iconShape = RoundedCornerShape(20.dp)
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(72.dp)
+                        .shadow(14.dp, iconShape, ambientColor = GoldDeep, spotColor = GoldDeep)
+                        .clip(iconShape)
+                        .background(RoyalTop),
+                ) {
+                    if (icon != null) {
+                        Image(
+                            bitmap = icon,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.size(72.dp),
+                        )
+                    } else {
+                        Text(
+                            text = listing.title.trim().take(1).uppercase(),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = GoldLight,
+                        )
+                    }
+                }
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        text = listing.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        listing.testers?.let { Progress(it, onDark = true) }
+                        listing.ownerTested?.takeIf { it > 0 }?.let { GivesBack(it, onDark = true) }
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = listOfNotNull(
+                            listing.category.ifBlank { null },
+                            listing.sizeBytes?.let { Formatter.formatShortFileSize(context, it) },
+                        ).joinToString(" · "),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OnRoyal.copy(alpha = 0.75f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Spacer(Modifier.height(14.dp))
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(CircleShape)
+                    .background(Brush.horizontalGradient(listOf(GoldLight, GoldDeep)))
+                    .padding(vertical = 11.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.board_spotlight_cta, listing.reward),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = GoldInk,
+                )
+                Spacer(Modifier.width(6.dp))
+                Image(
+                    painter = painterResource(R.drawable.ic_devcoin),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp).clip(CircleShape),
+                )
+            }
+        }
+        CoinTab(coins = listing.reward, modifier = Modifier.align(Alignment.TopEnd), gold = true)
     }
 }
 
@@ -181,14 +347,19 @@ private fun AppIcon(title: String, icon: androidx.compose.ui.graphics.ImageBitma
 
 /** How many have tested it, and how many more until Google's twelve. */
 @Composable
-private fun Progress(testers: Int) {
+private fun Progress(testers: Int, onDark: Boolean = false) {
     val reached = testers >= TESTERS_NEEDED
     val accent = if (reached) oneDevsColors.live else oneDevsColors.caution
+    val ink = when {
+        !onDark -> accent.solid
+        reached -> MintOnDark
+        else -> GoldLight
+    }
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         Icon(
             painter = painterResource(R.drawable.ic_users),
             contentDescription = null,
-            tint = accent.solid,
+            tint = ink,
             modifier = Modifier.size(14.dp),
         )
         Text(
@@ -199,27 +370,28 @@ private fun Progress(testers: Int) {
             },
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
-            color = accent.solid,
+            color = ink,
         )
     }
 }
 
 /** How many apps its developer has tested for others. */
 @Composable
-private fun GivesBack(apps: Int) {
+private fun GivesBack(apps: Int, onDark: Boolean = false) {
     val accent = oneDevsColors.live
+    val ink = if (onDark) MintOnDark else accent.solid
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         Icon(
             painter = painterResource(R.drawable.ic_seal_check),
             contentDescription = null,
-            tint = accent.solid,
+            tint = ink,
             modifier = Modifier.size(14.dp),
         )
         Text(
             text = pluralStringResource(R.plurals.board_card_gives, apps, apps),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
-            color = accent.solid,
+            color = ink,
         )
     }
 }
@@ -255,20 +427,20 @@ private fun Pill(text: String, fill: Color, ink: Color, icon: Int? = null) {
 
 /** What a test pays, as a blue tab folded over the card's corner, the coin in gold. */
 @Composable
-private fun CoinTab(coins: Int, modifier: Modifier = Modifier) {
+private fun CoinTab(coins: Int, modifier: Modifier = Modifier, gold: Boolean = false) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp),
         modifier = modifier
             .clip(RoundedCornerShape(topEnd = 24.dp, bottomStart = 18.dp))
-            .background(Brush.verticalGradient(listOf(TabTop, TabBottom)))
+            .background(Brush.verticalGradient(if (gold) listOf(GoldLight, GoldDeep) else listOf(TabTop, TabBottom)))
             .padding(start = 12.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
     ) {
         Text(
             text = stringResource(R.string.board_card_earn, coins),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = if (gold) GoldInk else Color.White,
         )
         Image(
             painter = painterResource(R.drawable.ic_devcoin),
