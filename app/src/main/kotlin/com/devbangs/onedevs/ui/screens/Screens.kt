@@ -368,6 +368,7 @@ fun ProfileScreen(onPlans: () -> Unit, modifier: Modifier = Modifier) {
     ) {
         AccountCard()
         com.devbangs.onedevs.ui.plans.PlanPromo(onPlans = onPlans)
+        com.devbangs.onedevs.ui.settings.JoinGroupCard()
         AppSettingsGroup()
         DeviceGroup()
         SupportGroup()

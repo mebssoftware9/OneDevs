@@ -1413,4 +1413,16 @@
     <string name="sp_no_icon">Abra um APK no Lab para mostrar o ícone.</string>
     <string name="sp_cut">Os celulares mostram as primeiras linhas da descrição; “Sobre o app” abre o resto.</string>
     <string name="tier_manage">Gerenciar ou cancelar assinatura</string>
+    <string name="group_title">Entrar no grupo do Google</string>
+    <string name="group_caption">Abre no seu navegador</string>
+    <string name="group_dialog_title">Entre nos testadores do OneDevs</string>
+    <string name="group_dialog_body">Membros deste grupo do Google podem instalar a versão de teste do OneDevs pelo Google Play e ajudá-lo a chegar à produção.
+
+1. Faça login no Google no navegador e toque em Participar do grupo.
+2. Abra o link de teste na página do grupo e toque em Tornar-se testador.
+3. Mantenha o OneDevs instalado e abra-o uma vez por dia durante 14 dias.
+
+A participação é aberta e gratuita. Só o dono do grupo vê seu e-mail.</string>
+    <string name="group_understood">Entendi</string>
+    <string name="group_not_now">Agora não</string>
 </resources>
