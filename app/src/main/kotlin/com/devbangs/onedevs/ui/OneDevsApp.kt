@@ -378,7 +378,10 @@ fun OneDevsApp() {
                 screen<Ghostline> { GhostlineScreen() }
                 screen<Badge> { BadgeScreen() }
                 screen<Profile> {
-                    ProfileScreen(onPlans = { navController.navigate(Plans) { launchSingleTop = true } })
+                    ProfileScreen(
+                        onPlans = { navController.navigate(Plans) { launchSingleTop = true } },
+                        onCycles = { navController.navigate(Cycles) { launchSingleTop = true } },
+                    )
                 }
                 screen<Wallet> { WalletScreen() }
             }

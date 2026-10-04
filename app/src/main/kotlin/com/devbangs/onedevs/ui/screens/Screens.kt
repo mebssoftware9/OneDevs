@@ -358,7 +358,7 @@ fun LaunchesScreen(
 }
 
 @Composable
-fun ProfileScreen(onPlans: () -> Unit, modifier: Modifier = Modifier) {
+fun ProfileScreen(onPlans: () -> Unit, onCycles: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.spacedBy(20.dp),
         modifier = modifier
@@ -368,6 +368,7 @@ fun ProfileScreen(onPlans: () -> Unit, modifier: Modifier = Modifier) {
     ) {
         AccountCard()
         com.devbangs.onedevs.ui.plans.PlanPromo(onPlans = onPlans)
+        com.devbangs.onedevs.ui.plans.CyclesCard(onCycles = onCycles)
         com.devbangs.onedevs.ui.settings.JoinGroupCard()
         AppSettingsGroup()
         DeviceGroup()

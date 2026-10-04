@@ -1439,4 +1439,5 @@
         <item quantity="many">%1$d nouvelles applis à tester</item>
         <item quantity="other">%1$d nouvelles applis à tester</item>
     </plurals>
+    <string name="cycles_card_caption">Lancez un cycle : Spotlight et testeurs pour votre appli</string>
 </resources>
