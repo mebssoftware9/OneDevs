@@ -1417,14 +1417,8 @@
     <string name="tier_manage">Gérer ou résilier l\'abonnement</string>
     <string name="group_title">Rejoindre le groupe Google</string>
     <string name="group_caption">S\'ouvre dans votre navigateur</string>
-    <string name="group_dialog_title">Rejoindre les testeurs OneDevs</string>
-    <string name="group_dialog_body">Les membres de ce groupe Google peuvent installer la version test de OneDevs depuis Google Play et l\'aider à atteindre la production.
-
-1. Connectez-vous à Google dans votre navigateur, puis touchez Rejoindre le groupe.
-2. Ouvrez le lien de test sur la page du groupe et touchez Devenir testeur.
-3. Gardez OneDevs installée et ouvrez-la une fois par jour pendant 14 jours.
-
-L\'adhésion est libre et gratuite. Seul le propriétaire du groupe voit votre e-mail.</string>
+    <string name="group_dialog_title">Rejoindre le groupe des testeurs OneDevs</string>
+    <string name="group_dialog_body">Les développeurs de OneDevs ajoutent ce groupe à leurs tests fermés dans la Play Console. Rejoignez-le une fois et vous pourrez installer toutes les applis du tableau qui l\'utilisent, sans demander à chaque développeur d\'ajouter votre e-mail.\n\nDéveloppeurs : ajoutez onedevs-testers@googlegroups.com dans Testeurs de votre test fermé, et tous les membres pourront tester votre appli.\n\nImportant : rejoignez-le avec le même compte Google que celui du Play Store sur ce téléphone. Si les comptes diffèrent, Google Play affiche « Élément introuvable » à l\'ouverture d\'un lien de test.</string>
     <string name="group_understood">Compris</string>
     <string name="group_not_now">Plus tard</string>
 </resources>

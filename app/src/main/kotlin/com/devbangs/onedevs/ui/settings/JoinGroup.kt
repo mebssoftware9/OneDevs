@@ -32,15 +32,16 @@ import androidx.compose.ui.unit.dp
 import com.devbangs.onedevs.R
 import com.devbangs.onedevs.ui.theme.oneDevsColors
 
-/** The Google Group whose members are OneDevs' closed testers on Play. */
+/** The Google Group OneDevs developers add to their closed tests, so its members can install them. */
 const val TESTERS_GROUP = "https://groups.google.com/g/onedevs-testers"
 
 /**
- * Joining the testers' Google Group, which is what lets an account install
- * the OneDevs test from Google Play.
+ * Joining the community's testers group. Developers add the group to their
+ * closed tests in Play Console, so one join lets a member install every app
+ * on the Board that uses it, instead of each developer collecting emails.
  *
- * A tap explains what joining does and what comes after, then Understood
- * opens the group, where Google asks the person to sign in and join.
+ * A tap explains that, and that the group and the Play Store must use the
+ * same Google account; Understood opens the group in the browser.
  */
 @Composable
 fun JoinGroupCard(modifier: Modifier = Modifier) {
