@@ -1,4 +1,4 @@
-import { judge, type Payload, sessionOf, sha256Hex } from "./integrity.ts";
+import { digestAsGoogleReports, judge, type Payload, sessionOf, sha256Hex } from "./integrity.ts";
 
 function assert(ok: boolean, what: string) {
   if (!ok) throw new Error(what);
@@ -49,4 +49,11 @@ Deno.test("the session id is read from the token, and nothing else passes for on
   assert(sessionOf(`h.${b64({ session_id: id })}.s`) === id, "reads it");
   assert(sessionOf(`h.${b64({ session_id: "x'; drop" })}.s`) === null, "refuses a non-id");
   assert(sessionOf("not a token") === null, "refuses junk");
+});
+
+Deno.test("a digest pasted from Play Console matches Google's base64url form", () => {
+  const hex = "AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89";
+  const google = digestAsGoogleReports(hex);
+  if (google !== "q83vASNFZ4mrze8BI0VniavN7wEjRWeJq83vASNFZ4k") throw new Error(google);
+  if (digestAsGoogleReports(google) !== google) throw new Error("base64url should pass through");
 });

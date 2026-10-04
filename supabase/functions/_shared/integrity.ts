@@ -59,10 +59,25 @@ export function judge(
   if (summary.app !== "PLAY_RECOGNIZED") return fail("app_not_recognized");
   if (expect.certDigests.length > 0) {
     const certs = p.appIntegrity?.certificateSha256Digest ?? [];
-    if (!certs.some((c) => expect.certDigests.includes(c))) return fail("wrong_signature");
+    const wanted = expect.certDigests.map(digestAsGoogleReports);
+    if (!certs.some((c) => wanted.includes(c))) return fail("wrong_signature");
   }
   if (!summary.device.includes("MEETS_DEVICE_INTEGRITY")) return fail("device_not_trusted");
   return { passed: true, reason: null, summary };
+}
+
+/**
+ * A certificate digest the way Play Integrity reports it: base64url, no
+ * padding. Play Console shows the same digest as colon-separated hex
+ * (AB:12:...), so a value pasted from there is converted; anything else is
+ * taken as already in Google's form.
+ */
+export function digestAsGoogleReports(digest: string): string {
+  const hex = digest.trim().replace(/:/g, "");
+  if (!/^[0-9a-fA-F]{64}$/.test(hex)) return digest.trim();
+  let raw = "";
+  for (let i = 0; i < 64; i += 2) raw += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16));
+  return btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 /** SHA-256 of a string as lowercase hex: the request hash the app sends. */
