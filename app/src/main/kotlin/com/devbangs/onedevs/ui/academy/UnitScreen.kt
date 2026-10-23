@@ -160,7 +160,16 @@ fun UnitScreen(
             Panel {
                 Body(spec.task)
                 when (val g = gate) {
-                    GateState.Idle -> Unit
+                    // Passed before, on this phone or another: say on what.
+                    GateState.Idle -> evidence.lastOrNull { it.competency == competency.id && it.artifact && it.correct }
+                        ?.packageName?.let {
+                            Text(
+                                text = stringResource(R.string.acad_unit_gate_passed, it),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = oneDevsColors.live.solid,
+                            )
+                        }
                     GateState.Working -> Body(stringResource(R.string.acad_unit_gate_working), muted = true)
                     is GateState.Problem -> Body(
                         if (g.arg != null) stringResource(g.message, g.arg) else stringResource(g.message),

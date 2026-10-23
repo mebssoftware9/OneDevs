@@ -44,7 +44,7 @@
           "kind": "concept",
           "hints": [
             "The rule is about people, a number of days, and one word that describes their status.",
-            "Which option uses the word 'opted in' and says 'continuously'?"
+            "Look for the answer built on being opted in, and staying opted in."
           ],
           "variants": [
             {
@@ -108,7 +108,7 @@
           "kind": "debug",
           "hints": [
             "Read each step against the rule: which track, who, how long.",
-            "One step uses a track the rule does not mention."
+            "One step points the build, or the testers, at the wrong place."
           ],
           "variants": [
             {
@@ -213,8 +213,8 @@
           "id": "ec-rule",
           "kind": "concept",
           "hints": [
-            "The change arrived with Android 12, for components that have something in common.",
-            "What does the manifest merger do when it is asked to guess?"
+            "Ask who opens the component: your own code, or another app.",
+            "Since Android 12, nothing with an intent filter is left to a default."
           ],
           "variants": [
             {
@@ -407,8 +407,8 @@
           "id": "pm-kinds",
           "kind": "concept",
           "hints": [
-            "Which of these can hurt nobody if it is granted silently?",
-            "Since Android 13 one of these needs a dialog that it did not need before."
+            "Some permissions are granted at install; others need a dialog.",
+            "Since Android 13, notifications are among the ones that need a dialog."
           ],
           "variants": [
             {
@@ -439,8 +439,8 @@
           "id": "pm-predict",
           "kind": "predict",
           "hints": [
-            "Android stopped letting apps ask the same question forever.",
-            "Where could a permission come from that you never typed?"
+            "Android limits how often an app may ask, and merges library manifests into yours.",
+            "Two denials end the asking; a dependency can bring permissions of its own."
           ],
           "variants": [
             {
@@ -570,8 +570,8 @@
           "id": "ts-roles",
           "kind": "concept",
           "hints": [
-            "One of these is about the oldest phone, one about what your code can name, one about behaviour.",
-            "Which number is a promise about testing?"
+            "One of the three is about the oldest phone, one about what your code can name, one about behaviour.",
+            "The oldest phone is minSdk's job; behaviour is targetSdk's."
           ],
           "variants": [
             {
@@ -602,8 +602,8 @@
           "id": "ts-predict",
           "kind": "predict",
           "hints": [
-            "Play's floor applies to updates as well as new apps.",
-            "A behaviour change is something Android does differently, not a compile error."
+            "targetSdk decides two things: what Play accepts, and how Android treats the app.",
+            "Play checks updates as well as new apps, and Android applies the target's behaviour changes."
           ],
           "variants": [
             {
@@ -788,8 +788,8 @@
           "id": "sg-predict",
           "kind": "predict",
           "hints": [
-            "What does a debug signature tell Play?",
-            "What does Android compare when one version replaces another?"
+            "A signature is identity: who built the app, and whether it is the same app.",
+            "The debug key proves nothing, and a different key means a different app."
           ],
           "variants": [
             {
@@ -820,8 +820,8 @@
           "id": "sg-leak",
           "kind": "debug",
           "hints": [
-            "Which values are secrets, and where do they come from here?",
-            "Look for a value written straight into the file."
+            "Read each line as Play Console would, then as someone reading the repository would.",
+            "One line hands over something that should come from elsewhere: a password, or the wrong key."
           ],
           "variants": [
             {
@@ -940,8 +940,8 @@
           "id": "rb-what",
           "kind": "concept",
           "hints": [
-            "One of these settings does three things to your code.",
-            "What can someone do to a debuggable app over adb?"
+            "Think about what R8 does to code, and what a debugger can reach in a running app.",
+            "Shrinking and renaming is R8's job; reading memory is what a debugger allows."
           ],
           "variants": [
             {
@@ -972,8 +972,8 @@
           "id": "rb-predict",
           "kind": "predict",
           "hints": [
-            "What does R8 do to code it cannot see being used?",
-            "Renamed code needs a dictionary to be read again."
+            "R8 renames and removes code; think about anything found by its name.",
+            "A renamed class can only be read back with the record of what it was renamed from."
           ],
           "variants": [
             {
@@ -1109,8 +1109,8 @@
           "id": "nc-bundle",
           "kind": "concept",
           "hints": [
-            "A bundle is not what a phone installs. What does Play make from it?",
-            "Which ABI is the 64-bit partner of armeabi-v7a?"
+            "A phone needs code for its own CPU, and Play builds what each phone gets from the bundle.",
+            "armeabi-v7a is 32-bit ARM; its 64-bit partner is arm64-v8a."
           ],
           "variants": [
             {
@@ -1205,8 +1205,8 @@
           "id": "nc-transfer",
           "kind": "transfer",
           "hints": [
-            "Where did the library come from, if not your own code?",
-            "What decides how much each phone downloads?"
+            "Native code usually arrives with a dependency, and Play delivers per phone from a bundle.",
+            "Fix things at their source, and let Play send each phone only its own part."
           ],
           "variants": [
             {
@@ -1272,8 +1272,8 @@
           "id": "vt-what",
           "kind": "concept",
           "hints": [
-            "One of these is a number Play compares, the rest are not.",
-            "The twelve-tester rule names its track."
+            "Play compares one number on every upload, and the twelve-tester rule names one track.",
+            "versionName is only text, and internal testing is not the closed track."
           ],
           "variants": [
             {
@@ -1304,8 +1304,8 @@
           "id": "vt-predict",
           "kind": "predict",
           "hints": [
-            "Which of the two values did the new upload change?",
-            "Halting a rollout stops new offers. Does it reach phones that already updated?"
+            "Ask what Play actually compares, and what it can still change on phones.",
+            "A versionCode is never reused, and a halt only stops new offers."
           ],
           "variants": [
             {
@@ -1336,7 +1336,7 @@
           "id": "vt-history",
           "kind": "debug",
           "hints": [
-            "Read the versionCode column only.",
+            "Read the versionCode values only.",
             "One number appears twice, or is outside what Play allows."
           ],
           "variants": [
@@ -1434,8 +1434,8 @@
           "id": "sl-limits",
           "kind": "concept",
           "hints": [
-            "The title limit is the smallest of the three text limits.",
-            "Which graphic must not be transparent?"
+            "Recall the numbers: 30, 80 and 4,000 characters; 512 square, and 1024 by 500.",
+            "Only one of the graphics has to be opaque."
           ],
           "variants": [
             {
@@ -1596,8 +1596,8 @@
           "id": "ds-who",
           "kind": "concept",
           "hints": [
-            "Whose app is the SDK inside?",
-            "Think about someone who no longer has the app installed."
+            "Responsibility follows the app: its SDKs and its accounts are yours.",
+            "Someone who uninstalled the app still needs a way to reach you."
           ],
           "variants": [
             {
@@ -1628,8 +1628,8 @@
           "id": "ds-predict",
           "kind": "predict",
           "hints": [
-            "Play reviews the build as well as the form.",
-            "Where can someone without the app go?"
+            "Play compares what you declare with what the build does.",
+            "People without the app installed need a web page."
           ],
           "variants": [
             {

@@ -143,7 +143,9 @@ private fun Learn(
     onLaunches: () -> Unit,
 ) {
     val open = { c: com.devbangs.onedevs.data.academy.Competency -> c.openOn(plan) }
-    val next = Mastery.next(pathway, progress, open)
+    // Reviews have their own button beside this one, so the main action is
+    // always the next lesson not yet verified.
+    val next = Mastery.next(pathway, progress) { open(it) && progress[it.id]?.standing != Standing.ReviewDue }
     val verified = pathway.competencies.count { progress[it.id]?.verified == true }
     val due = pathway.competencies.count { open(it) && progress[it.id]?.standing == Standing.ReviewDue }
     val started = progress.values.any { it.answeredAny }
