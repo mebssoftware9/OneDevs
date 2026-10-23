@@ -1,0 +1,1726 @@
+{
+  "pathway": "ship-to-play",
+  "version": 1,
+  "title": "Ship to Play",
+  "summary": "From a build on your laptop to an app Play accepts: the rules, the configuration, and the evidence that you can do it.",
+  "capstone": {
+    "title": "Ship it through a closed test",
+    "outcome": "Run your own app through a closed test on OneDevs until 12 verified testers have used it across 14 days.",
+    "testers": 12,
+    "days": 14
+  },
+  "competencies": [
+    {
+      "id": "closed-testing",
+      "title": "The closed-testing rule",
+      "outcome": "Plan a closed test that meets Play's requirement for new personal developer accounts, and say what does and does not count.",
+      "minutes": 10,
+      "free": true,
+      "requires": [],
+      "model": [
+        "A personal developer account created after 13 November 2023 cannot publish to production straight away. Play first asks for a closed test with at least 12 testers who have been opted in for at least the last 14 days continuously. Only then does the Dashboard let you apply for production access.",
+        "Opted in is the word that matters. An invitation is not a tester. A tester is on your list (an email list or a Google Group), opens the opt-in link, accepts, and installs from Play. Twelve invitations can be three testers.",
+        "Continuously means the last 14 days, not any 14 days. Someone who opts out stops counting, and someone who joins late has only the days since they joined. Recruit more than twelve: people leave.",
+        "Production access is an application, not a switch. Google asks how the test went and what you changed because of it, and it can say no. Testers who actually use the app and report problems give you something true to write."
+      ],
+      "example": {
+        "code": [
+          "Day 0   Create the closed track; upload a signed release AAB",
+          "Day 0   Add a Google Group of 16 people as the testers",
+          "Day 0   Share the opt-in link; testers accept and install",
+          "Day 1+  Testers use the app; you ship fixes to the same track",
+          "Day 14  12 or more have been opted in for 14 straight days",
+          "Day 14  Apply for production access from the Dashboard"
+        ],
+        "notes": [
+          "Sixteen, not twelve: anyone who opts out stops counting.",
+          "New builds during the test are fine. The rule is about testers, not builds.",
+          "Write down feedback and fixes as they happen; the application asks for them."
+        ]
+      },
+      "questions": [
+        {
+          "id": "ct-rule",
+          "kind": "concept",
+          "hints": [
+            "The rule is about people, a number of days, and one word that describes their status.",
+            "Which option uses the word 'opted in' and says 'continuously'?"
+          ],
+          "variants": [
+            {
+              "prompt": "What does Play require before a new personal account can apply for production access?",
+              "choices": [
+                "At least 12 testers opted in to a closed test for at least the last 14 days continuously",
+                "At least 12 installs of the app at any time in the last month",
+                "20 five-star reviews from internal testers",
+                "14 testers for 12 days, followed by an open test"
+              ],
+              "answer": 0,
+              "why": "Twelve testers opted in, for at least the last 14 days without a break. Installs, reviews and other tracks do not stand in for it."
+            },
+            {
+              "prompt": "Which of these people counts toward Play's twelve?",
+              "choices": [
+                "Someone in your Google Group who never opened the opt-in link",
+                "Someone who accepted the opt-in link and has stayed opted in",
+                "Someone you emailed an APK to",
+                "Someone who installed the app from production"
+              ],
+              "answer": 1,
+              "why": "Only someone who accepted the opt-in and is still opted in counts. Being on the list, getting an APK, or using the production app does not."
+            }
+          ]
+        },
+        {
+          "id": "ct-count",
+          "kind": "predict",
+          "hints": [
+            "Count only the people who were opted in for every one of the last 14 days.",
+            "A tester who left, and a tester who joined late, are both short of 14 days."
+          ],
+          "variants": [
+            {
+              "prompt": "You start a closed test with 13 testers opted in. On day 9 two of them opt out. On day 14 you open the Dashboard. What do you see?",
+              "choices": [
+                "You can apply: 13 were opted in at the start",
+                "You cannot apply yet: fewer than 12 have been opted in for the last 14 days",
+                "You can apply, because opting out does not remove anyone from the count",
+                "The test has been cancelled and the track deleted"
+              ],
+              "answer": 1,
+              "why": "Eleven people have been opted in for the last 14 days. The two who left stopped counting the day they opted out."
+            },
+            {
+              "prompt": "Your closed test started 20 days ago with 12 testers. Five days ago one of them opted out and someone new opted in. How many have been opted in for the last 14 days continuously?",
+              "choices": [
+                "12",
+                "11",
+                "13",
+                "None: the count starts over"
+              ],
+              "answer": 1,
+              "why": "The newcomer has five days and the one who left has none, so eleven have the full 14."
+            }
+          ]
+        },
+        {
+          "id": "ct-plan",
+          "kind": "debug",
+          "hints": [
+            "Read each step against the rule: which track, who, how long.",
+            "One step uses a track the rule does not mention."
+          ],
+          "variants": [
+            {
+              "prompt": "Tap the step that means this plan can never meet the requirement.",
+              "code": [
+                "Upload the release AAB to the internal testing track",
+                "Invite 15 people by email",
+                "Share the opt-in link the same day",
+                "Ship fixes to the same track as feedback arrives",
+                "Apply for production access on day 15"
+              ],
+              "answer": 0,
+              "why": "The requirement is a closed test. Internal testing is a different track and does not count toward it."
+            },
+            {
+              "prompt": "Tap the step that leaves you with no testers at all.",
+              "code": [
+                "Create a closed testing track and upload the AAB",
+                "Add a Google Group with 15 members as testers",
+                "Send the group the link to the app's production listing",
+                "Ship fixes to the closed track as feedback arrives",
+                "Apply for production access after 14 days with 12 or more opted in"
+              ],
+              "answer": 2,
+              "why": "There is no production listing yet, and a tester has to accept the opt-in link to count. The group needs the opt-in link, not a store link."
+            }
+          ]
+        },
+        {
+          "id": "ct-transfer",
+          "kind": "transfer",
+          "hints": [
+            "Think about what makes the count drop, and what Google asks when you apply.",
+            "The good answer protects the count and gives you something true to say."
+          ],
+          "variants": [
+            {
+              "prompt": "You are about to start your test with exactly 12 people. What is the most useful change?",
+              "choices": [
+                "Recruit a few more than 12, because anyone who opts out stops counting",
+                "Ask all 12 to uninstall after day 1 so the count is frozen",
+                "Upload a second build to start the clock",
+                "Move them to internal testing, which is faster"
+              ],
+              "answer": 0,
+              "why": "Anyone who opts out stops counting, so exactly twelve leaves no margin. A few spare testers protect the 14 days."
+            },
+            {
+              "prompt": "Your application for production access was turned down because the testing did not show enough engagement. What gives the next one the best chance?",
+              "choices": [
+                "Run the test again with testers who use the app and report issues, and describe what you changed because of their feedback",
+                "Apply again the same day with the same answers",
+                "Add 100 people to the group without telling them about the app",
+                "Switch to an open test and skip the closed one"
+              ],
+              "answer": 0,
+              "why": "Google wants to see a real test. Testers who use the app and report problems, and changes you made because of them, are what the application asks you to describe."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exported-components",
+      "title": "Exported components",
+      "outcome": "Decide for every activity, service and receiver whether other apps may start it, and declare it so the build installs on Android 12 and later.",
+      "minutes": 12,
+      "free": true,
+      "requires": [],
+      "model": [
+        "Every activity, service, receiver and provider in the manifest is a door into your app. android:exported says whether apps other than yours may open it.",
+        "From Android 12 (API 31), an activity, service or receiver with an intent filter must set android:exported explicitly. When the app targets 31 or higher and one does not, the manifest merger stops the build, and an APK like that would not install.",
+        "The launcher activity has to be exported, because the launcher is another app. Most other components should be exported=\"false\": only your own code opens them.",
+        "An exported component with no permission can be started by any app, with any data in the intent. Treat what arrives in it as untrusted input. A signature permission limits the door to apps signed with your key.",
+        "Libraries bring components of their own. The merged manifest is the one that ships, and it is the one the Lab reads."
+      ],
+      "example": {
+        "code": [
+          "<activity",
+          "    android:name=\".MainActivity\"",
+          "    android:exported=\"true\">",
+          "    <intent-filter>",
+          "        <action android:name=\"android.intent.action.MAIN\" />",
+          "        <category android:name=\"android.intent.category.LAUNCHER\" />",
+          "    </intent-filter>",
+          "</activity>",
+          "<activity",
+          "    android:name=\".SettingsActivity\"",
+          "    android:exported=\"false\" />",
+          "<receiver",
+          "    android:name=\".SyncReceiver\"",
+          "    android:exported=\"false\" />"
+        ],
+        "notes": [
+          "MainActivity is exported because the launcher, another app, starts it.",
+          "SettingsActivity is opened only by your own code, so no other app needs the door.",
+          "An explicit false costs nothing and records the decision."
+        ]
+      },
+      "questions": [
+        {
+          "id": "ec-rule",
+          "kind": "concept",
+          "hints": [
+            "The change arrived with Android 12, for components that have something in common.",
+            "What does the manifest merger do when it is asked to guess?"
+          ],
+          "variants": [
+            {
+              "prompt": "Your app targets API 34. An activity has an intent filter and no android:exported. What happens?",
+              "choices": [
+                "The build fails at manifest merge",
+                "It is exported by default",
+                "It is private by default",
+                "Only Play rejects it; local installs work"
+              ],
+              "answer": 0,
+              "why": "Since Android 12 a component with an intent filter has to say whether it is exported. The merger refuses to guess, so the build stops."
+            },
+            {
+              "prompt": "Which component has to be android:exported=\"true\" in almost every app?",
+              "choices": [
+                "The launcher activity",
+                "Every service",
+                "Every broadcast receiver",
+                "Any activity reached from a button in your app"
+              ],
+              "answer": 0,
+              "why": "The launcher is another app, so the activity it starts has to be reachable from outside. Activities you open with your own buttons do not."
+            }
+          ]
+        },
+        {
+          "id": "ec-reach",
+          "kind": "predict",
+          "hints": [
+            "Read the attributes: exported, and whether anything guards it.",
+            "A signature-level permission is granted only to apps signed with the same key."
+          ],
+          "variants": [
+            {
+              "prompt": "What can another app on the same phone do with this service?",
+              "code": [
+                "<service",
+                "    android:name=\".UploadService\"",
+                "    android:exported=\"true\" />"
+              ],
+              "choices": [
+                "Start or bind to UploadService with any intent it likes",
+                "Nothing: services are never reachable from outside",
+                "Only read its logs",
+                "Only start it if it was installed from Play"
+              ],
+              "answer": 0,
+              "why": "Exported with no permission is an open door: any app can start or bind to it, with any intent it likes."
+            },
+            {
+              "prompt": "Which apps can start this service?",
+              "code": [
+                "<permission",
+                "    android:name=\"com.example.permission.UPLOAD\"",
+                "    android:protectionLevel=\"signature\" />",
+                "<service",
+                "    android:name=\".UploadService\"",
+                "    android:exported=\"true\"",
+                "    android:permission=\"com.example.permission.UPLOAD\" />"
+              ],
+              "choices": [
+                "Only apps signed with the same key as yours",
+                "Any app on the phone",
+                "No app, not even yours",
+                "Any app the user grants the permission to in a dialog"
+              ],
+              "answer": 0,
+              "why": "The service is exported, but the permission guarding it has protectionLevel signature, which Android grants only to apps signed with your key."
+            }
+          ]
+        },
+        {
+          "id": "ec-merge",
+          "kind": "debug",
+          "hints": [
+            "Look for a component that has an intent filter.",
+            "Of those, which one says nothing about being exported?"
+          ],
+          "variants": [
+            {
+              "prompt": "This app targets API 34 and the build fails at manifest merge. Tap the line that starts the component causing it.",
+              "code": [
+                "<activity",
+                "    android:name=\".MainActivity\"",
+                "    android:exported=\"true\">",
+                "    <intent-filter>",
+                "        <action android:name=\"android.intent.action.MAIN\" />",
+                "        <category android:name=\"android.intent.category.LAUNCHER\" />",
+                "    </intent-filter>",
+                "</activity>",
+                "<activity android:name=\".ShareActivity\">",
+                "    <intent-filter>",
+                "        <action android:name=\"android.intent.action.SEND\" />",
+                "        <data android:mimeType=\"text/plain\" />",
+                "    </intent-filter>",
+                "</activity>"
+              ],
+              "answer": 8,
+              "why": "ShareActivity has an intent filter and no android:exported. MainActivity says true, so it is fine."
+            },
+            {
+              "prompt": "This app targets API 33 and the build fails at manifest merge. Tap the line that starts the component causing it.",
+              "code": [
+                "<receiver android:name=\".BootReceiver\">",
+                "    <intent-filter>",
+                "        <action android:name=\"android.intent.action.BOOT_COMPLETED\" />",
+                "    </intent-filter>",
+                "</receiver>",
+                "<activity",
+                "    android:name=\".AboutActivity\"",
+                "    android:exported=\"false\" />"
+              ],
+              "answer": 0,
+              "why": "The receiver listens for BOOT_COMPLETED through an intent filter and does not say whether it is exported. AboutActivity has no filter and says false anyway."
+            }
+          ]
+        },
+        {
+          "id": "ec-transfer",
+          "kind": "transfer",
+          "hints": [
+            "Who opens this component: your code, the system on another app's behalf, or another app?",
+            "A door that must be open still decides what it trusts."
+          ],
+          "variants": [
+            {
+              "prompt": "A library you added declares its own activity with an intent filter and no android:exported, and now your build fails. Your manifest is correct. What is the right fix?",
+              "choices": [
+                "Update the library, or redeclare its activity in your manifest with android:exported set",
+                "Lower targetSdk to 30",
+                "Delete the library's manifest from the Gradle cache",
+                "Nothing: library manifests are ignored"
+              ],
+              "answer": 0,
+              "why": "The merged manifest is what counts. Update the library to a version that declares it, or redeclare its activity in your manifest with android:exported set."
+            },
+            {
+              "prompt": "Your app accepts text shared from other apps (ACTION_SEND). Which declaration is right?",
+              "choices": [
+                "exported=\"true\", and treat the incoming text as untrusted input",
+                "exported=\"false\": the share sheet belongs to the system, so it still works",
+                "exported=\"true\" with a signature permission",
+                "No intent filter; other apps can start it by class name"
+              ],
+              "answer": 0,
+              "why": "The share sheet starts the activity on behalf of another app, so it must be exported. A signature permission would shut out every app not signed by you, and the text that arrives is input from a stranger."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "permissions",
+      "title": "Permissions and Play's restricted list",
+      "outcome": "Ask only for the permissions a feature needs, when it needs them, and recognise the ones Play allows only with a declaration.",
+      "minutes": 14,
+      "free": true,
+      "requires": [],
+      "model": [
+        "Install-time permissions such as INTERNET are granted when the app is installed. Runtime permissions such as CAMERA or ACCESS_FINE_LOCATION show a dialog: the person can say no, and change their mind later in Settings.",
+        "Ask in context, when the person taps the feature that needs it, not on first launch. A refusal is an answer the app has to handle, not an error. From Android 11, a person who denies the same permission twice is not asked again; the request returns denied.",
+        "Android 13 made notifications a runtime permission, POST_NOTIFICATIONS. An app that targets 33 or higher and never asks never notifies.",
+        "Some permissions are allowed on Play only for apps whose core purpose needs them, and only with a declaration in Play Console: SMS and Call Log, ACCESS_BACKGROUND_LOCATION, MANAGE_EXTERNAL_STORAGE, QUERY_ALL_PACKAGES and REQUEST_INSTALL_PACKAGES among them. Ship one without qualifying and the update is rejected.",
+        "Often there is a way that needs no permission at all: the photo picker instead of reading media, a foreground service started while the app is open instead of background location. Libraries can add permissions too, so check the built APK, not only the manifest you wrote."
+      ],
+      "example": {
+        "code": [
+          "val askCamera = registerForActivityResult(",
+          "    ActivityResultContracts.RequestPermission()",
+          ") { granted ->",
+          "    if (granted) openScanner() else typeCodeInstead()",
+          "}",
+          "",
+          "scanButton.setOnClickListener {",
+          "    val held = ContextCompat.checkSelfPermission(",
+          "        this, Manifest.permission.CAMERA",
+          "    ) == PackageManager.PERMISSION_GRANTED",
+          "    if (held) openScanner() else askCamera.launch(Manifest.permission.CAMERA)",
+          "}"
+        ],
+        "notes": [
+          "The camera is asked for when the person taps Scan, so the dialog explains itself.",
+          "A refusal leads somewhere useful: typing the code by hand.",
+          "Nothing is asked at launch."
+        ]
+      },
+      "questions": [
+        {
+          "id": "pm-kinds",
+          "kind": "concept",
+          "hints": [
+            "Which of these can hurt nobody if it is granted silently?",
+            "Since Android 13 one of these needs a dialog that it did not need before."
+          ],
+          "variants": [
+            {
+              "prompt": "Which permission does Android grant at install, with no dialog?",
+              "choices": [
+                "INTERNET",
+                "CAMERA",
+                "ACCESS_FINE_LOCATION",
+                "POST_NOTIFICATIONS"
+              ],
+              "answer": 0,
+              "why": "INTERNET is an install-time permission. Camera, location and, from Android 13, notifications are runtime permissions."
+            },
+            {
+              "prompt": "Your app targets API 34 and shows reminders. What must it do before its notifications appear on Android 13 and later?",
+              "choices": [
+                "Request POST_NOTIFICATIONS at runtime",
+                "Nothing: notifications are always allowed",
+                "Declare FOREGROUND_SERVICE",
+                "Ask for SCHEDULE_EXACT_ALARM"
+              ],
+              "answer": 0,
+              "why": "POST_NOTIFICATIONS is a runtime permission from Android 13. Without asking, the reminders never show."
+            }
+          ]
+        },
+        {
+          "id": "pm-predict",
+          "kind": "predict",
+          "hints": [
+            "Android stopped letting apps ask the same question forever.",
+            "Where could a permission come from that you never typed?"
+          ],
+          "variants": [
+            {
+              "prompt": "The person has tapped Deny on your camera request twice. On Android 11 and later, what does launching the same request a third time do?",
+              "choices": [
+                "Nothing visible: it returns denied without showing the dialog",
+                "It shows the dialog again",
+                "It opens Settings by itself",
+                "It throws a SecurityException"
+              ],
+              "answer": 0,
+              "why": "Two denials count as 'don't ask again'. The request returns denied without a dialog; only Settings can grant it now."
+            },
+            {
+              "prompt": "Your manifest lists only INTERNET, but the Lab's Permissions Inspector finds ACCESS_FINE_LOCATION in the built APK. What most likely happened?",
+              "choices": [
+                "A library added it to the merged manifest",
+                "The Lab invented it",
+                "Android adds location to every app",
+                "Gradle adds it to apps built with Compose"
+              ],
+              "answer": 0,
+              "why": "Library manifests are merged into yours. A dependency asked for location, and your app now does too."
+            }
+          ]
+        },
+        {
+          "id": "pm-restricted",
+          "kind": "debug",
+          "hints": [
+            "Match each permission to what the app says it does.",
+            "One of these is on Play's restricted list and the app's purpose does not need it."
+          ],
+          "variants": [
+            {
+              "prompt": "A barcode scanner that sends reminders. Tap the line Play will reject without a declaration this app cannot justify.",
+              "code": [
+                "<uses-permission android:name=\"android.permission.INTERNET\" />",
+                "<uses-permission android:name=\"android.permission.CAMERA\" />",
+                "<uses-permission android:name=\"android.permission.QUERY_ALL_PACKAGES\" />",
+                "<uses-permission android:name=\"android.permission.POST_NOTIFICATIONS\" />"
+              ],
+              "answer": 2,
+              "why": "QUERY_ALL_PACKAGES lets an app see every app installed, and Play allows it only for apps whose core purpose needs that. A scanner does not."
+            },
+            {
+              "prompt": "A weather app shows the forecast for where you are when you open it. Tap the line that asks for more than that needs, and needs a Play declaration.",
+              "code": [
+                "<uses-permission android:name=\"android.permission.INTERNET\" />",
+                "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\" />",
+                "<uses-permission android:name=\"android.permission.ACCESS_BACKGROUND_LOCATION\" />",
+                "<uses-permission android:name=\"android.permission.VIBRATE\" />"
+              ],
+              "answer": 2,
+              "why": "Location while the app is open needs only coarse location. Background location is restricted on Play and needs a declaration and review."
+            }
+          ]
+        },
+        {
+          "id": "pm-transfer",
+          "kind": "transfer",
+          "hints": [
+            "The best permission is the one you never need.",
+            "Is there a system component, or a moment when the app is visible, that does the job?"
+          ],
+          "variants": [
+            {
+              "prompt": "A notes app lets people attach a photo they pick. Which approach needs no storage or media permission at all?",
+              "choices": [
+                "The system photo picker",
+                "READ_MEDIA_IMAGES",
+                "MANAGE_EXTERNAL_STORAGE",
+                "READ_EXTERNAL_STORAGE with requestLegacyExternalStorage"
+              ],
+              "answer": 0,
+              "why": "The system photo picker hands the app only the photos the person chooses, and needs no permission."
+            },
+            {
+              "prompt": "A running app records a route while the screen is off, after the runner pressed Start. Which shape avoids background location?",
+              "choices": [
+                "A location foreground service started from the visible app, using while-in-use location",
+                "ACCESS_BACKGROUND_LOCATION requested on first launch",
+                "A WorkManager job every 15 minutes",
+                "MANAGE_EXTERNAL_STORAGE to write the route file"
+              ],
+              "answer": 0,
+              "why": "A location foreground service started while the app is visible can keep using location granted 'while in use'. Background location is for apps that need it with nothing on screen."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "target-sdk",
+      "title": "targetSdk and Play's yearly floor",
+      "outcome": "Set minSdk, compileSdk and targetSdk for what each one means, and keep targetSdk at or above Play's current floor.",
+      "minutes": 12,
+      "free": false,
+      "requires": [
+        "exported-components",
+        "permissions"
+      ],
+      "model": [
+        "minSdk is the oldest Android your app installs on. compileSdk is the API level you compile against: which classes and methods your code can name. targetSdk is a promise that you have tested against that version's behaviour, so Android applies its behaviour changes to you.",
+        "Raising targetSdk changes behaviour, not only a number: foreground services need a type when you target 34, and Android 15 draws apps edge to edge when you target 35. Read the version's behaviour changes and test before you raise it.",
+        "Every year Play raises its floor. New apps and updates must now target API {floor} or higher, and Play Console refuses an upload below it, however good the app is.",
+        "compileSdk should be at least targetSdk: you cannot promise to behave like a version you cannot compile against. To keep old phones and use new APIs, keep minSdk low and guard the new call with a check of Build.VERSION.SDK_INT."
+      ],
+      "example": {
+        "code": [
+          "android {",
+          "    compileSdk = {floor}",
+          "    defaultConfig {",
+          "        minSdk = 26          // the oldest phone you support",
+          "        targetSdk = {floor}  // the newest behaviour you tested",
+          "    }",
+          "}"
+        ],
+        "notes": [
+          "minSdk and targetSdk answer different questions, so they are rarely the same number.",
+          "compileSdk is at least targetSdk.",
+          "The Lab compares targetSdk with Play's floor every time it reads an APK."
+        ]
+      },
+      "questions": [
+        {
+          "id": "ts-roles",
+          "kind": "concept",
+          "hints": [
+            "One of these is about the oldest phone, one about what your code can name, one about behaviour.",
+            "Which number is a promise about testing?"
+          ],
+          "variants": [
+            {
+              "prompt": "Which setting decides which behaviour changes Android applies to your app?",
+              "choices": [
+                "targetSdk",
+                "minSdk",
+                "compileSdk",
+                "versionCode"
+              ],
+              "answer": 0,
+              "why": "targetSdk tells Android which version's behaviour you have tested against, and Android applies that version's changes."
+            },
+            {
+              "prompt": "Which setting decides the oldest Android version your app can be installed on?",
+              "choices": [
+                "minSdk",
+                "targetSdk",
+                "compileSdk",
+                "A maximum version set in Play Console"
+              ],
+              "answer": 0,
+              "why": "minSdk is the floor for installation. The other two are about compiling and behaviour."
+            }
+          ]
+        },
+        {
+          "id": "ts-predict",
+          "kind": "predict",
+          "hints": [
+            "Play's floor applies to updates as well as new apps.",
+            "A behaviour change is something Android does differently, not a compile error."
+          ],
+          "variants": [
+            {
+              "prompt": "Play's floor is API {floor}. You upload an update with targetSdk = {floor-1}. What happens?",
+              "choices": [
+                "Play Console refuses the upload because of the target API requirement",
+                "It publishes, but only to phones on Android API {floor-1}",
+                "It publishes with a warning",
+                "It publishes: the floor applies to new apps only"
+              ],
+              "answer": 0,
+              "why": "The floor applies to new apps and to updates. Play Console refuses the upload until targetSdk reaches it."
+            },
+            {
+              "prompt": "You raise targetSdk from 34 to 35 and change nothing else. What do you need to check first?",
+              "choices": [
+                "The behaviour changes Android 15 applies to apps that target it, such as edge-to-edge drawing",
+                "Nothing: targetSdk is only metadata",
+                "That minSdk is also 35",
+                "That versionCode starts again from 1"
+              ],
+              "answer": 0,
+              "why": "Targeting 35 opts you into Android 15's behaviour changes, such as drawing edge to edge. The screens need testing before the update ships."
+            }
+          ]
+        },
+        {
+          "id": "ts-config",
+          "kind": "debug",
+          "hints": [
+            "Compare the three levels with each other and with Play's floor.",
+            "Which number is lower than one it has to be at least?"
+          ],
+          "variants": [
+            {
+              "prompt": "This app must target Play's floor and use that version's APIs. Tap the line that is wrong.",
+              "code": [
+                "android {",
+                "    compileSdk = 34",
+                "    defaultConfig {",
+                "        minSdk = 24",
+                "        targetSdk = {floor}",
+                "        versionCode = 12",
+                "    }",
+                "}"
+              ],
+              "answer": 1,
+              "why": "compileSdk 34 is below targetSdk {floor}. You cannot compile against the APIs of the version you promise to behave like."
+            },
+            {
+              "prompt": "Play Console refuses this update. Tap the line responsible.",
+              "code": [
+                "android {",
+                "    compileSdk = {floor}",
+                "    defaultConfig {",
+                "        minSdk = 26",
+                "        targetSdk = {floor-1}",
+                "        versionCode = 40",
+                "    }",
+                "}"
+              ],
+              "answer": 4,
+              "why": "targetSdk {floor-1} is below Play's floor of {floor}. compileSdk is already high enough."
+            }
+          ]
+        },
+        {
+          "id": "ts-transfer",
+          "kind": "transfer",
+          "hints": [
+            "Each of the three numbers can move without the others.",
+            "The new API can be guarded at run time."
+          ],
+          "variants": [
+            {
+              "prompt": "Your app supports Android 8.0 and you want an API added in Android 13. What keeps both?",
+              "choices": [
+                "Keep minSdk 26, compile against the latest, and guard the call with Build.VERSION.SDK_INT",
+                "Raise minSdk to 33",
+                "Lower targetSdk to 26",
+                "Lower compileSdk to 26"
+              ],
+              "answer": 0,
+              "why": "minSdk stays where your users are, compileSdk lets you name the new API, and a version check calls it only where it exists."
+            },
+            {
+              "prompt": "A library you depend on breaks when you raise targetSdk to Play's floor. What is the sound order of work?",
+              "choices": [
+                "Update the library to a version that supports the new target, test the behaviour changes, then raise targetSdk",
+                "Keep targetSdk below the floor until the library is fixed",
+                "Raise minSdk instead",
+                "Remove the library's permissions"
+              ],
+              "answer": 0,
+              "why": "Staying below the floor is not an option for updates. Update the library, test the behaviour changes, then raise targetSdk."
+            }
+          ]
+        }
+      ],
+      "gate": {
+        "artifact": "target_sdk",
+        "task": "Pick a release APK of your own app. The Lab reads its targetSdk and checks it against Play's floor of API {floor}."
+      }
+    },
+    {
+      "id": "signing",
+      "title": "App signing and your upload key",
+      "outcome": "Sign release builds with your own upload key, explain what Play App Signing keeps, and keep the key out of the repository.",
+      "minutes": 15,
+      "free": false,
+      "requires": [
+        "target-sdk"
+      ],
+      "model": [
+        "Android installs only signed apps, and an update has to be signed with the same key as the app it replaces. The signature is the app's identity.",
+        "With Play App Signing, which new apps published as App Bundles use, Google keeps the app signing key that signs what phones download. You sign what you upload with an upload key. If the upload key is lost, Play support can register a new one; the app signing key never leaves Google.",
+        "The Android SDK creates a debug key on every machine, under the name Android Debug. A build signed with it is a debug build whatever else it says, and Play Console refuses it.",
+        "Signature schemes: v1 is the old JAR signature, v2 (Android 7.0) signs the whole file, and v3 (Android 9) adds key rotation. Gradle applies the ones your minSdk needs.",
+        "The keystore and its passwords stay out of the repository: in a gitignored keystore.properties, or in your CI's secret store. A key that was ever committed has to be treated as public."
+      ],
+      "example": {
+        "code": [
+          "val keystore = Properties().apply {",
+          "    rootProject.file(\"keystore.properties\")",
+          "        .takeIf { it.exists() }?.inputStream()?.use { load(it) }",
+          "}",
+          "",
+          "android {",
+          "    signingConfigs {",
+          "        create(\"upload\") {",
+          "            storeFile = rootProject.file(keystore.getProperty(\"storeFile\"))",
+          "            storePassword = keystore.getProperty(\"storePassword\")",
+          "            keyAlias = keystore.getProperty(\"keyAlias\")",
+          "            keyPassword = keystore.getProperty(\"keyPassword\")",
+          "        }",
+          "    }",
+          "    buildTypes {",
+          "        release { signingConfig = signingConfigs.getByName(\"upload\") }",
+          "    }",
+          "}"
+        ],
+        "notes": [
+          "The secrets come from a gitignored file, never from build.gradle.kts.",
+          "Only release uses the upload key; debug keeps the SDK's debug key.",
+          "OneDevs itself is built this way."
+        ]
+      },
+      "questions": [
+        {
+          "id": "sg-keys",
+          "kind": "concept",
+          "hints": [
+            "There are two keys under Play App Signing. Which one stays with Google?",
+            "Which key could Play support replace for you?"
+          ],
+          "variants": [
+            {
+              "prompt": "With Play App Signing, which key signs the APKs phones download from Play?",
+              "choices": [
+                "Google's app signing key",
+                "Your upload key",
+                "The Android debug key",
+                "No key: Play removes signatures"
+              ],
+              "answer": 0,
+              "why": "Google signs what it delivers with the app signing key it holds. Your upload key only proves an upload came from you."
+            },
+            {
+              "prompt": "You have lost your upload key. What is true?",
+              "choices": [
+                "Play support can register a new upload key; the app signing key is safe with Google",
+                "The app can never be updated again",
+                "You can sign with the debug key until it turns up",
+                "Uploading with any new key replaces the old one automatically"
+              ],
+              "answer": 0,
+              "why": "The upload key can be reset through Play support, because Google holds the key that actually signs the app."
+            }
+          ]
+        },
+        {
+          "id": "sg-predict",
+          "kind": "predict",
+          "hints": [
+            "What does a debug signature tell Play?",
+            "What does Android compare when one version replaces another?"
+          ],
+          "variants": [
+            {
+              "prompt": "Your release AAB was signed with the debug config by mistake. What does Play Console do with the upload?",
+              "choices": [
+                "Refuses it: it was signed in debug mode",
+                "Accepts it and signs it again with your upload key",
+                "Accepts it for closed testing only",
+                "Accepts it but hides it from search"
+              ],
+              "answer": 0,
+              "why": "Play Console refuses anything signed in debug mode. The debug key is not yours alone and proves nothing."
+            },
+            {
+              "prompt": "A phone has version 3 of your app, signed with key A. You install version 4, signed with key B. What happens?",
+              "choices": [
+                "The install fails: an update must be signed with the same key",
+                "It installs and keeps the data",
+                "It installs as a second app",
+                "Android asks the person which key to trust"
+              ],
+              "answer": 0,
+              "why": "An update must carry the same signing identity as the installed app, so Android refuses it."
+            }
+          ]
+        },
+        {
+          "id": "sg-leak",
+          "kind": "debug",
+          "hints": [
+            "Which values are secrets, and where do they come from here?",
+            "Look for a value written straight into the file."
+          ],
+          "variants": [
+            {
+              "prompt": "This file is committed to git. Tap the line that leaks a secret.",
+              "code": [
+                "android {",
+                "    signingConfigs {",
+                "        create(\"upload\") {",
+                "            storeFile = file(\"upload.jks\")",
+                "            storePassword = \"hunter2\"",
+                "            keyAlias = \"upload\"",
+                "            keyPassword = keystore.getProperty(\"keyPassword\")",
+                "        }",
+                "    }",
+                "}"
+              ],
+              "answer": 4,
+              "why": "The keystore password is written into the build file, so everyone with the repository has it. Read it from a gitignored file or a CI secret, as the key password already is."
+            },
+            {
+              "prompt": "Play Console refuses this release build. Tap the line responsible.",
+              "code": [
+                "buildTypes {",
+                "    release {",
+                "        isMinifyEnabled = true",
+                "        signingConfig = signingConfigs.getByName(\"debug\")",
+                "    }",
+                "    debug {",
+                "        applicationIdSuffix = \".debug\"",
+                "    }",
+                "}"
+              ],
+              "answer": 3,
+              "why": "The release build is signed with the debug configuration, so it carries the Android Debug certificate."
+            }
+          ]
+        },
+        {
+          "id": "sg-transfer",
+          "kind": "transfer",
+          "hints": [
+            "Where do secrets live when no person should have to paste them?",
+            "The answer keeps the key out of git and out of inboxes."
+          ],
+          "variants": [
+            {
+              "prompt": "You move CI to a new provider. How should the release job get the upload key?",
+              "choices": [
+                "From the CI's secret store, written to a file at build time and never committed",
+                "Committed to a private repository",
+                "Pasted into build.gradle.kts",
+                "Downloaded from Play Console"
+              ],
+              "answer": 0,
+              "why": "The CI's secret store keeps the key encrypted and out of the repository; the job writes it to a file only while it builds."
+            },
+            {
+              "prompt": "A teammate needs to make release builds on their own machine. What do you do?",
+              "choices": [
+                "Give them access through a secret manager, so the key and passwords stay out of git and inboxes",
+                "Email them the .jks file and the passwords",
+                "Commit the .jks with the passwords removed",
+                "Let them generate their own upload key and upload with it"
+              ],
+              "answer": 0,
+              "why": "Share access through a secret manager. A key sent by email or committed anywhere has to be treated as leaked, and a key they generate themselves is not the upload key Play knows."
+            }
+          ]
+        }
+      ],
+      "gate": {
+        "artifact": "signing",
+        "task": "Pick a release APK of your own app. The Lab checks that it is signed with your own key, not the debug key, using a modern signature scheme."
+      }
+    },
+    {
+      "id": "release-build",
+      "title": "Release builds: R8 and debuggable",
+      "outcome": "Produce a release build that R8 has shrunk, that is not debuggable, and that still works where code is reached by reflection.",
+      "minutes": 15,
+      "free": false,
+      "requires": [
+        "signing"
+      ],
+      "model": [
+        "A release build must not be debuggable. A debuggable app lets anyone with adb attach a debugger and read its memory. Gradle's release type is not debuggable unless someone overrides it.",
+        "R8 shrinks (removes code nothing calls), optimises, and obfuscates (renames classes to a, b, c). isMinifyEnabled = true turns it on for release, and it is often the biggest size saving an app has.",
+        "R8 sees only the calls it can follow. Code reached by reflection, such as classes named in strings or models read by field name, needs a keep rule, or it is removed and crashes only in release.",
+        "Keep the mapping file R8 writes for every release, or stack traces arrive as a.b.c. An App Bundle carries it to Play; for an APK you upload it yourself.",
+        "Test the release build before it ships. The bug R8 introduces is invisible in debug, which is the build you test by hand."
+      ],
+      "example": {
+        "code": [
+          "buildTypes {",
+          "    release {",
+          "        isMinifyEnabled = true",
+          "        isShrinkResources = true",
+          "        proguardFiles(",
+          "            getDefaultProguardFile(\"proguard-android-optimize.txt\"),",
+          "            \"proguard-rules.pro\",",
+          "        )",
+          "    }",
+          "}",
+          "",
+          "// proguard-rules.pro: models read by field name over JSON",
+          "-keep class com.example.api.model.** { *; }"
+        ],
+        "notes": [
+          "Resource shrinking needs code shrinking on, which is why both are here.",
+          "The keep rule covers only what reflection reaches, not the whole app.",
+          "The Lab reads the R8 marker in the DEX to tell whether R8 actually ran."
+        ]
+      },
+      "questions": [
+        {
+          "id": "rb-what",
+          "kind": "concept",
+          "hints": [
+            "One of these settings does three things to your code.",
+            "What can someone do to a debuggable app over adb?"
+          ],
+          "variants": [
+            {
+              "prompt": "What does isMinifyEnabled = true turn on?",
+              "choices": [
+                "R8: shrinking, optimisation and obfuscation of your code",
+                "Image compression only",
+                "Removal of unused languages",
+                "Debug symbols"
+              ],
+              "answer": 0,
+              "why": "It runs R8 over the release build: shrinking, optimisation and obfuscation."
+            },
+            {
+              "prompt": "Why must a release build not be debuggable?",
+              "choices": [
+                "Anyone with adb can attach a debugger to it and read its memory",
+                "It runs slower, but only in the emulator",
+                "Play cannot read its icon",
+                "It cannot be signed"
+              ],
+              "answer": 0,
+              "why": "A debuggable app accepts a debugger from anyone with adb, who can then read and change what it holds in memory."
+            }
+          ]
+        },
+        {
+          "id": "rb-predict",
+          "kind": "predict",
+          "hints": [
+            "What does R8 do to code it cannot see being used?",
+            "Renamed code needs a dictionary to be read again."
+          ],
+          "variants": [
+            {
+              "prompt": "A class is filled from JSON by reflection, by field name. R8 is on and no keep rule covers it. What happens?",
+              "choices": [
+                "Its fields are renamed or removed and parsing breaks, only in the release build",
+                "Nothing: R8 never touches data classes",
+                "The build fails",
+                "It works, but the APK is larger"
+              ],
+              "answer": 0,
+              "why": "R8 renames or removes fields it does not see used, so parsing breaks, and only in release, which is why the debug build looked fine."
+            },
+            {
+              "prompt": "A crash report from a release says: at a.b.c(Unknown Source). What do you need to read it?",
+              "choices": [
+                "The mapping.txt R8 wrote for that exact build",
+                "The same crash from a debug build",
+                "The source code of the latest version",
+                "A new build with R8 turned off"
+              ],
+              "answer": 0,
+              "why": "The mapping file R8 wrote for that exact build translates the short names back. Another build's mapping does not match."
+            }
+          ]
+        },
+        {
+          "id": "rb-config",
+          "kind": "debug",
+          "hints": [
+            "Read each line of the release block as if you were an attacker, then as if you were R8.",
+            "Which line turns off the thing the rules file is for, or turns on something release must never have?"
+          ],
+          "variants": [
+            {
+              "prompt": "Tap the line that makes this release build unsafe to ship.",
+              "code": [
+                "buildTypes {",
+                "    release {",
+                "        isMinifyEnabled = true",
+                "        isDebuggable = true",
+                "        signingConfig = signingConfigs.getByName(\"upload\")",
+                "    }",
+                "}"
+              ],
+              "answer": 3,
+              "why": "isDebuggable = true makes the release build accept a debugger from anyone with adb."
+            },
+            {
+              "prompt": "The rules file is there, yet the release APK is not shrunk. Tap the line responsible.",
+              "code": [
+                "buildTypes {",
+                "    release {",
+                "        isMinifyEnabled = false",
+                "        isDebuggable = false",
+                "        proguardFiles(getDefaultProguardFile(\"proguard-android-optimize.txt\"))",
+                "    }",
+                "}"
+              ],
+              "answer": 2,
+              "why": "R8 runs only when isMinifyEnabled is true. The rules file does nothing on its own."
+            }
+          ]
+        },
+        {
+          "id": "rb-transfer",
+          "kind": "transfer",
+          "hints": [
+            "The fix should keep R8 working for the rest of the app.",
+            "Which build is the one your users actually get?"
+          ],
+          "variants": [
+            {
+              "prompt": "After turning R8 on, the release build crashes on a screen that loads a class by name from a string. Debug is fine. What is the right fix?",
+              "choices": [
+                "Add a keep rule for that class, then test the release build again",
+                "Turn R8 off for good",
+                "Make the release build debuggable",
+                "Rename the class to something shorter"
+              ],
+              "answer": 0,
+              "why": "A keep rule for that class tells R8 it is used, and the rest of the app stays shrunk. Then test the release build itself."
+            },
+            {
+              "prompt": "You want testers to see exactly what users will get. Which build do they install?",
+              "choices": [
+                "The release build, signed and shrunk, from the closed track",
+                "The debug build from Android Studio",
+                "A release build with R8 turned off",
+                "Any build with the same versionName"
+              ],
+              "answer": 0,
+              "why": "The signed, shrunk release build from the testing track is the one that behaves like production."
+            }
+          ]
+        }
+      ],
+      "gate": {
+        "artifact": "release_build",
+        "task": "Pick a release APK of your own app. The Lab checks that it is not debuggable or test-only, that its DEX was built for release, and that R8 ran."
+      }
+    },
+    {
+      "id": "native-code",
+      "title": "App Bundles, ABIs and 16 KB pages",
+      "outcome": "Ship native code that loads on every phone Play serves: 64-bit libraries alongside any 32-bit ones, aligned for 16 KB pages, delivered through an App Bundle.",
+      "minutes": 12,
+      "free": false,
+      "requires": [
+        "release-build"
+      ],
+      "model": [
+        "New apps on Play are published as Android App Bundles (.aab). From the bundle Play builds APKs for each phone, so a phone downloads only its own screen density, CPU architecture (ABI) and, by default, languages.",
+        "Native code (.so files) is built once per ABI: arm64-v8a, armeabi-v7a, x86_64. An app that ships 32-bit native code has to ship the 64-bit version of it too.",
+        "Android 15 brought phones whose memory pages are 16 KB rather than 4 KB. A 64-bit library aligned only for 4 KB can fail to load on them. Play requires apps that target Android 15 or higher to support 16 KB pages, and NDK r28 and later align for it by default.",
+        "Native code usually arrives in a dependency, not in C++ you wrote. When the Lab finds an unaligned library, the fix is normally a newer version of whatever brought it.",
+        "An app written only in Kotlin or Java ships no native libraries, so there is nothing to align."
+      ],
+      "example": {
+        "code": [
+          "lib/arm64-v8a/libimage.so     64-bit, 16 KB aligned",
+          "lib/armeabi-v7a/libimage.so   32-bit, paired with arm64-v8a",
+          "lib/x86_64/libimage.so        64-bit, 16 KB aligned"
+        ],
+        "notes": [
+          "Every 32-bit library has its 64-bit twin.",
+          "Every 64-bit library is aligned for 16 KB pages.",
+          "From a bundle, a phone downloads only the folder for its own ABI."
+        ]
+      },
+      "questions": [
+        {
+          "id": "nc-bundle",
+          "kind": "concept",
+          "hints": [
+            "A bundle is not what a phone installs. What does Play make from it?",
+            "Which ABI is the 64-bit partner of armeabi-v7a?"
+          ],
+          "variants": [
+            {
+              "prompt": "What does Play deliver to a phone from your App Bundle?",
+              "choices": [
+                "APKs holding only what that phone needs: its ABI, density and languages",
+                "The whole .aab file",
+                "A universal APK with every ABI",
+                "Only the code, with resources downloaded on first launch"
+              ],
+              "answer": 0,
+              "why": "Play generates APKs from the bundle and serves each phone the parts for its own ABI, screen density and languages."
+            },
+            {
+              "prompt": "Your app includes armeabi-v7a native libraries. What does Play require?",
+              "choices": [
+                "The matching arm64-v8a libraries as well",
+                "Nothing else",
+                "x86 libraries",
+                "A separate listing for 32-bit phones"
+              ],
+              "answer": 0,
+              "why": "32-bit native code must come with its 64-bit version: arm64-v8a for ARM."
+            }
+          ]
+        },
+        {
+          "id": "nc-pages",
+          "kind": "predict",
+          "hints": [
+            "Alignment is decided when the library is built, not at install.",
+            "Which apps have libraries at all?"
+          ],
+          "variants": [
+            {
+              "prompt": "A 64-bit library aligned only for 4 KB pages is loaded on a phone with 16 KB pages. What can happen?",
+              "choices": [
+                "It can fail to load, and the app crashes when it needs the library",
+                "It only loads more slowly",
+                "Android realigns it during install",
+                "Nothing: page size only matters for games"
+              ],
+              "answer": 0,
+              "why": "The loader cannot map its segments, so the library can fail to load and the app crash when it needs it. Android does not realign it for you."
+            },
+            {
+              "prompt": "Your app is written entirely in Kotlin and has no native dependencies. What do you need to do for 16 KB pages?",
+              "choices": [
+                "Nothing: there are no native libraries to align",
+                "Rebuild with NDK r28",
+                "Set a page size in the manifest",
+                "Ship a 32-bit APK"
+              ],
+              "answer": 0,
+              "why": "Alignment is about native libraries. With none in the APK, there is nothing to align."
+            }
+          ]
+        },
+        {
+          "id": "nc-libs",
+          "kind": "debug",
+          "hints": [
+            "Pair each 32-bit library with its 64-bit twin, and read every 64-bit alignment.",
+            "One library is the odd one out."
+          ],
+          "variants": [
+            {
+              "prompt": "Play refuses this upload. Tap the library that causes it.",
+              "code": [
+                "lib/arm64-v8a/libsqlite.so    64-bit, 16 KB aligned",
+                "lib/armeabi-v7a/libsqlite.so  32-bit",
+                "lib/armeabi-v7a/libcrypto.so  32-bit",
+                "lib/arm64-v8a/libmlkit.so     64-bit, 16 KB aligned"
+              ],
+              "answer": 2,
+              "why": "libcrypto.so exists only for armeabi-v7a. 32-bit native code needs its 64-bit version alongside."
+            },
+            {
+              "prompt": "This app targets Android 15. Tap the library that blocks the update.",
+              "code": [
+                "lib/arm64-v8a/libvision.so    64-bit, 4 KB aligned",
+                "lib/arm64-v8a/libmath.so      64-bit, 16 KB aligned",
+                "lib/x86_64/libvision.so       64-bit, 16 KB aligned",
+                "lib/x86_64/libmath.so         64-bit, 16 KB aligned"
+              ],
+              "answer": 0,
+              "why": "A 64-bit library aligned only for 4 KB does not meet the 16 KB requirement for apps targeting Android 15 or higher."
+            }
+          ]
+        },
+        {
+          "id": "nc-transfer",
+          "kind": "transfer",
+          "hints": [
+            "Where did the library come from, if not your own code?",
+            "What decides how much each phone downloads?"
+          ],
+          "variants": [
+            {
+              "prompt": "The Lab says libpdf.so is not aligned for 16 KB pages. You never wrote any C++. What do you do first?",
+              "choices": [
+                "Find which dependency ships libpdf.so and update it to a version built for 16 KB pages",
+                "Delete the .so from the APK by hand",
+                "Lower targetSdk to 34 for good",
+                "Rename the file"
+              ],
+              "answer": 0,
+              "why": "The library came from a dependency. A version of it built for 16 KB pages fixes it without touching the APK by hand."
+            },
+            {
+              "prompt": "Your game ships native libraries for three ABIs and you want each phone's download as small as possible. What do you publish?",
+              "choices": [
+                "An App Bundle, so each phone gets only its own ABI",
+                "A universal APK with every ABI",
+                "One app per ABI, each with its own listing",
+                "Only armeabi-v7a, to save space"
+              ],
+              "answer": 0,
+              "why": "An App Bundle lets Play send each phone only the libraries for its own ABI."
+            }
+          ]
+        }
+      ],
+      "gate": {
+        "artifact": "native_code",
+        "task": "Pick a release APK of your own app. The Lab checks that any 32-bit native code has its 64-bit twin and that 64-bit libraries are aligned for 16 KB pages. An app with no native code passes."
+      }
+    },
+    {
+      "id": "versions-tracks",
+      "title": "Versions, tracks and staged rollouts",
+      "outcome": "Number every upload correctly and move a release from testers to everyone in stages you can stop.",
+      "minutes": 10,
+      "free": false,
+      "requires": [
+        "closed-testing"
+      ],
+      "model": [
+        "versionCode is the number Play and Android compare. Each upload needs a versionCode Play has never seen, and a phone updates only to a higher one. versionName is the text people read; nothing compares it.",
+        "Play's tracks run from narrow to wide: internal testing (up to 100 testers, available within minutes), closed testing (the track the twelve-tester rule is about), open testing (anyone can join), and production.",
+        "Promote a release rather than rebuilding it. The bundle your testers used is the one that should reach production.",
+        "A staged rollout releases to a percentage of users first. If crashes rise, halt it and Play stops offering the update to people who do not have it. Phones that already updated keep it, so you fix forward with a higher versionCode.",
+        "versionCode must stay at or below 2,100,000,000."
+      ],
+      "example": {
+        "code": [
+          "defaultConfig {",
+          "    versionCode = 31        // 30 was the last upload",
+          "    versionName = \"1.4.0\"   // what people read",
+          "}"
+        ],
+        "notes": [
+          "One more than the highest code ever uploaded is the simplest rule that never fails.",
+          "versionName can say anything; versionCode cannot repeat."
+        ]
+      },
+      "questions": [
+        {
+          "id": "vt-what",
+          "kind": "concept",
+          "hints": [
+            "One of these is a number Play compares, the rest are not.",
+            "The twelve-tester rule names its track."
+          ],
+          "variants": [
+            {
+              "prompt": "Which value has to be new with every upload to Play?",
+              "choices": [
+                "versionCode",
+                "versionName",
+                "targetSdk",
+                "minSdk"
+              ],
+              "answer": 0,
+              "why": "Play compares versionCode and refuses one it has already seen. versionName is only text."
+            },
+            {
+              "prompt": "Which track is the twelve-tester requirement about?",
+              "choices": [
+                "Closed testing",
+                "Internal testing",
+                "Open testing",
+                "Production"
+              ],
+              "answer": 0,
+              "why": "The requirement is a closed test. Internal and open testing do not count toward it."
+            }
+          ]
+        },
+        {
+          "id": "vt-predict",
+          "kind": "predict",
+          "hints": [
+            "Which of the two values did the new upload change?",
+            "Halting a rollout stops new offers. Does it reach phones that already updated?"
+          ],
+          "variants": [
+            {
+              "prompt": "Production has versionCode 41. You fix a typo and upload a new AAB with versionCode 41 and versionName 1.2.1. What happens?",
+              "choices": [
+                "Play refuses it: versionCode 41 has already been used",
+                "It replaces 41",
+                "It publishes, because versionName changed",
+                "It publishes to testers only"
+              ],
+              "answer": 0,
+              "why": "versionCode 41 has been used, so Play refuses the upload. Changing versionName changes nothing Play compares."
+            },
+            {
+              "prompt": "You halt a staged rollout at 20%. What happens to people who already updated?",
+              "choices": [
+                "They keep the update; you fix forward with a higher versionCode",
+                "Play rolls them back to the previous version",
+                "The app is removed from their phones",
+                "They are moved to the testing track"
+              ],
+              "answer": 0,
+              "why": "Halting stops the update reaching anyone new. Those who have it keep it, so the fix goes out as a higher versionCode."
+            }
+          ]
+        },
+        {
+          "id": "vt-history",
+          "kind": "debug",
+          "hints": [
+            "Read the versionCode column only.",
+            "One number appears twice, or is outside what Play allows."
+          ],
+          "variants": [
+            {
+              "prompt": "Here is the upload history. Tap the upload Play refuses.",
+              "code": [
+                "versionCode 18   versionName 1.0.0   internal",
+                "versionCode 19   versionName 1.0.1   closed",
+                "versionCode 20   versionName 1.1.0   closed",
+                "versionCode 19   versionName 1.1.1   production"
+              ],
+              "answer": 3,
+              "why": "versionCode 19 was already used by the second upload. Every upload needs a code Play has not seen."
+            },
+            {
+              "prompt": "Play refuses an upload with this configuration. Tap the line responsible.",
+              "code": [
+                "defaultConfig {",
+                "    applicationId = \"com.example.notes\"",
+                "    versionCode = 2_147_000_000",
+                "    versionName = \"3.0\"",
+                "}"
+              ],
+              "answer": 2,
+              "why": "versionCode is above Play's ceiling of 2,100,000,000."
+            }
+          ]
+        },
+        {
+          "id": "vt-transfer",
+          "kind": "transfer",
+          "hints": [
+            "Which track is built for speed with a small trusted team?",
+            "The sound answer limits the damage first and fixes forward."
+          ],
+          "variants": [
+            {
+              "prompt": "You want new builds in front of a team of eight within minutes, several times a day. Which track?",
+              "choices": [
+                "Internal testing",
+                "Production, with a 1% rollout",
+                "Open testing",
+                "Closed testing with a Google Group of twelve"
+              ],
+              "answer": 0,
+              "why": "Internal testing exists for exactly this: up to 100 testers and builds available within minutes."
+            },
+            {
+              "prompt": "Crashes jump after a 10% rollout. What is the sound sequence?",
+              "choices": [
+                "Halt the rollout, fix, upload a higher versionCode, and stage it again",
+                "Go to 100% so the crash rate averages out",
+                "Delete the release from Play Console",
+                "Upload the same AAB again"
+              ],
+              "answer": 0,
+              "why": "Halting stops the damage spreading; the fix goes out with a higher versionCode, staged again."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "store-listing",
+      "title": "The store listing",
+      "outcome": "Prepare a listing Play accepts that tells a stranger what the app does.",
+      "minutes": 10,
+      "free": false,
+      "requires": [
+        "versions-tracks"
+      ],
+      "model": [
+        "Text limits: the title is at most 30 characters, the short description at most 80, the full description at most 4,000. Play Console will not save a listing over them.",
+        "Graphics: the icon is a 512 by 512 PNG of up to 1 MB. The feature graphic is 1024 by 500, a JPEG or a PNG without transparency. Phone screenshots: at least two, each side between 320 and 3,840 pixels, and the long side no more than twice the short.",
+        "Play's metadata policy keeps the title, icon and developer name free of ranking claims and promotions: no 'best', '#1', 'free' or prices, no emoji used for decoration, no keyword lists.",
+        "The first line of the short description and the first screenshot carry most of the decision. Say what the app does and for whom, in words a stranger uses.",
+        "The Lab's store tools check your graphics and text against these rules before you upload."
+      ],
+      "example": {
+        "code": [
+          "Title              Pocket Ledger",
+          "Short description  Track spending in seconds, even offline.",
+          "Icon               512 x 512 PNG",
+          "Feature graphic    1024 x 500 JPEG",
+          "Screenshots        4 phone screenshots, 1080 x 1920"
+        ],
+        "notes": [
+          "The title is the name, not a list of keywords.",
+          "The short description says what it does and the one thing that sets it apart.",
+          "1080 x 1920 is under the 2:1 limit and large enough to be featured."
+        ]
+      },
+      "questions": [
+        {
+          "id": "sl-limits",
+          "kind": "concept",
+          "hints": [
+            "The title limit is the smallest of the three text limits.",
+            "Which graphic must not be transparent?"
+          ],
+          "variants": [
+            {
+              "prompt": "How long can an app's title on Play be?",
+              "choices": [
+                "30 characters",
+                "50 characters",
+                "80 characters",
+                "There is no limit"
+              ],
+              "answer": 0,
+              "why": "The title is limited to 30 characters. The short description has 80."
+            },
+            {
+              "prompt": "Which feature graphic will Play accept?",
+              "choices": [
+                "1024 x 500, a JPEG or a PNG without transparency",
+                "512 x 512 PNG with transparency",
+                "1920 x 1080 in any format",
+                "1024 x 500 PNG with transparency"
+              ],
+              "answer": 0,
+              "why": "The feature graphic is 1024 by 500, as a JPEG or a PNG without an alpha channel."
+            }
+          ]
+        },
+        {
+          "id": "sl-predict",
+          "kind": "predict",
+          "hints": [
+            "Count the characters, then read the words against the metadata policy.",
+            "What does Play Console do with text over a limit?"
+          ],
+          "variants": [
+            {
+              "prompt": "Your title is 'Best Free Budget App #1 - Save Money'. What will happen?",
+              "choices": [
+                "It breaks the rules: it is too long, and 'best', '#1' and 'free' are not allowed in a title",
+                "It is fine, as long as the app is free",
+                "It is fine, as long as it fits in 30 characters",
+                "It is fine for a closed test"
+              ],
+              "answer": 0,
+              "why": "It is over 30 characters, and 'best', 'free' and '#1' are the promotional words Play's metadata policy keeps out of titles."
+            },
+            {
+              "prompt": "Your short description is 92 characters. What happens when you save the listing?",
+              "choices": [
+                "Play Console will not save it until it is 80 characters or fewer",
+                "It is cut off with an ellipsis",
+                "It is accepted; the limit is a guideline",
+                "The extra text moves to the full description"
+              ],
+              "answer": 0,
+              "why": "Play Console will not save text over its limit. Nothing is cut for you."
+            }
+          ]
+        },
+        {
+          "id": "sl-draft",
+          "kind": "debug",
+          "hints": [
+            "Check every line against a number from the lesson.",
+            "Transparency, length, or proportions: one of them is wrong."
+          ],
+          "variants": [
+            {
+              "prompt": "Tap the part of this listing Play Console refuses.",
+              "code": [
+                "Title              Pocket Ledger",
+                "Short description  Track spending in seconds, even offline.",
+                "Icon               512 x 512 PNG",
+                "Feature graphic    1024 x 500 PNG with transparency",
+                "Screenshots        4 phone screenshots, 1080 x 1920"
+              ],
+              "answer": 3,
+              "why": "The feature graphic has transparency. Play wants a JPEG or a PNG without an alpha channel."
+            },
+            {
+              "prompt": "Tap the part of this listing Play Console refuses.",
+              "code": [
+                "Title              Pocket Ledger: Budget & Expense Tracker",
+                "Short description  Track spending in seconds, even offline.",
+                "Icon               512 x 512 PNG",
+                "Feature graphic    1024 x 500 JPEG",
+                "Screenshots        4 phone screenshots, 1080 x 1920"
+              ],
+              "answer": 0,
+              "why": "'Pocket Ledger: Budget & Expense Tracker' is 39 characters, over the 30 a title may have."
+            }
+          ]
+        },
+        {
+          "id": "sl-transfer",
+          "kind": "transfer",
+          "hints": [
+            "What does a stranger read first?",
+            "Words belong where they describe the app."
+          ],
+          "variants": [
+            {
+              "prompt": "Testers keep asking what your app is for. Where does the fix belong first?",
+              "choices": [
+                "The first line of the short description and the first screenshot: what it does, for whom",
+                "A longer full description with more keywords",
+                "A new icon",
+                "A video at the end of the full description"
+              ],
+              "answer": 0,
+              "why": "The short description's first line and the first screenshot are what people read before deciding."
+            },
+            {
+              "prompt": "You want people searching for 'budget' to find you. What is within the rules?",
+              "choices": [
+                "Use the word naturally where it describes the app, in the title or descriptions",
+                "Repeat 'budget' twenty times at the end of the full description",
+                "Put a competitor's app name in your title",
+                "Hide the word in tiny text inside a screenshot"
+              ],
+              "answer": 0,
+              "why": "Using the word where it honestly describes the app is fine. Repetition, competitors' names and hidden text are what the policy forbids."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "data-safety",
+      "title": "Data safety, privacy and account deletion",
+      "outcome": "Declare what the app and its SDKs collect, publish a privacy policy, and give people a way to delete their account.",
+      "minutes": 12,
+      "free": false,
+      "requires": [
+        "permissions"
+      ],
+      "model": [
+        "Every app on Play fills in the Data safety form: what data is collected or shared, why, whether it is encrypted in transit, and whether people can ask for it to be deleted. It covers your SDKs too. An ads or analytics SDK's collection is your app's collection.",
+        "Every app needs a privacy policy at a public URL, linked in Play Console. An app that handles personal data links it inside the app as well.",
+        "An app that lets people create an account has to let them delete it: from inside the app, and from a web page for people who no longer have it installed. Deleting means the account and its data, except what the law makes you keep, which you say.",
+        "The form has to match the build. Play reviews what the APK does and what its SDKs send; a form that says 'no data collected' over an analytics SDK is a policy violation.",
+        "If any ad shows, including through a mediation SDK, declare that the app contains ads."
+      ],
+      "example": {
+        "code": [
+          "Data type        Collected  Shared  Why                  Optional",
+          "Email address    Yes        No      Account management   No",
+          "Crash logs       Yes        No      App functionality    No",
+          "Device or ad ID  Yes        Yes     Advertising          Yes"
+        ],
+        "notes": [
+          "Sign-in brings the email address.",
+          "The crash reporting SDK brings crash logs.",
+          "The ads SDK brings the advertising ID, shared with the ad network."
+        ]
+      },
+      "questions": [
+        {
+          "id": "ds-who",
+          "kind": "concept",
+          "hints": [
+            "Whose app is the SDK inside?",
+            "Think about someone who no longer has the app installed."
+          ],
+          "variants": [
+            {
+              "prompt": "Who is responsible for declaring the data an analytics SDK in your app collects?",
+              "choices": [
+                "You are: the SDK's collection is your app's collection",
+                "The SDK's vendor, in their own listing",
+                "Nobody: SDKs are exempt",
+                "Google, automatically"
+              ],
+              "answer": 0,
+              "why": "You are. The SDK runs inside your app, so its collection is your app's collection."
+            },
+            {
+              "prompt": "Your app has sign-up. What must it offer?",
+              "choices": [
+                "Account deletion from inside the app and from a web page",
+                "Only an email address for deletion requests",
+                "Deletion after 12 months without sign-in",
+                "Nothing, if the privacy policy mentions data retention"
+              ],
+              "answer": 0,
+              "why": "Account deletion from inside the app, and from a web page for people who have uninstalled it."
+            }
+          ]
+        },
+        {
+          "id": "ds-predict",
+          "kind": "predict",
+          "hints": [
+            "Play reviews the build as well as the form.",
+            "Where can someone without the app go?"
+          ],
+          "variants": [
+            {
+              "prompt": "Your Data safety form says 'No data collected', and the app includes an ads SDK that uses the advertising ID. What is likely in review?",
+              "choices": [
+                "The update is rejected, or the app flagged, for an inaccurate Data safety form",
+                "Nothing: ads SDKs are exempt",
+                "Play fills in the form for you",
+                "Only people in Europe see a warning"
+              ],
+              "answer": 0,
+              "why": "Play compares the form with what the build does. An inaccurate form gets the update rejected or the app flagged."
+            },
+            {
+              "prompt": "Someone who uninstalled your app asks how to delete their account. What lets them do it?",
+              "choices": [
+                "The deletion web page linked from your Play listing",
+                "Reinstalling and opening Settings, the only way",
+                "Emailing Google",
+                "Nothing: deletion needs the app"
+              ],
+              "answer": 0,
+              "why": "The deletion web page linked from your Play listing exists for exactly this person."
+            }
+          ]
+        },
+        {
+          "id": "ds-draft",
+          "kind": "debug",
+          "hints": [
+            "List what each SDK in the app collects, then compare it with the rows.",
+            "One row says 'not collected' about something an SDK in this app uses."
+          ],
+          "variants": [
+            {
+              "prompt": "Data safety draft for an app with Google sign-in, crash reporting and AdMob. Tap the row that is wrong.",
+              "code": [
+                "Email address         Collected      Account management",
+                "Crash logs            Collected      App functionality",
+                "Advertising ID        Not collected",
+                "Approximate location  Not collected"
+              ],
+              "answer": 2,
+              "why": "AdMob uses the advertising ID. The form has to say so."
+            },
+            {
+              "prompt": "A release checklist for an app with accounts. Tap the line that falls short of Play's account deletion requirement.",
+              "code": [
+                "Privacy policy URL added in Play Console",
+                "Data safety form matches the SDKs in this build",
+                "Account deletion: email support to request it",
+                "Contains ads: Yes"
+              ],
+              "answer": 2,
+              "why": "An email to support is not deletion inside the app, and it is not a web page anyone can use. Play asks for both."
+            }
+          ]
+        },
+        {
+          "id": "ds-transfer",
+          "kind": "transfer",
+          "hints": [
+            "A new SDK changes what the build does.",
+            "No accounts does not mean no data."
+          ],
+          "variants": [
+            {
+              "prompt": "You add a crash reporting SDK in an update. What else changes before you publish?",
+              "choices": [
+                "The Data safety form and the privacy policy, to include what it collects",
+                "Nothing: crash data is anonymous",
+                "Only the versionName",
+                "The app's category"
+              ],
+              "answer": 0,
+              "why": "The Data safety form and the privacy policy have to describe what the new SDK collects."
+            },
+            {
+              "prompt": "Your app has no accounts and collects nothing itself, but it shows ads through an ads SDK. What do you still need?",
+              "choices": [
+                "A privacy policy, an accurate Data safety form for the SDK's data, and the 'contains ads' declaration",
+                "Nothing at all",
+                "Only the 'contains ads' declaration",
+                "Account deletion"
+              ],
+              "answer": 0,
+              "why": "A privacy policy, a Data safety form that declares the SDK's data, and the 'contains ads' declaration. Account deletion applies only to apps with accounts."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

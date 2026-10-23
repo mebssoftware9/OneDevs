@@ -64,6 +64,11 @@ class OneDevsApplication : Application() {
             }
         }
         ClaimWorker.drain(this)
+        // Answers given offline in the Academy go to the server once someone
+        // is signed in; the store sends them itself when it starts.
+        scope.launch {
+            account.session.map { it?.userId }.distinctUntilChanged().filterNotNull().collect { academy }
+        }
         // A testing cycle's reports arrive whether or not the app is open.
         InsightWorker.schedule(this)
         // New apps on the Board, once each, while the app is closed.
@@ -185,6 +190,16 @@ class OneDevsApplication : Application() {
 
     val feedback: com.devbangs.onedevs.data.feedback.FeedbackRepository by lazy {
         com.devbangs.onedevs.data.feedback.FeedbackRepository(backend)
+    }
+
+    /** The Academy: lessons from assets, answers on disk and on the server, credentials. */
+    val academy: com.devbangs.onedevs.data.academy.AcademyStore by lazy {
+        com.devbangs.onedevs.data.academy.AcademyStore(
+            context = this,
+            backend = backend,
+            account = account,
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+        )
     }
 
     val badges: com.devbangs.onedevs.data.badges.BadgeRepository by lazy {

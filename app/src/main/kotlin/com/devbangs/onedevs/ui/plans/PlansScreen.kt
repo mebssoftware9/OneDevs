@@ -132,6 +132,7 @@ fun PlansScreen(onCycles: () -> Unit, modifier: Modifier = Modifier) {
                 stringResource(R.string.tier_community_2),
                 stringResource(R.string.tier_community_3),
                 stringResource(R.string.tier_community_4),
+                stringResource(R.string.tier_community_academy),
                 stringResource(R.string.tier_community_5),
             ),
             action = stringResource(if (tier == Tier.Community) R.string.plans_current else R.string.plans_included),
@@ -159,6 +160,7 @@ fun PlansScreen(onCycles: () -> Unit, modifier: Modifier = Modifier) {
                 stringResource(R.string.tier_premium_8),
                 stringResource(R.string.tier_premium_9),
                 stringResource(R.string.tier_premium_10),
+                stringResource(R.string.tier_premium_academy),
                 stringResource(R.string.tier_priority_support),
             ),
             action = stringResource(

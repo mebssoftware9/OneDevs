@@ -103,9 +103,10 @@ data class ApkReport(
         /**
          * Play's floor for new apps and updates. A constant here because it is
          * Google's number and it moves every August, and the one place it is
-         * written should be the place someone thinks to check.
+         * written should be the place someone thinks to check. API 36 from
+         * 31 August 2026. The Academy's lessons quote it from here too.
          */
-        const val PLAY_TARGET_SDK_FLOOR = 35
+        const val PLAY_TARGET_SDK_FLOOR = 36
     }
 
     val meetsPlayTargetFloor: Boolean get() = targetSdk >= PLAY_TARGET_SDK_FLOOR

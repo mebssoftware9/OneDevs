@@ -416,3 +416,6 @@ enabled = true
 
 [functions.play-rtdn]
 verify_jwt = false
+
+[functions.verify]
+verify_jwt = false

@@ -21,7 +21,7 @@ ICONS = {
     "list-checks": ("bold", "fill"),
     "rocket-launch": ("bold", "fill"),
     "flask": ("bold", "fill"),
-    "medal": ("bold", "fill"),
+    "graduation-cap": ("bold", "fill"),
     # DevBot's status-bar silhouette. Android flattens notification icons to
     # flat white at 24dp, where a solid shape survives and an outline breaks
     # up, so the bold weight would only ever be dead weight.
@@ -35,7 +35,6 @@ ICONS = {
     "target": ("bold",),
     "globe": ("bold",),
     "lock": ("bold",),
-    "coins": ("bold",),
     # Badge catalogue. One glyph per badge, all bold: a badge is a badge whether
     # or not it has been earned, and the earned state is carried by colour.
     "seal-check": ("bold",), "test-tube": ("bold",), "trophy": ("bold",),
@@ -60,6 +59,8 @@ ICONS = {
     "translate": ("bold",), "moon": ("bold",), "bell": ("bold",),
     "file-text": ("bold",), "receipt": ("bold",),
     "android-logo": ("bold",), "cpu": ("bold",), "info": ("bold",), "scroll": ("bold",),
+    # Academy: a credential, and the share action on it.
+    "certificate": ("bold",), "share-network": ("bold",),
 }
 DENSITIES = {"mdpi": 1.0, "hdpi": 1.5, "xhdpi": 2.0, "xxhdpi": 3.0, "xxxhdpi": 4.0}
 COIN_DP, HERO_DP = 32, 96

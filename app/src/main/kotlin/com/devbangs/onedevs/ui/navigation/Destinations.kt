@@ -7,12 +7,13 @@ import kotlinx.serialization.Serializable
 
 // The loop: test apps on the Board to earn DevCoins, spend DevCoins to put your
 // own app up as a Launch. Missions is what you committed to; Launches is what
-// you shipped for others to test.
+// you shipped for others to test. The Academy is where you learn to ship it,
+// and where what you have shown -- credentials and badges -- is kept.
 @Serializable object Board
 @Serializable object Missions
 @Serializable object Launches
 @Serializable object Lab
-@Serializable object Badge
+@Serializable object Academy
 @Serializable object Profile
 @Serializable object Wallet
 @Serializable object Plans
@@ -38,6 +39,12 @@ import kotlinx.serialization.Serializable
  */
 @Serializable data class AppDetails(val id: String)
 
+/** One competency of the Academy's pathway: its lesson, practice and gate. */
+@Serializable data class AcademyUnit(val id: String)
+
+/** A practice session for one competency, or a review across all of them when [competency] is null. */
+@Serializable data class AcademyPractice(val competency: String? = null)
+
 /** One mission's own page, where it is joined. */
 @Serializable data class MissionDetails(val id: String)
 
@@ -55,5 +62,5 @@ enum class TopLevel(
     MISSIONS(Missions, R.string.nav_missions, R.drawable.ic_list_checks, R.drawable.ic_list_checks_fill),
     LAUNCHES(Launches, R.string.nav_launches, R.drawable.ic_rocket_launch, R.drawable.ic_rocket_launch_fill),
     LAB(Lab, R.string.nav_lab, R.drawable.ic_flask, R.drawable.ic_flask_fill),
-    BADGE(Badge, R.string.nav_badge, R.drawable.ic_medal, R.drawable.ic_medal_fill),
+    ACADEMY(Academy, R.string.nav_academy, R.drawable.ic_graduation_cap, R.drawable.ic_graduation_cap_fill),
 }

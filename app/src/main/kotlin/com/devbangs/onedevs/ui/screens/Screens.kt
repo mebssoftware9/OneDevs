@@ -391,10 +391,14 @@ fun LabScreen(onPlans: () -> Unit, modifier: Modifier = Modifier) {
  *
  * What is earned comes from the server, which works each badge out from the
  * account's missions, reports, tests and verified phone. Read again each
- * time the tab is shown, so a badge earned elsewhere appears here.
+ * time it is shown, so a badge earned elsewhere appears here.
+ *
+ * It sits in the Academy's Record, beside the credentials, without a scroll
+ * of its own: badges are the record of testing work, credentials the record
+ * of learning, and both are what this account has shown it can do.
  */
 @Composable
-fun BadgeScreen(modifier: Modifier = Modifier) {
+fun BadgeList(modifier: Modifier = Modifier) {
     val app = LocalContext.current.applicationContext as OneDevsApplication
     var states by remember { mutableStateOf<List<com.devbangs.onedevs.data.badges.BadgeState>>(emptyList()) }
     var tick by remember { mutableIntStateOf(0) }
@@ -406,23 +410,17 @@ fun BadgeScreen(modifier: Modifier = Modifier) {
     val specs = BadgeCatalogue.flatMap { it.badges }
     val earned = specs.filter { byKey[it.key]?.earned == true }.map { it.name }.toSet()
     val progress = specs.mapNotNull { spec -> byKey[spec.key]?.let { spec.name to (it.have to it.need) } }.toMap()
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.badge_intro),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp, bottom = 6.dp),
-        )
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier) {
         Text(
             text = stringResource(R.string.badge_your_badges),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(top = 6.dp),
+        )
+        Text(
+            text = stringResource(R.string.badge_intro),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         BadgeCatalogue.forEach { group -> BadgeGroupCard(group, earned, progress = progress) }
     }

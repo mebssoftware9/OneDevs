@@ -52,7 +52,9 @@ import com.devbangs.onedevs.ui.details.AppDetailsScreen
 import com.devbangs.onedevs.ui.launch.AddListingScreen
 import com.devbangs.onedevs.ui.navigation.AddListing
 import com.devbangs.onedevs.ui.navigation.AppDetails
-import com.devbangs.onedevs.ui.navigation.Badge
+import com.devbangs.onedevs.ui.navigation.Academy
+import com.devbangs.onedevs.ui.navigation.AcademyPractice
+import com.devbangs.onedevs.ui.navigation.AcademyUnit
 import com.devbangs.onedevs.ui.navigation.Board
 import com.devbangs.onedevs.ui.navigation.Lab
 import com.devbangs.onedevs.ui.navigation.Launches
@@ -80,7 +82,9 @@ import com.devbangs.onedevs.ui.components.BrandedLoading
 import com.devbangs.onedevs.ui.components.OfflineScreen
 import com.devbangs.onedevs.ui.profile.SignInScreen
 import com.devbangs.onedevs.ui.profile.loadAvatar
-import com.devbangs.onedevs.ui.screens.BadgeScreen
+import com.devbangs.onedevs.ui.academy.AcademyScreen
+import com.devbangs.onedevs.ui.academy.PracticeScreen
+import com.devbangs.onedevs.ui.academy.UnitScreen
 import com.devbangs.onedevs.ui.screens.BoardScreen
 import com.devbangs.onedevs.ui.screens.LabScreen
 import com.devbangs.onedevs.ui.screens.LaunchesScreen
@@ -164,8 +168,9 @@ fun OneDevsApp() {
     }
 
     // One definition of what entering a top-level destination means. The tabs
-    // and the profile action both go through it, so the action switches to
-    // Badge rather than stacking a second copy of it on the back stack.
+    // go through it, and so does anything that sends someone to another tab --
+    // the Academy's capstone opening Launches -- so a tab is switched to rather
+    // than a second copy of it stacked on the back stack.
     val openTopLevel: (Any) -> Unit = { route ->
         navController.navigate(route) {
             popUpTo(navController.graph.findStartDestination().id)
@@ -273,11 +278,8 @@ fun OneDevsApp() {
                                     navController.navigate(Wallet) { launchSingleTop = true }
                                 },
                             )
-                            // Badge already owns reputation, devices and account
-                            // settings. The profile action opens that rather than
-                            // introducing a second destination for one screen.
-                            // Profile is its own destination now. It was
-                            // opening Badge because there was nothing else to
+                            // Profile is its own destination. It once opened
+                            // the Badge tab because there was nothing else to
                             // open, which made settings look like a reward.
                             ProfileAction(
                                 avatar = avatar,
@@ -376,7 +378,28 @@ fun OneDevsApp() {
                     CyclesScreen(onPlans = { navController.navigate(Plans) { launchSingleTop = true } })
                 }
                 screen<Ghostline> { GhostlineScreen() }
-                screen<Badge> { BadgeScreen() }
+                screen<Academy> {
+                    AcademyScreen(
+                        onUnit = { id -> navController.navigate(AcademyUnit(id)) },
+                        onReview = { navController.navigate(AcademyPractice()) },
+                        onPlans = { navController.navigate(Plans) { launchSingleTop = true } },
+                        onLaunches = { openTopLevel(Launches) },
+                    )
+                }
+                screen<AcademyUnit> { entry ->
+                    val id = entry.toRoute<AcademyUnit>().id
+                    UnitScreen(
+                        competencyId = id,
+                        onPractice = { navController.navigate(AcademyPractice(id)) },
+                        onPlans = { navController.navigate(Plans) { launchSingleTop = true } },
+                    )
+                }
+                screen<AcademyPractice> { entry ->
+                    PracticeScreen(
+                        competencyId = entry.toRoute<AcademyPractice>().competency,
+                        onDone = { navController.popBackStack() },
+                    )
+                }
                 screen<Profile> {
                     ProfileScreen(onPlans = { navController.navigate(Plans) { launchSingleTop = true } })
                 }

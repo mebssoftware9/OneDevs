@@ -1,6 +1,8 @@
 package com.devbangs.onedevs
 
-import com.devbangs.onedevs.ui.navigation.Badge
+import com.devbangs.onedevs.ui.navigation.Academy
+import com.devbangs.onedevs.ui.navigation.AcademyPractice
+import com.devbangs.onedevs.ui.navigation.AcademyUnit
 import com.devbangs.onedevs.ui.navigation.Board
 import com.devbangs.onedevs.ui.navigation.Lab
 import com.devbangs.onedevs.ui.navigation.Launches
@@ -70,7 +72,9 @@ class RouteSerializationTest {
             serializer<Missions>() to "com.devbangs.onedevs.ui.navigation.Missions",
             serializer<Launches>() to "com.devbangs.onedevs.ui.navigation.Launches",
             serializer<Lab>() to "com.devbangs.onedevs.ui.navigation.Lab",
-            serializer<Badge>() to "com.devbangs.onedevs.ui.navigation.Badge",
+            serializer<Academy>() to "com.devbangs.onedevs.ui.navigation.Academy",
+            serializer<AcademyUnit>() to "com.devbangs.onedevs.ui.navigation.AcademyUnit",
+            serializer<AcademyPractice>() to "com.devbangs.onedevs.ui.navigation.AcademyPractice",
             serializer<Wallet>() to "com.devbangs.onedevs.ui.navigation.Wallet",
         )
         expected.forEach { (s, name) -> assertEquals(name, s.descriptor.serialName) }
@@ -80,14 +84,15 @@ class RouteSerializationTest {
     fun `serial names are unique`() {
         val names = listOf(
             serializer<Board>(), serializer<Missions>(), serializer<Launches>(),
-            serializer<Lab>(), serializer<Badge>(), serializer<Wallet>(),
+            serializer<Lab>(), serializer<Academy>(), serializer<Wallet>(),
+            serializer<AcademyUnit>(), serializer<AcademyPractice>(),
         ).map { it.descriptor.serialName }
         assertEquals(names.size, names.distinct().size)
     }
 
     @Test
     fun `every top-level route is one of the serializable destinations`() {
-        val known = setOf<Any>(Board, Missions, Launches, Lab, Badge)
+        val known = setOf<Any>(Board, Missions, Launches, Lab, Academy)
         TopLevel.entries.forEach { assertTrue("${it.name} is not a known route", it.route in known) }
     }
 }
